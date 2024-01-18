@@ -8,11 +8,12 @@ def generate_participant() -> dict:
     xmin        = random.randint(1,100)
     ymin        = random.randint(1,100)
 
-    width       = random.randint(1,20)
-    height      = random.randint(1,20)
+    width       = random.randint(1,60)
+    height      = random.randint(1,60)
 
 
     participant = {
+        "idx":          0,  
         "xmin":         xmin,
         "ymin":         ymin,
         "width":        width,
@@ -210,3 +211,25 @@ def calculate_overlap(A : dict, B : dict) -> float:
           return 0
     else:    
         return (x_Overlap_min, y_Overlap_min), (x_Overlap_max, y_Overlap_max)
+    
+
+def calculate_layout_area(layout_zone : dict) -> float:
+
+      total_layout_area = layout_zone['width'] * layout_zone['height']      
+
+      return total_layout_area
+    
+
+def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:
+
+      total_layout_area             = calculate_layout_area(layout_zone)
+
+      widths                        = [sub_dict.get('width') for sub_dict in participants.values()]
+
+      heights                       = [sub_dict.get('height') for sub_dict in participants.values()]
+
+      summed_participants_area      = sum([a * b for a, b in zip(widths, heights)])
+
+      leeway_coeffcient             = (total_layout_area/summed_participants_area) ** 0.5
+
+      return leeway_coeffcient
