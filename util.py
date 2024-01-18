@@ -213,6 +213,11 @@ def calculate_overlap(A : dict, B : dict) -> float:
         return (x_Overlap_min, y_Overlap_min), (x_Overlap_max, y_Overlap_max)
     
 
+def calculate_participant_area(A : dict) -> float:
+
+      return A['width'] * A['height']
+
+
 def calculate_layout_area(layout_zone : dict) -> float:
 
       total_layout_area = layout_zone['width'] * layout_zone['height']      
@@ -233,3 +238,17 @@ def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> flo
       leeway_coeffcient             = (total_layout_area/summed_participants_area) ** 0.5
 
       return leeway_coeffcient
+
+
+def calculate_relaxation_threshold(leeway_coeffcient : float, A : dict, B : dict) -> float:
+
+      idx_B                   = B['idx']
+
+      emphasis                = A['connections'][idx_B]
+
+      area_A                  = calculate_participant_area(A)
+      area_B                  = calculate_participant_area(B)
+
+      relaxation_threshold    = (leeway_coeffcient/(2**0.5 * emphasis)) * (area_A**0.5 + area_B**0.5)
+
+      return relaxation_threshold
