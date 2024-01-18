@@ -1,7 +1,8 @@
 import random
+import math
 from matplotlib import pyplot as plt, patches
 
-# Test functions
+## Test functions
 
 def generate_participant() -> dict:
 
@@ -18,10 +19,10 @@ def generate_participant() -> dict:
         "ymin":         ymin,
         "width":        width,
         "height":       height,
-        "clashes":      {},
-        "aversions":    {},
+        "clashes":      {},         #{'idx' : 100}
+        "aversions":    {},         #{'idx' : 17,5}
         "inference":    0,
-        "connections":  {},
+        "connections":  {},         #{'idx' : 2}
         "turmoil":      0,
         "wounds":       []
     }
@@ -55,6 +56,8 @@ def plot_participants(participants):
     plt.show()
 
     return 0
+
+## Geometric relationships
 
 
 def calculate_overlap(A : dict, B : dict) -> float:
@@ -223,9 +226,26 @@ def calculate_layout_area(layout_zone : dict) -> float:
       total_layout_area = layout_zone['width'] * layout_zone['height']      
 
       return total_layout_area
-    
 
-def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:
+
+def calculate_euclidean_distance(A : dict, B : dict) -> float:
+
+      center_A_x  = A['xmin'] + 0.5 * A['width']
+
+      center_A_y  = A['ymin'] + 0.5 * A['height']
+
+      center_B_x  = B['xmin'] + 0.5 * B['width']
+
+      center_B_y  = B['ymin'] + 0.5 * B['height']
+
+      distance    = math.sqrt((center_A_x - center_B_x)**2 + (center_A_y - center_B_y)**2)
+
+      return distance
+
+
+## SWARM specifics    
+
+def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:                         # Equation 7.33 p. 120
 
       total_layout_area             = calculate_layout_area(layout_zone)
 
@@ -235,12 +255,12 @@ def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> flo
 
       summed_participants_area      = sum([a * b for a, b in zip(widths, heights)])
 
-      leeway_coeffcient             = (total_layout_area/summed_participants_area) ** 0.5
+      leeway_coeffcient             = math.sqrt(total_layout_area/summed_participants_area)
 
       return leeway_coeffcient
 
 
-def calculate_relaxation_threshold(leeway_coeffcient : float, A : dict, B : dict) -> float:
+def calculate_relaxation_threshold(leeway_coeffcient : float, A : dict, B : dict) -> float:                 # Equation 7.42 p. 121
 
       idx_B                   = B['idx']
 
@@ -249,6 +269,26 @@ def calculate_relaxation_threshold(leeway_coeffcient : float, A : dict, B : dict
       area_A                  = calculate_participant_area(A)
       area_B                  = calculate_participant_area(B)
 
-      relaxation_threshold    = (leeway_coeffcient/(2**0.5 * emphasis)) * (area_A**0.5 + area_B**0.5)
+      relaxation_threshold    = (leeway_coeffcient/(math.sqrt(2) * emphasis)) * (math.sqrt(area_A) + math.sqrt(area_B))
 
       return relaxation_threshold
+
+
+def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float:                             # Equation 7.48 p 122
+
+      idx_B                   = B['idx']
+
+      emphasis                = A['connections'][idx_B]
+
+      strength                = len(A['connections']) + len(B['connections']) - 1
+
+      distance                = calculate_euclidean_distance(A, B)
+
+      relaxation_threshold    = calculate_relaxation_threshold(leeway_coefficient, A, B)
+
+      if distance <= relaxation_threshold * emphasis:
+            tension           = distance * strength * emphasis
+      else:
+            tension           = ((distance + 0.5 - relaxation_threshold * emphasis)**2 - 0.25 + relaxation_threshold * emphasis) * strength * emphasis
+
+      return tension 
