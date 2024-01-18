@@ -275,6 +275,7 @@ def calculate_protrusion(layout_zone : dict, B : dict) -> str:  #layout zone is 
         
     return protrusion
 
+
 def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:                         # Equation 7.33 p. 120
 
       total_layout_area             = calculate_layout_area(layout_zone)
