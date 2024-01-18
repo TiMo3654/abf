@@ -309,6 +309,18 @@ def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float: 
 
 def calculate_trouble(A : dict, B : dict) -> float:
 
-      overlap     = calculate_overlap(A, B)
+      overlap                 = calculate_overlap(A, B)
 
-      return 0
+      if overlap:
+            overlap_area      = overlap['width'] * overlap['height']
+            idx_B             = B['idx']
+            aversion          = A['aversion'][idx_B]
+            area_B            = calculate_participant_area(B)
+
+            intensity         = overlap_area * area_B
+
+            trouble           = intensity + aversion
+      else:
+            trouble          = 0
+
+      return trouble
