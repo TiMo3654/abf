@@ -14,7 +14,7 @@ def generate_participant() -> dict:
 
 
     participant = {
-        "idx":          0,  
+        "idx":          "0",  
         "xmin":         xmin,
         "ymin":         ymin,
         "width":        width,
@@ -60,7 +60,7 @@ def plot_participants(participants):
 ## Geometric relationships
 
 
-def calculate_overlap(A : dict, B : dict) -> float:
+def calculate_overlap(A : dict, B : dict) -> tuple:
 
       x_A_min             = A['xmin']
       y_A_min             = A['ymin']
@@ -76,7 +76,8 @@ def calculate_overlap(A : dict, B : dict) -> float:
 
       if  (x_A_min >= x_B_max or x_A_max <= x_B_min) or (y_A_min >= y_B_max or y_A_max <= y_B_min):    # No horizontal or vertical overlap
 
-            overlapped        = False
+            overlapped          = False
+            locations           = [False, False, False, False, False, False]
 
       else:
 
@@ -113,6 +114,8 @@ def calculate_overlap(A : dict, B : dict) -> float:
                         south_edge_overlap = True
             else:
                         south_edge_overlap = False
+            
+            locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
 
     # Determine overlap coordinates
     
@@ -226,7 +229,7 @@ def calculate_overlap(A : dict, B : dict) -> float:
                                     "width"  : overlap_width,
                                     "height" : overlap_height}
           
-      return overlap
+      return overlap, locations
     
 
 def calculate_participant_area(A : dict) -> float:
@@ -256,7 +259,21 @@ def calculate_euclidean_distance(A : dict, B : dict) -> float:
       return distance
 
 
-## SWARM specifics    
+## SWARM specifics   
+
+def calculate_protrusion(layout_zone : dict, B : dict) -> str:  #layout zone is participant A for this function
+
+    overlap_locations   = calculate_overlap(layout_zone, B)[1]
+
+    if any(overlap_locations):
+        if overlap_locations[0]:
+            protrusion = 'safe'
+        else:
+            protrusion = 'prone'
+    else:
+        protrusion = 'lost'
+        
+    return protrusion
 
 def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:                         # Equation 7.33 p. 120
 
@@ -304,23 +321,51 @@ def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float: 
       else:
             tension           = ((distance + 0.5 - relaxation_threshold * emphasis)**2 - 0.25 + relaxation_threshold * emphasis) * strength * emphasis
 
-      return tension 
+      return tension
+
+
+def calculate_intensity(A : dict, B : dict) -> float:
+    
+    overlap             = calculate_overlap(A, B)[0]
+    
+    if overlap:
+        overlap_area	= overlap['width'] * overlap['height']
+        area_B			= calculate_participant_area(B)
+        intensity		= overlap_area * area_B
+    else:
+        intensity       = 0.0       
+    
+    return intensity
+
+
+def calculate_aversion(A : dict, B : dict) -> float:
+
+    idx_B = B['idx']
+
+    current_aversion    = A['aversion'][idx_B]
+    current_clashes     = A['clashes'][idx_B]
+
+    intensity           = calculate_intensity(A,B)
+
+    new_aversion        = (current_aversion + intensity) * (current_clashes + 1)
+
+    return new_aversion 
 
 
 def calculate_trouble(A : dict, B : dict) -> float:
 
-      overlap                 = calculate_overlap(A, B)
+    overlap                 = calculate_overlap(A, B)[0]
 
-      if overlap:
-            overlap_area      = overlap['width'] * overlap['height']
-            idx_B             = B['idx']
-            aversion          = A['aversion'][idx_B]
-            area_B            = calculate_participant_area(B)
+    if overlap:
+        overlap_area      = overlap['width'] * overlap['height']
+        idx_B             = B['idx']
+        aversion          = A['aversion'][idx_B]
+        area_B            = calculate_participant_area(B)
+        intensity         = overlap_area * area_B
+        trouble           = intensity + aversion
+    else:
+        trouble           = 0.0
 
-            intensity         = overlap_area * area_B
+    return trouble
 
-            trouble           = intensity + aversion
-      else:
-            trouble          = 0
 
-      return trouble
