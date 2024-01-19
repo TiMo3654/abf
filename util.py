@@ -382,7 +382,7 @@ def calculate_interference(A : dict, participants : dict) -> float:
     return interference
 
 
-def calculate_turmoil(layout_zone : dict, A : dict, participants : dict, leeway_coefficient : float) -> float:
+def calculate_turmoil(A : dict, participants : dict, leeway_coefficient : float) -> float:
 
     turmoil             = 0
 
