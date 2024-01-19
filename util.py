@@ -372,7 +372,7 @@ def calculate_trouble(A : dict, B : dict) -> float:
 
 def calculate_interference(A : dict, participants : dict) -> float:
 
-    interference         = 0
+    interference        = 0
        
     for idx in participants:
         trouble         = calculate_trouble(A, participants[idx])
@@ -382,11 +382,9 @@ def calculate_interference(A : dict, participants : dict) -> float:
     return interference
 
 
-def calculate_turmoil(layout_zone : dict, A : dict, participants : dict) -> float:
+def calculate_turmoil(layout_zone : dict, A : dict, participants : dict, leeway_coefficient : float) -> float:
 
     turmoil             = 0
-
-    leeway_coefficient  = calculate_leeway_coefficient(layout_zone, participants | A)
 
     for idx in participants:
         tension         = calculate_tension(leeway_coefficient, A, participants[idx])
@@ -394,5 +392,9 @@ def calculate_turmoil(layout_zone : dict, A : dict, participants : dict) -> floa
         turmoil         += tension
     
     return turmoil
+
+
+
+## MOVEMENTS
 
 
