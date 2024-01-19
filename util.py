@@ -267,11 +267,11 @@ def calculate_protrusion(layout_zone : dict, B : dict) -> str:  #layout zone is 
 
     if any(overlap_locations):
         if overlap_locations[0]:
-            protrusion = 'safe'
+            protrusion  = 'safe'
         else:
-            protrusion = 'prone'
+            protrusion  = 'prone'
     else:
-        protrusion = 'lost'
+        protrusion      = 'lost'
         
     return protrusion
 
@@ -355,7 +355,7 @@ def calculate_aversion(A : dict, B : dict) -> float:
 
 def calculate_trouble(A : dict, B : dict) -> float:
 
-    overlap                 = calculate_overlap(A, B)[0]
+    overlap               = calculate_overlap(A, B)[0]
 
     if overlap:
         overlap_area      = overlap['width'] * overlap['height']
@@ -368,5 +368,31 @@ def calculate_trouble(A : dict, B : dict) -> float:
         trouble           = 0.0
 
     return trouble
+
+
+def calculate_interference(A : dict, participants : dict) -> float:
+
+    interference         = 0
+       
+    for idx in participants:
+        trouble         = calculate_trouble(A, participants[idx])
+
+        interference    += trouble
+
+    return interference
+
+
+def calculate_turmoil(layout_zone : dict, A : dict, participants : dict) -> float:
+
+    turmoil             = 0
+
+    leeway_coefficient  = calculate_leeway_coefficient(layout_zone, participants | A)
+
+    for idx in participants:
+        tension         = calculate_tension(leeway_coefficient, A, participants[idx])
+
+        turmoil         += tension
+    
+    return turmoil
 
 
