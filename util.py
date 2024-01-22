@@ -394,6 +394,41 @@ def calculate_turmoil(A : dict, participants : dict, leeway_coefficient : float)
     return turmoil
 
 
+def stretch_edge(A : dict, layout_zone : dict, edge : str) -> dict:
+    
+    if edge == "north":
+        stretched_participant   = {
+              'xmin' :  A['xmin'],
+              'ymin' :  A['ymin'],
+              'width':  A['width'],
+              'height': layout_zone['height'] - A['ymin']
+        }
+    elif edge == "west":
+        stretched_participant   = {
+              'xmin' :  A['xmin'],
+              'ymin' :  A['ymin'],
+              'width':  layout_zone['width'] - A['xmin'],
+              'height': A['height']
+        }
+    elif edge == "east":
+        stretched_participant   = {
+              'xmin' :  layout_zone['xmin'],
+              'ymin' :  A['ymin'],
+              'width':  A['xmin'] + A['width'],
+              'height': A['height']
+        }
+    elif edge == "south":
+        stretched_participant   = {
+              'xmin' :  A['xmin'],
+              'ymin' :  layout_zone['ymin'],
+              'width':  A['width'],
+              'height': A['ymin'] + A['height']
+        }
+    else:
+        stretched_participant = {}
+        print('No correct edge received!')
+
+    return stretched_participant    
 
 ## MOVEMENTS
 
