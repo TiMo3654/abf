@@ -439,89 +439,96 @@ def calculate_corridor(A : dict, layout_zone : dict, edge : str) -> dict:
 
 def calclulate_free_space(A : dict, free_edges : list, participants : dict, layout_zone : dict) -> dict:
 
-    northern_boundary   = []
-    western_boundary    = []
-    southern_boundary   = []
-    eastern_boundary    = []
+    if free_edges:
 
-    for edge in free_edges:
+        northern_boundary   = []
+        western_boundary    = []
+        southern_boundary   = []
+        eastern_boundary    = []
 
-        corridor   = calculate_corridor(A, layout_zone, edge)
+        for edge in free_edges:
 
-        for idx in participants:
-            
-            B       = participants[idx]
+            corridor   = calculate_corridor(A, layout_zone, edge)
 
-            overlap, locations = calculate_overlap(corridor, B)
+            for idx in participants:
+                
+                B       = participants[idx]
 
-            # The minimum y coordinate of an overlap in the northern corridor is the northern border of A's free space
-            # The minimum x coordinate of an overlap in the eastern corridor is the eastern border of A's free space
-            # The maximum y coordinate of an overlap in the southern corridor is the southern border of A's free space
-            # The maximum x coordinate of an overlap in the western corridor is the western border of A's free space
-            # If a corridor has no overlaps, then A's free space is limited by the layout zone
-            # Free space is only calculated on A's edges free of overlaps 
-            # Free space is limited to the borders of the layout zone
+                overlap, locations = calculate_overlap(corridor, B)
 
-            if edge == 'north':
-                if overlap:
-                    y_max_free_space    = overlap['ymin']
-                else:
-                    y_max_free_space    = layout_zone['height']
+                # The minimum y coordinate of an overlap in the northern corridor is the northern border of A's free space
+                # The minimum x coordinate of an overlap in the eastern corridor is the eastern border of A's free space
+                # The maximum y coordinate of an overlap in the southern corridor is the southern border of A's free space
+                # The maximum x coordinate of an overlap in the western corridor is the western border of A's free space
+                # If a corridor has no overlaps, then A's free space is limited by the layout zone
+                # Free space is only calculated on A's edges free of overlaps 
+                # Free space is limited to the borders of the layout zone
 
-                northern_boundary.append(y_max_free_space)
-            
-            elif edge == 'east':
-                if overlap:
-                    x_max_free_space    = overlap['xmin']
-                else:
-                    x_max_free_space    = layout_zone['width']
+                if edge == 'north':
+                    if overlap:
+                        y_max_free_space    = overlap['ymin']
+                    else:
+                        y_max_free_space    = layout_zone['height']
 
-                eastern_boundary.append(x_max_free_space)
-            
-            elif edge == 'south':
-                if overlap:
-                    y_min_free_space    = overlap['ymin'] + overlap['height']
-                else:
-                    y_min_free_space    = layout_zone['ymin']
+                    northern_boundary.append(y_max_free_space)
+                
+                elif edge == 'east':
+                    if overlap:
+                        x_max_free_space    = overlap['xmin']
+                    else:
+                        x_max_free_space    = layout_zone['width']
 
-                southern_boundary.append(y_min_free_space)
+                    eastern_boundary.append(x_max_free_space)
+                
+                elif edge == 'south':
+                    if overlap:
+                        y_min_free_space    = overlap['ymin'] + overlap['height']
+                    else:
+                        y_min_free_space    = layout_zone['ymin']
 
-            elif edge == 'west':
-                if overlap:
-                    x_min_free_space    = overlap['xmin'] + overlap['width']
-                else:
-                    x_min_free_space    = layout_zone['xmin']
+                    southern_boundary.append(y_min_free_space)
 
-                western_boundary.append(x_min_free_space)
+                elif edge == 'west':
+                    if overlap:
+                        x_min_free_space    = overlap['xmin'] + overlap['width']
+                    else:
+                        x_min_free_space    = layout_zone['xmin']
+
+                    western_boundary.append(x_min_free_space)
 
 
-    if northern_boundary:
-        y_max_free_space            = min(northern_boundary)
+        if northern_boundary:
+            y_max_free_space            = min(northern_boundary)
+        else:
+            y_max_free_space            = A['ymin'] + A['height']   # Blocked edge in the northern direction
+
+        if eastern_boundary:
+            x_max_free_space            = min(eastern_boundary)
+        else:
+            x_max_free_space            = A['xmin'] + A['width']    # Blocked edge in the eastern direction
+
+        if southern_boundary:
+            y_min_free_space            = max(southern_boundary)
+        else:
+            y_min_free_space            = A['ymin']                 # Blocked edge in the southern direction
+
+        if western_boundary:
+            x_min_free_space            = max(western_boundary)
+        else:
+            x_min_free_space            = A['xmin']                 # Blocked edge in the western direction
+                
+
+        free_space          = {
+            'xmin'    : x_min_free_space,
+            'ymin'    : y_min_free_space,
+            'width'   : x_max_free_space - x_min_free_space,
+            'height'  : y_max_free_space - y_min_free_space
+        }
+
     else:
-        y_max_free_space            = A['ymin'] + A['height']   # Blocked edge in the northern direction
 
-    if eastern_boundary:
-        x_max_free_space            = min(eastern_boundary)
-    else:
-        x_max_free_space            = A['xmin'] + A['width']    # Blocked edge in the eastern direction
+        free_space = {}                                             # If no free edges are available, then there is no free space
 
-    if southern_boundary:
-        y_min_free_space            = max(southern_boundary)
-    else:
-        y_min_free_space            = A['ymin']                 # Blocked edge in the southern direction
-
-    if western_boundary:
-        x_min_free_space            = max(western_boundary)
-    else:
-        x_min_free_space            = A['xmin']                 # Blocked edge in the western direction
-            
-
-    free_space          = {
-          'xmin'    : x_min_free_space,
-          'ymin'    : y_min_free_space,
-          'width'   : x_max_free_space - x_min_free_space,
-          'height'  : y_max_free_space - y_min_free_space
-    }
 
     return free_space
 
