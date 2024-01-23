@@ -400,41 +400,41 @@ def calculate_turmoil(A : dict, participants : dict, leeway_coefficient : float)
     return turmoil
 
 
-def stretch_edge(A : dict, layout_zone : dict, edge : str) -> dict:
+def calculate_corridor(A : dict, layout_zone : dict, edge : str) -> dict:
     
     if edge == "north":
-        stretched_participant   = {
+        corridor   = {
               'xmin' :  A['xmin'],
-              'ymin' :  A['ymin'],
+              'ymin' :  A['ymin'] + A['height'],
               'width':  A['width'],
-              'height': layout_zone['height'] - A['ymin']
+              'height': layout_zone['height'] - (A['ymin'] + A['height'])
         }
     elif edge == "west":
-        stretched_participant   = {
+        corridor   = {
               'xmin' :  layout_zone['xmin'],
               'ymin' :  A['ymin'],
-              'width':  A['width'] + A['xmin'],
+              'width':  A['xmin'],
               'height': A['height']
         }
     elif edge == "east":
-        stretched_participant   = {
-              'xmin' :  A['xmin'],
+        corridor   = {
+              'xmin' :  A['xmin'] + A['width'],
               'ymin' :  A['ymin'],
-              'width':  layout_zone['width'] - A['xmin'],
+              'width':  layout_zone['width'] - (A['xmin'] + A['width']),
               'height': A['height']
         }
     elif edge == "south":
-        stretched_participant   = {
+        corridor   = {
               'xmin' :  A['xmin'],
               'ymin' :  layout_zone['ymin'],
               'width':  A['width'],
-              'height': A['ymin'] + A['height']
+              'height': A['ymin']
         }
     else:
-        stretched_participant = {}
+        corridor = {}
         print('No correct edge received!')
 
-    return stretched_participant    
+    return corridor    
 
 
 def calclulate_free_space(A : dict, free_edges : list, participants : dict, layout_zone : dict) -> dict:
@@ -446,72 +446,75 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
 
     for edge in free_edges:
 
-        stretched_participant   = stretch_edge(A, layout_zone, edge)
+        corridor   = calculate_corridor(A, layout_zone, edge)
 
         for idx in participants:
             
             B       = participants[idx]
 
-            overlap, locations = calculate_overlap(stretched_participant, B)
+            overlap, locations = calculate_overlap(corridor, B)
 
-            A_fully_encloses_B  = locations[0]
-
-            # if A_fully_encloses_B:
-            #     print('A fully encloses B') # B takes no effect on the free space of A
-            # else:
+            # The minimum y coordinate of an overlap in the northern corridor is the northern border of A's free space
+            # The minimum x coordinate of an overlap in the eastern corridor is the eastern border of A's free space
+            # The maximum y coordinate of an overlap in the southern corridor is the southern border of A's free space
+            # The maximum x coordinate of an overlap in the western corridor is the western border of A's free space
+            # If a corridor has no overlaps, then A's free space is limited by the layout zone
+            # Free space is only calculated on A's edges free of overlaps 
+            # Free space is limited to the borders of the layout zone
 
             if edge == 'north':
                 if overlap:
-                    y_max   = overlap['ymin']
+                    y_max_free_space    = overlap['ymin']
                 else:
-                    y_max   = layout_zone['height']
-                
-                northern_boundary.append(y_max)
+                    y_max_free_space    = layout_zone['height']
+
+                northern_boundary.append(y_max_free_space)
+            
+            elif edge == 'east':
+                if overlap:
+                    x_max_free_space    = overlap['xmin']
+                else:
+                    x_max_free_space    = layout_zone['width']
+
+                eastern_boundary.append(x_max_free_space)
+            
+            elif edge == 'south':
+                if overlap:
+                    y_min_free_space    = overlap['ymin'] + overlap['height']
+                else:
+                    y_min_free_space    = layout_zone['ymin']
+
+                southern_boundary.append(y_min_free_space)
 
             elif edge == 'west':
                 if overlap:
-                    x_min   = overlap['xmin']
+                    x_min_free_space    = overlap['xmin'] + overlap['width']
                 else:
-                    x_min   = layout_zone['xmin']
-                
-                western_boundary.append(x_min)
+                    x_min_free_space    = layout_zone['xmin']
 
-            elif edge == 'south':
-                if overlap:
-                    y_min = overlap['ymin'] + overlap['height']
-                else:
-                    y_min = layout_zone['ymin']
+                western_boundary.append(x_min_free_space)
 
-                southern_boundary.append(y_min)
-
-            elif edge == 'east':
-                if overlap:
-                    x_max = overlap['xmin']
-                else:
-                    x_max = layout_zone['width']
-
-                eastern_boundary.append(x_max)
-
-    # Check for closest value of an overlap. On non-free edges, there is no free space
-    if western_boundary:
-        x_min_free_space    = max(western_boundary)
-    else:
-        x_min_free_space    = A['xmin']
-
-    if eastern_boundary:
-        x_max_free_space    = min(eastern_boundary)
-    else:
-        x_max_free_space    = A['xmin'] + A['width']
-
-    if southern_boundary:
-        y_min_free_space    = max(southern_boundary)
-    else:
-        y_min_free_space    = A['ymin']
 
     if northern_boundary:
-        y_max_free_space    = min(northern_boundary)
+        y_max_free_space            = min(northern_boundary)
     else:
-        y_max_free_space    = A['ymin'] + A['height']
+        y_max_free_space            = A['ymin'] + A['height']   # Blocked edge in the northern direction
+
+    if eastern_boundary:
+        x_max_free_space            = min(eastern_boundary)
+    else:
+        x_max_free_space            = A['xmin'] + A['width']    # Blocked edge in the eastern direction
+
+    if southern_boundary:
+        y_min_free_space            = max(southern_boundary)
+    else:
+        y_min_free_space            = A['ymin']                 # Blocked edge in the southern direction
+
+    if western_boundary:
+        x_min_free_space            = max(western_boundary)
+    else:
+        x_min_free_space            = A['xmin']                 # Blocked edge in the western direction
+            
 
     free_space          = {
           'xmin'    : x_min_free_space,
