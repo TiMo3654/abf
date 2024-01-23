@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt, patches
 
 def generate_participant() -> dict:
 
-    xmin        = random.randint(0,100)
+    xmin        = random.randint(-10,100)
     ymin        = random.randint(-10,100)
 
     width       = random.randint(1,60)
@@ -469,7 +469,7 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
                     if overlap:
                         y_max_free_space    = overlap['ymin']
                     else:
-                        y_max_free_space    = layout_zone['height']
+                        y_max_free_space    = layout_zone['height']     # The algorithm enters this path when there is no object in the corridor or when this edge is outside the layout zone
 
                     northern_boundary.append(y_max_free_space)
                 
