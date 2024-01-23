@@ -6,8 +6,8 @@ from matplotlib import pyplot as plt, patches
 
 def generate_participant() -> dict:
 
-    xmin        = random.randint(1,100)
-    ymin        = random.randint(1,100)
+    xmin        = random.randint(0,100)
+    ymin        = random.randint(-10,100)
 
     width       = random.randint(1,60)
     height      = random.randint(1,60)
@@ -463,6 +463,7 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
                 # If a corridor has no overlaps, then A's free space is limited by the layout zone
                 # Free space is only calculated on A's edges free of overlaps 
                 # Free space is limited to the borders of the layout zone
+                # In case of protrusion, all free edges have to be evaluated (also the one outside the layout area)
 
                 if edge == 'north':
                     if overlap:
@@ -516,7 +517,7 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
             x_min_free_space            = max(western_boundary)
         else:
             x_min_free_space            = A['xmin']                 # Blocked edge in the western direction
-                
+
 
         free_space          = {
             'xmin'    : x_min_free_space,
@@ -533,5 +534,7 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
     return free_space
 
 ## MOVEMENTS
+
+
 
 
