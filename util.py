@@ -533,6 +533,68 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
 
     return free_space
 
+
+def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict, layout_zone : dict) -> dict:
+    
+        northern_boundary   = []
+        western_boundary    = []
+        southern_boundary   = []
+        eastern_boundary    = []
+
+            
+        if vertex == "north-east":
+            print('Free at north-east!')
+
+            x   = A['xmin'] + A['width']
+            y   = A['ymin'] + A['height']
+
+        elif vertex == "south-east":
+            print('Free at south-east!')
+
+            x   = A['xmin'] + A['width']
+            y   = A['ymin']
+
+        elif vertex == 'south-west':
+            print('Free at south-west!')
+
+            x   = A['xmin']
+            y   = A['ymin']
+
+        elif vertex == "north-west":
+            print('Free at north-west!')
+
+            x   = A['xmin']
+            y   = A['ymin'] + A['height']
+
+        else:
+            print("No correct vertex given!")
+
+        for idx in participants:
+            
+            B   = participants[idx]
+
+            B_somewhere_above_vertex            = B['ymin'] > y
+
+            B_somewhere_right_of_vertex         = B['xmin'] > x
+
+            vertex_vertical_cuts_edge_of_B      = (B['xmin'] <= x <= B['xmin'] + B['width'])
+
+            vertex_horizontal_cuts_edge_of_B    = (B['ymin'] <= y <= B['ymin'] + B['height'])
+
+            # Check upwards and downwards
+
+            if B_above_vertex:
+                
+                if 
+                
+
+            # Check rightwards and leftwards
+
+
+
+
+
+        return secondary_free_space
 ## MOVEMENTS
 
 
