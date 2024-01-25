@@ -583,12 +583,22 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
 
             # Check upwards and downwards
 
-            if B_above_vertex:
+            if B_somewhere_above_vertex:
                 
-                if 
+                if vertex_vertical_cuts_edge_of_B:
+                    northern_boundary.append(B['ymin'])
+                else:
+                    northern_boundary.append(layout_zone['height'])
+            
+            else:
+                if vertex_vertical_cuts_edge_of_B:
+                    southern_boundary.append(B['ymin'] + B['height'])
+                else:
+                    southern_boundary.append(layout_zone['ymin'])             
                 
-
             # Check rightwards and leftwards
+                    
+            if B_somewhere_right_of_vertex:
 
 
 
