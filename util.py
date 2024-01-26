@@ -721,8 +721,8 @@ def evade(A : dict, layout_zone : dict, layout_zone_edge : str) -> list:
 
 def center(A: dict) -> tuple:
      
-    x_min_new   = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'])
-    y_min_new   = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'])
+    x_min_new   = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'] - 0.5 * A['width'])
+    y_min_new   = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'] - 0.5 * A['height'])
 
     return x_min_new, y_min_new
 
@@ -730,6 +730,36 @@ def center(A: dict) -> tuple:
 def linger(A: dict) -> tuple:
      
     return A['xmin'], A['ymin']
+
+
+def budge(A: dict, secondary_free_space : str) -> tuple:
+     
+    if secondary_free_space == 'north-east':
+         
+        x_min_new   = int(A['secondary-freespace-north-east']['xmin'] + 0.5 * A['secondary-freespace-north-east']['width'] - 0.5 * A['width'])
+        y_min_new   = int(A['secondary-freespace-north-east']['ymin'] + 0.5 * A['secondary-freespace-north-east']['height'] - 0.5 * A['height'])
+
+    elif secondary_free_space == 'south-east':
+         
+        x_min_new   = int(A['secondary-freespace-south-east']['xmin'] + 0.5 * A['secondary-freespace-south-east']['width'] - 0.5 * A['width'])
+        y_min_new   = int(A['secondary-freespace-south-east']['ymin'] + 0.5 * A['secondary-freespace-south-east']['height'] - 0.5 * A['height'])
+
+    elif secondary_free_space == 'south-west':
+        
+        x_min_new   = int(A['secondary-freespace-south-west']['xmin'] + 0.5 * A['secondary-freespace-south-west']['width'] - 0.5 * A['width'])
+        y_min_new   = int(A['secondary-freespace-south-west']['ymin'] + 0.5 * A['secondary-freespace-south-west']['height'] - 0.5 * A['height'])
+
+    elif secondary_free_space == 'north-west':
+        
+        x_min_new   = int(A['secondary-freespace-north-west']['xmin'] + 0.5 * A['secondary-freespace-north-west']['width'] - 0.5 * A['width'])
+        y_min_new   = int(A['secondary-freespace-north-west']['ymin'] + 0.5 * A['secondary-freespace-north-west']['height'] - 0.5 * A['height'])
+
+    else:
+         
+        print('No secondary free space given!')
+
+    return x_min_new, y_min_new
+        
 
 
 
