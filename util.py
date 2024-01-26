@@ -570,7 +570,7 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
         else:
             print("No correct vertex given!")
 
-        # Check for collisions
+        # Check for pairwise collisions
 
         for idx in participants:
             
@@ -587,6 +587,8 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
             # Check upwards and downwards
 
             if B_somewhere_above_vertex:
+
+                southern_boundary.append(layout_zone['ymin'])           # If B is above A, the southern boundary is automatically the layout zone minimum in this pairwise comparison
                 
                 if vertex_vertical_cuts_edge_of_B:
                     northern_boundary.append(B['ymin'])
@@ -594,7 +596,9 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
                     northern_boundary.append(layout_zone['height'])
             
             else:
-                
+
+                northern_boundary.append(layout_zone['height'])         # If B is below A, the northern boundary is automatically the layout zone maximum in this pairwise comparison
+
                 if vertex_vertical_cuts_edge_of_B:
                     southern_boundary.append(B['ymin'] + B['height'])
                 else:
@@ -603,6 +607,8 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
             # Check rightwards and leftwards
                     
             if B_somewhere_right_of_vertex:
+
+                western_boundary.append(layout_zone['xmin'])            # If B is right of A, the western boundary is automatically the layout zone minimum in this pairwise comparison
                   
                 if vertex_horizontal_cuts_edge_of_B:
                     eastern_boundary.append(B['xmin'])
@@ -610,6 +616,8 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
                     eastern_boundary.append(layout_zone['width'])
 
             else:
+
+                eastern_boundary.append(layout_zone['width'])           # If B is left of A, the eastern boundary is automatically the layout zone maximum in this pairwise comparison
                 
                 if vertex_horizontal_cuts_edge_of_B:
                     western_boundary.append(B['xmin'] + B['width'])
