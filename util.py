@@ -773,7 +773,50 @@ def swap(A: dict, B: dict) -> tuple:
     x_min_new_B     = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'] - 0.5 * B['width'])
     y_min_new_B     = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'] - 0.5 * B['height'])
 
-    return x_min_new_A, y_min_new_A, x_min_new_B, y_min_new_B
+    return (x_min_new_A, y_min_new_A), (x_min_new_B, y_min_new_B)
+
+
+def pair(A : dict, B : dict, pair_direction : str) -> tuple:
+     
+    if pair_direction == 'horizontal-push-right':
+         
+        x_min_new_A = int(B['xmin'] - 0.5 * A['width'])
+        x_min_new_B = int(B['xmin'] + 0.5 * A['width'])
+
+        y_min_new_A = B['ymin']
+        y_min_new_B = B['ymin']
+
+    elif pair_direction == 'horizontal-push-left':
+         
+        x_min_new_A = int(B['xmin'] + B['width'] - 0.5 * A['width'])
+        x_min_new_B = int(B['xmin'] - 0.5 * A['width'])
+
+        y_min_new_A = B['ymin']
+        y_min_new_B = B['ymin']
+
+    elif pair_direction == 'vertikal-push-up':
+         
+        x_min_new_A = B['xmin']
+        x_min_new_B = B['xmin']
+
+        y_min_new_A = int(B['ymin'] - 0.5 * A['height'])
+        y_min_new_B = int(B['ymin'] + 0.5 * A['height'])
+
+    elif pair_direction == 'vertikal-push-down':
+         
+        x_min_new_A = B['xmin']
+        x_min_new_B = B['xmin']
+
+        y_min_new_A = int(B['ymin'] + B['height'] - 0.5 * A['height'])
+        y_min_new_B = int(B['ymin'] - 0.5 * A['height'])
+
+    else:
+        
+        print('No valid pair direction!')
+
+    return (x_min_new_A, y_min_new_A), (x_min_new_B, y_min_new_B)
+        
+
 
 
         
