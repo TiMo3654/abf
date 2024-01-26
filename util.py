@@ -534,7 +534,7 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
     return free_space
 
 
-def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict, layout_zone : dict) -> dict:
+def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict, layout_zone : dict) -> dict:   # Budging Move p.137
     
         northern_boundary   = []
         western_boundary    = []
@@ -635,7 +635,32 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
         }                 
         
         return secondary_free_space
+
+
 ## MOVEMENTS
+
+def reenter(A : dict, layout_zone : dict) -> dict:                      # Only activated in case of a lost participant
+
+    participant_left_of_layout_zone     = (A['xmin'] < layout_zone['xmin'])
+
+    participant_right_of_layout_zone    = (A['xmin'] >= layout_zone['xmin'] + layout_zone['width'])
+
+    participant_above_layout_zone       = (A['ymin'] >= layout_zone['ymin'] + layout_zone['height'])
+    
+    participant_below_layout_zone       = (A['ymin'] < layout_zone['ymin'])
+
+    reentered_participant               = A
+
+     
+    reentered_participant['xmin']       = layout_zone['xmin'] if participant_left_of_layout_zone else reentered_participant['xmin']
+
+    reentered_participant['xmin']       = (layout_zone['xmin'] + layout_zone['width'] - reentered_participant['width']) if participant_right_of_layout_zone else reentered_participant['xmin']
+
+    reentered_participant['ymin']       = layout_zone['ymin'] if participant_below_layout_zone else reentered_participant['ymin']
+
+    reentered_participant['ymin']       = (layout_zone['ymin'] + layout_zone['height'] - reentered_participant['height']) if participant_above_layout_zone else reentered_participant['ymin']     
+    
+    return reentered_participant
 
 
 
