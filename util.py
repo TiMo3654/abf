@@ -815,6 +815,30 @@ def pair(A : dict, B : dict, pair_direction : str) -> tuple:
         print('No valid pair direction!')
 
     return (x_min_new_A, y_min_new_A), (x_min_new_B, y_min_new_B)
+
+
+def hustle(A : dict, B : dict) -> tuple:
+    
+    overlap, locations  = calculate_overlap(A, B)
+
+    print(overlap)
+
+    if overlap['width'] <= overlap['height']:
+
+        delta_x         = overlap['width'] if B['xmin'] >= A['xmin'] else overlap['width'] * -1
+        delta_y         = 0
+
+    else:
+         
+        delta_x         = 0
+        delta_y         = overlap['height'] if B['ymin'] >= A['ymin'] else overlap['height'] * -1
+
+
+    x_min_new_B         = B['xmin'] + delta_x
+
+    y_min_new_B         = B['ymin'] + delta_y
+
+    return x_min_new_B, y_min_new_B
         
 
 
