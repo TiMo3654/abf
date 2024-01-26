@@ -639,7 +639,7 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
 
 ## MOVEMENTS
 
-def reenter(A : dict, layout_zone : dict) -> dict:                      # Only activated in case of a lost participant
+def reenter(A : dict, layout_zone : dict) -> dict:                      # Only activated and working in case of a totally lost participant
 
     participant_left_of_layout_zone     = (A['xmin'] < layout_zone['xmin'])
 
