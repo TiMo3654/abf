@@ -24,7 +24,8 @@ def generate_participant() -> dict:
         "inference":    0,
         "connections":  {},         #{'idx' : 2}
         "turmoil":      0,
-        "wounds":       []
+        "wounds":       [],
+        "freespace":    {}
     }
 
     return participant
@@ -639,28 +640,95 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
 
 ## MOVEMENTS
 
-def reenter(A : dict, layout_zone : dict) -> dict:                      # Only activated and working in case of a totally lost participant
+def reenter(A : dict, layout_zone : dict) -> tuple:                      # Only activated and working in case of a totally lost participant
 
     participant_left_of_layout_zone     = (A['xmin'] < layout_zone['xmin'])
 
-    participant_right_of_layout_zone    = (A['xmin'] >= layout_zone['xmin'] + layout_zone['width'])
+    participant_right_of_layout_zone    = (A['xmin'] + A['width'] >= layout_zone['xmin'] + layout_zone['width']) # To detect if an participant is at the north eastern corner of the layout zone
 
     participant_above_layout_zone       = (A['ymin'] >= layout_zone['ymin'] + layout_zone['height'])
     
     participant_below_layout_zone       = (A['ymin'] < layout_zone['ymin'])
 
-    reentered_participant               = A
+    x_min_new                           = A['xmin']
+
+    y_min_new                           = A['ymin']
 
      
-    reentered_participant['xmin']       = layout_zone['xmin'] if participant_left_of_layout_zone else reentered_participant['xmin']
+    x_min_new                           = layout_zone['xmin'] if participant_left_of_layout_zone else x_min_new
 
-    reentered_participant['xmin']       = (layout_zone['xmin'] + layout_zone['width'] - reentered_participant['width']) if participant_right_of_layout_zone else reentered_participant['xmin']
+    x_min_new                           = (layout_zone['xmin'] + layout_zone['width'] - A['width']) if participant_right_of_layout_zone else x_min_new
 
-    reentered_participant['ymin']       = layout_zone['ymin'] if participant_below_layout_zone else reentered_participant['ymin']
+    y_min_new                           = layout_zone['ymin'] if participant_below_layout_zone else y_min_new
 
-    reentered_participant['ymin']       = (layout_zone['ymin'] + layout_zone['height'] - reentered_participant['height']) if participant_above_layout_zone else reentered_participant['ymin']     
+    y_min_new                           = (layout_zone['ymin'] + layout_zone['height'] - A['height']) if participant_above_layout_zone else y_min_new     
     
-    return reentered_participant
+    return x_min_new, y_min_new
+
+
+def evade(A : dict, layout_zone : dict, layout_zone_edge : str) -> list:
+
+    if layout_zone_edge == 'north':
+         
+        x_min_new_at_left_vertex    = layout_zone['xmin']
+        y_min_new_at_left_vertex    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+
+        x_min_new_at_center         = layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width']
+        y_min_new_at_center         = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+
+        x_min_new_at_right_vertex   = layout_zone['xmin'] + layout_zone['width'] - A['width']
+        y_min_new_at_right_vertex   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+
+    elif layout_zone_edge == 'east':    # Rotate layout zone clockwise virtually for edge orientation
+         
+        x_min_new_at_left_vertex    = layout_zone['xmin'] + layout_zone['width'] - A['width']
+        y_min_new_at_left_vertex    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+
+        x_min_new_at_center         = layout_zone['xmin'] + layout_zone['width'] - A['width']
+        y_min_new_at_center         = (layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height'])
+
+        x_min_new_at_right_vertex   = layout_zone['xmin'] + layout_zone['width'] - A['width']
+        y_min_new_at_right_vertex   = layout_zone['ymin']
+
+    elif layout_zone_edge == 'south':
+         
+        x_min_new_at_left_vertex    = layout_zone['xmin']
+        y_min_new_at_left_vertex    = layout_zone['ymin']
+
+        x_min_new_at_center         = layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width']
+        y_min_new_at_center         = layout_zone['ymin']
+
+        x_min_new_at_right_vertex   = layout_zone['xmin'] + layout_zone['width'] - A['width']
+        y_min_new_at_right_vertex   = layout_zone['ymin']
+
+    elif layout_zone_edge == 'west':    # Rotate layout zone counter-clockwise virtually for edge naming orientation
+         
+        x_min_new_at_left_vertex    = layout_zone['xmin']
+        y_min_new_at_left_vertex    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+
+        x_min_new_at_center         = layout_zone['xmin']
+        y_min_new_at_center         = (layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height'])
+
+        x_min_new_at_right_vertex   = layout_zone['xmin']
+        y_min_new_at_right_vertex   = layout_zone['ymin']
+
+    else:
+        
+        print('No correct edge given!')      
+
+    return [(x_min_new_at_left_vertex, y_min_new_at_left_vertex), (x_min_new_at_center, y_min_new_at_center), (x_min_new_at_right_vertex, y_min_new_at_right_vertex)]
+
+
+def center(A: dict) -> tuple:
+     
+    x_min_new   = A['freespace']['xmin'] + 0.5 * A['freespace']['width']
+    y_min_new   = A['freespace']['ymin'] + 0.5 * A['freespace']['height']
+
+    return x_min_new, y_min_new
+
+
+
+
 
 
 
