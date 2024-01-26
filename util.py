@@ -25,7 +25,11 @@ def generate_participant() -> dict:
         "connections":  {},         #{'idx' : 2}
         "turmoil":      0,
         "wounds":       [],
-        "freespace":    {}
+        "freespace":    {},
+        'secondary-freespace-north-east': {},
+        'secondary-freespace-south-east': {},
+        'secondary-freespace-south-west': {},
+        'secondary-freespace-north-west': {}
     }
 
     return participant
@@ -759,6 +763,19 @@ def budge(A: dict, secondary_free_space : str) -> tuple:
         print('No secondary free space given!')
 
     return x_min_new, y_min_new
+
+
+def swap(A: dict, B: dict) -> tuple:
+     
+    x_min_new_A     = int(B['freespace']['xmin'] + 0.5 * B['freespace']['width'] - 0.5 * A['width'])
+    y_min_new_A     = int(B['freespace']['ymin'] + 0.5 * B['freespace']['height'] - 0.5 * A['height'])
+
+    x_min_new_B     = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'] - 0.5 * B['width'])
+    y_min_new_B     = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'] - 0.5 * B['height'])
+
+    return x_min_new_A, y_min_new_A, x_min_new_B, y_min_new_B
+
+
         
 
 
