@@ -541,6 +541,7 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
         southern_boundary   = []
         eastern_boundary    = []
 
+        # Get vertex coordinates
             
         if vertex == "north-east":
             print('Free at north-east!')
@@ -569,13 +570,15 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
         else:
             print("No correct vertex given!")
 
+        # Check for collisions
+
         for idx in participants:
             
             B   = participants[idx]
 
-            B_somewhere_above_vertex            = B['ymin'] > y
+            B_somewhere_above_vertex            = B['ymin'] > y     # This can only be checked so easily due to the assumption, that B does not overlap the chosen vertex of A
 
-            B_somewhere_right_of_vertex         = B['xmin'] > x
+            B_somewhere_right_of_vertex         = B['xmin'] > x     # This can only be checked so easily due to the assumption, that B does not overlap the chosen vertex of A
 
             vertex_vertical_cuts_edge_of_B      = (B['xmin'] <= x <= B['xmin'] + B['width'])
 
@@ -591,6 +594,7 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
                     northern_boundary.append(layout_zone['height'])
             
             else:
+                
                 if vertex_vertical_cuts_edge_of_B:
                     southern_boundary.append(B['ymin'] + B['height'])
                 else:
@@ -599,11 +603,29 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
             # Check rightwards and leftwards
                     
             if B_somewhere_right_of_vertex:
+                  
+                if vertex_horizontal_cuts_edge_of_B:
+                    eastern_boundary.append(B['xmin'])
+                else:
+                    eastern_boundary.append(layout_zone['width'])
 
+            else:
+                
+                if vertex_horizontal_cuts_edge_of_B:
+                    western_boundary.append(B['xmin'] + B['width'])
+                else:
+                    western_boundary.append(layout_zone['xmin'])
 
+        # Get boundary values
+                    
+        secondary_free_space    = {
+             'xmin'     : max(western_boundary),
+             'ymin'     : max(southern_boundary),
+             'width'    : min(eastern_boundary) - max(western_boundary),
+             'height'   : min(northern_boundary) - max(southern_boundary)
 
-
-
+        }                 
+        
         return secondary_free_space
 ## MOVEMENTS
 
