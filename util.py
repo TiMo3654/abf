@@ -673,7 +673,7 @@ def evade(A : dict, layout_zone : dict, layout_zone_edge : str) -> list:
         x_min_new_at_left_vertex    = layout_zone['xmin']
         y_min_new_at_left_vertex    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
 
-        x_min_new_at_center         = layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width']
+        x_min_new_at_center         = int(layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width'])
         y_min_new_at_center         = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
 
         x_min_new_at_right_vertex   = layout_zone['xmin'] + layout_zone['width'] - A['width']
@@ -685,7 +685,7 @@ def evade(A : dict, layout_zone : dict, layout_zone_edge : str) -> list:
         y_min_new_at_left_vertex    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
 
         x_min_new_at_center         = layout_zone['xmin'] + layout_zone['width'] - A['width']
-        y_min_new_at_center         = (layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height'])
+        y_min_new_at_center         = int((layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height']))
 
         x_min_new_at_right_vertex   = layout_zone['xmin'] + layout_zone['width'] - A['width']
         y_min_new_at_right_vertex   = layout_zone['ymin']
@@ -695,7 +695,7 @@ def evade(A : dict, layout_zone : dict, layout_zone_edge : str) -> list:
         x_min_new_at_left_vertex    = layout_zone['xmin']
         y_min_new_at_left_vertex    = layout_zone['ymin']
 
-        x_min_new_at_center         = layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width']
+        x_min_new_at_center         = int(layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width'])
         y_min_new_at_center         = layout_zone['ymin']
 
         x_min_new_at_right_vertex   = layout_zone['xmin'] + layout_zone['width'] - A['width']
@@ -707,7 +707,7 @@ def evade(A : dict, layout_zone : dict, layout_zone_edge : str) -> list:
         y_min_new_at_left_vertex    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
 
         x_min_new_at_center         = layout_zone['xmin']
-        y_min_new_at_center         = (layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height'])
+        y_min_new_at_center         = int((layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height']))
 
         x_min_new_at_right_vertex   = layout_zone['xmin']
         y_min_new_at_right_vertex   = layout_zone['ymin']
@@ -721,10 +721,17 @@ def evade(A : dict, layout_zone : dict, layout_zone_edge : str) -> list:
 
 def center(A: dict) -> tuple:
      
-    x_min_new   = A['freespace']['xmin'] + 0.5 * A['freespace']['width']
-    y_min_new   = A['freespace']['ymin'] + 0.5 * A['freespace']['height']
+    x_min_new   = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'])
+    y_min_new   = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'])
 
     return x_min_new, y_min_new
+
+
+def linger(A: dict) -> tuple:
+     
+    return A['xmin'], A['ymin']
+
+
 
 
 
