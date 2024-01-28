@@ -171,7 +171,7 @@ def calculate_overlap(A : dict, B : dict) -> tuple:
                   y_Overlap_min = y_A_min
                   y_Overlap_max = y_B_max
             elif north_edge_overlap and east_edge_overlap:
-                  #print('Overlap at nort and east edge!')
+                  #print('Overlap at north and east edge!')
                   x_Overlap_min = x_B_min
                   x_Overlap_max = x_A_max
                   y_Overlap_min = y_B_min
@@ -642,6 +642,58 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
         return secondary_free_space
 
 
+def calculate_yield_polygon(A : dict, participants : dict, layout_zone : dict) -> dict:     # For yield (here called "yielt") move p. 141
+
+    northern_boundary   = []
+    western_boundary    = []
+    southern_boundary   = []
+    eastern_boundary    = []
+
+    for idx in participants:
+        
+        B                   = participants[idx]
+
+        overlap, locations  = calculate_overlap(A, B)
+
+        B_fully_encloses_A  = locations[1]
+        west_edge_overlap   = locations[2]
+        east_edge_overlap   = locations[3]
+        north_edge_overlap  = locations[4]
+        south_edge_overlap  = locations[5]
+
+        if not B_fully_encloses_A:
+
+            wb  = (overlap['xmin'] + overlap['width'])  if west_edge_overlap    else (A['xmin'])
+
+            eb  = (overlap['xmin'])                     if east_edge_overlap    else (A['xmin'] + A['width'])
+
+            nb  = (overlap['ymin'])                     if north_edge_overlap   else (A['ymin'] + A['height'])
+
+            sb  = (overlap['ymin'] + overlap['height']) if south_edge_overlap   else (A['ymin'])
+
+            western_boundary.append(wb)
+            eastern_boundary.append(eb)
+            northern_boundary.append(nb)
+            southern_boundary.append(sb)
+
+        else:
+            
+            return {}   # No yield polygon can be calculated in case of A beeing fully enclosed by B
+        
+
+    yield_polygon    = {
+    'xmin'     : max(western_boundary),
+    'ymin'     : max(southern_boundary),
+    'width'    : min(eastern_boundary) - max(western_boundary),
+    'height'   : min(northern_boundary) - max(southern_boundary)
+    }     
+
+    return yield_polygon
+     
+    
+
+
+
 ## MOVEMENTS
 
 def reenter(A : dict, layout_zone : dict) -> tuple:                      # Only activated and working in case of a totally lost participant
@@ -821,7 +873,7 @@ def hustle(A : dict, B : dict) -> tuple:
     
     overlap, locations  = calculate_overlap(A, B)
 
-    print(overlap)
+    #print(overlap)
 
     if overlap['width'] <= overlap['height']:
 
@@ -839,7 +891,13 @@ def hustle(A : dict, B : dict) -> tuple:
     y_min_new_B         = B['ymin'] + delta_y
 
     return x_min_new_B, y_min_new_B
-        
+
+
+def yielt(A : dict, participants : dict) -> tuple:      # Intentional typo in "yield" to avoid keyword
+     
+
+    
+    return x_min_new_A, y_min_new_A
 
 
 
