@@ -598,7 +598,7 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
                 if vertex_vertical_cuts_edge_of_B:
                     northern_boundary.append(B['ymin'])
                 else:
-                    northern_boundary.append(layout_zone['height'])
+                    northern_boundary.appen(layout_zone['height'])
             
             else:
 
@@ -893,9 +893,15 @@ def hustle(A : dict, B : dict) -> tuple:
     return x_min_new_B, y_min_new_B
 
 
-def yielt(A : dict, participants : dict) -> tuple:      # Intentional typo in "yield" to avoid keyword
+def yielt(A : dict) -> tuple:      # Intentional typo in "yield" to avoid keyword
      
+    x_center_yield_poly     = A['yield-polygon']['xmin'] + 0.5 * A['yield-polygon']['width']
 
+    y_center_yield_poly     = A['yield-polygon']['ymin'] + 0.5 * A['yield-polygon']['height']
+
+    x_min_new_A             = x_center_yield_poly - 0.5 * A['width']
+
+    y_min_new_A             = y_center_yield_poly - 0.5 * A['height']
     
     return x_min_new_A, y_min_new_A
 
