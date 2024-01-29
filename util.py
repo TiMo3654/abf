@@ -283,8 +283,7 @@ def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone i
         if locations[0]:
             protrusion          = 'safe'
 
-            protrusion_extend_x = 0
-            protrusion_extend_y = 0
+            protrusion_extend   = ()
 
         else:
             protrusion          = 'prone'
@@ -292,13 +291,14 @@ def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone i
             protrusion_extend_x = (B['width'] - overlap['width'])   if west_edge_overlap    else (B['width'] - overlap['width']) * -1       # negative in case of east edge, else zero (0 in the brackets in case of pure north or south overlap)
             protrusion_extend_y = (B['height'] - overlap['height']) if south_edge_overlap   else (B['height'] - overlap['height']) * -1     # negative in case of north edge, else zero
 
+            protrusion_extend   = (protrusion_extend_x, protrusion_extend_y)
+
     else:
         protrusion              = 'lost'
 
-        protrusion_extend_x = 0
-        protrusion_extend_y = 0
+        protrusion_extend       = ()
         
-    return protrusion, (protrusion_extend_x, protrusion_extend_y)   # The protrusion extend is signed and can therefore be simply added to the origin of a rectangle to correct a prone state
+    return protrusion, protrusion_extend   # The protrusion extend is signed and can therefore be simply added to the origin of a rectangle to correct a prone state
 
 
 def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:                         # Equation 7.33 p. 120
