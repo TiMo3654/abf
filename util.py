@@ -272,12 +272,43 @@ def calculate_euclidean_distance(A : dict, B : dict) -> float:
 
 ## SWARM specifics   
 
+def calculate_wound(A : dict, B : dict) -> list:    # p. 126
+    
+    new_wound, locations                        = calculate_overlap(A,B)
+
+    if new_wound:
+
+        wounds                                  = []
+
+        new_wound['severity']                   = 1
+
+        wounds.append(new_wound)
+        
+        for old_wound in A['wounds']:
+            
+            overlap_with_old_wound              = calculate_overlap(new_wound, old_wound)
+
+            if overlap_with_old_wound:
+                
+                intensified_wound               = overlap_with_old_wound
+
+                intensified_wound['severity']   = old_wound['severity'] + 1
+
+                wounds.append(intensified_wound)              
+                
+    else:
+         
+        wounds                      = []
+
+    return wounds
+
+
 def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone is participant A for this function
 
-    overlap, locations   = calculate_overlap(layout_zone, B)
+    overlap, locations          = calculate_overlap(layout_zone, B)
 
-    west_edge_overlap   = locations[2]
-    south_edge_overlap  = locations[5]
+    west_edge_overlap           = locations[2]
+    south_edge_overlap          = locations[5]
 
     if any(locations):
         if locations[0]:
