@@ -275,21 +275,17 @@ def calculate_euclidean_distance(A : dict, B : dict) -> float:
 
 def calculate_wounds(A : dict, B : dict) -> list:    # p. 126
     
-    new_wound, locations                        = calculate_overlap(A,B)
-
-    overlapped_wounds_idx                       = []
+    new_wound, _                        = calculate_overlap(A,B)
 
     if new_wound:
 
-        wounds                                  = []
-
         new_wound['severity']                   = 1
 
-        wounds.append(new_wound)
+        wounds                                  = [new_wound]
         
-        for i, old_wound in enumerate(A['wounds']):
+        for old_wound in A['wounds']:
             
-            overlap_with_old_wound              = calculate_overlap(new_wound, old_wound)
+            overlap_with_old_wound, _           = calculate_overlap(new_wound, old_wound)
 
             if overlap_with_old_wound:
                 
@@ -299,44 +295,25 @@ def calculate_wounds(A : dict, B : dict) -> list:    # p. 126
 
                 wounds.append(intensified_wound)  
 
-                overlapped_wounds_idx.append(i)
-
     else:
          
         wounds                                  = []
 
-    return wounds, overlapped_wounds_idx
+    return wounds
 
 
 def calculate_health(A : dict, critical_severity : int) -> str:
 
-    for wound in A['wounds']:
-        
-        if wound['severity'] < critical_severity:
-            health  = "healthy"
-        else:
-            health  = "sick"
-            break
+    sick    = [wound for wound in A['wounds'] if wound['severity'] >= critical_severity]
+
+    health  = "sick" if sick else 'healthy' 
 
     return health 
 
 
 def ameliorate(A : dict) -> list:
 
-    ameliorated_wounds  = A['wounds']
-
-    idx_healed = []
-     
-    for i, wound in ameliorated_wounds:
-    
-        wound['severity']   = wound['severity'] - 1
-
-        if wound['severity'] < 0:
-            
-            idx_healed.append(i)
-
-    for index in sorted(idx_healed, reverse=True):
-        del ameliorated_wounds[index]
+    ameliorated_wounds  = [wound | {"severity" :  wound['severity'] - 1 } for wound in A['wounds'] if wound['severity'] >= 0]
 
     return ameliorated_wounds        
 
