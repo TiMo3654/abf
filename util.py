@@ -14,18 +14,19 @@ def generate_participant() -> dict:
 
 
     participant = {
-        "idx":          "0",  
-        "xmin":         xmin,
-        "ymin":         ymin,
-        "width":        width,
-        "height":       height,
-        "clashes":      {},         #{'idx' : 100}
-        "aversions":    {},         #{'idx' : 17,5}
-        "inference":    0,
-        "connections":  {},         #{'idx' : 2}
-        "turmoil":      0,
-        "wounds":       [],
-        "freespace":    {},
+        "idx"                           : "0",  
+        "xmin"                          : xmin,
+        "ymin"                          : ymin,
+        "width"                         : width,
+        "height"                        : height,
+        "clashes"                       : {},         #{'idx' : 100}
+        "aversions"                     : {},         #{'idx' : 17,5}
+        "inference"                     :  0,
+        "connections"                   : {},         #{'idx' : 2}
+        "turmoil"                       : 0,
+        "wounds"                        : [],
+        "yield-polygon"                 : {},
+        "freespace"                     : {},
         'secondary-freespace-north-east': {},
         'secondary-freespace-south-east': {},
         'secondary-freespace-south-west': {},
@@ -272,9 +273,11 @@ def calculate_euclidean_distance(A : dict, B : dict) -> float:
 
 ## SWARM specifics   
 
-def calculate_wound(A : dict, B : dict) -> list:    # p. 126
+def calculate_wounds(A : dict, B : dict) -> list:    # p. 126
     
     new_wound, locations                        = calculate_overlap(A,B)
+
+    overlapped_wounds_idx                       = []
 
     if new_wound:
 
@@ -284,7 +287,7 @@ def calculate_wound(A : dict, B : dict) -> list:    # p. 126
 
         wounds.append(new_wound)
         
-        for old_wound in A['wounds']:
+        for i, old_wound in enumerate(A['wounds']):
             
             overlap_with_old_wound              = calculate_overlap(new_wound, old_wound)
 
@@ -294,13 +297,48 @@ def calculate_wound(A : dict, B : dict) -> list:    # p. 126
 
                 intensified_wound['severity']   = old_wound['severity'] + 1
 
-                wounds.append(intensified_wound)              
-                
+                wounds.append(intensified_wound)  
+
+                overlapped_wounds_idx.append(i)
+
     else:
          
-        wounds                      = []
+        wounds                                  = []
 
-    return wounds
+    return wounds, overlapped_wounds_idx
+
+
+def calculate_health(A : dict, critical_severity : int) -> str:
+
+    for wound in A['wounds']:
+        
+        if wound['severity'] < critical_severity:
+            health  = "healthy"
+        else:
+            health  = "sick"
+            break
+
+    return health 
+
+
+def ameliorate(A : dict) -> list:
+
+    ameliorated_wounds  = A['wounds']
+
+    idx_healed = []
+     
+    for i, wound in ameliorated_wounds:
+    
+        wound['severity']   = wound['severity'] - 1
+
+        if wound['severity'] < 0:
+            
+            idx_healed.append(i)
+
+    for index in sorted(idx_healed, reverse=True):
+        del ameliorated_wounds[index]
+
+    return ameliorated_wounds        
 
 
 def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone is participant A for this function
