@@ -272,19 +272,33 @@ def calculate_euclidean_distance(A : dict, B : dict) -> float:
 
 ## SWARM specifics   
 
-def calculate_protrusion(layout_zone : dict, B : dict) -> str:  #layout zone is participant A for this function
+def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone is participant A for this function
 
-    overlap_locations   = calculate_overlap(layout_zone, B)[1]
+    overlap, locations   = calculate_overlap(layout_zone, B)
 
-    if any(overlap_locations):
-        if overlap_locations[0]:
-            protrusion  = 'safe'
+    west_edge_overlap   = locations[2]
+    south_edge_overlap  = locations[5]
+
+    if any(locations):
+        if locations[0]:
+            protrusion          = 'safe'
+
+            protrusion_extend_x = 0
+            protrusion_extend_y = 0
+
         else:
-            protrusion  = 'prone'
+            protrusion          = 'prone'
+
+            protrusion_extend_x = (B['width'] - overlap['width'])   if west_edge_overlap    else (B['width'] - overlap['width']) * -1       # negative in case of east edge, else zero (0 in the brackets in case of pure north or south overlap)
+            protrusion_extend_y = (B['height'] - overlap['height']) if south_edge_overlap   else (B['height'] - overlap['height']) * -1     # negative in case of north edge, else zero
+
     else:
-        protrusion      = 'lost'
+        protrusion              = 'lost'
+
+        protrusion_extend_x = 0
+        protrusion_extend_y = 0
         
-    return protrusion
+    return protrusion, (protrusion_extend_x, protrusion_extend_y)   # The protrusion extend is signed and can therefore be simply added to the origin of a rectangle to correct a prone state
 
 
 def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:                         # Equation 7.33 p. 120
