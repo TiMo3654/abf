@@ -74,201 +74,201 @@ def plot_participants(participants):
 
 def calculate_overlap(A : dict, B : dict) -> tuple:
 
-      x_A_min             = A['xmin']
-      y_A_min             = A['ymin']
-      x_A_max             = A['xmin'] + A['width']
-      y_A_max             = A['ymin'] + A['height']
+    x_A_min             = A['xmin']
+    y_A_min             = A['ymin']
+    x_A_max             = A['xmin'] + A['width']
+    y_A_max             = A['ymin'] + A['height']
 
-      x_B_min             = B['xmin']
-      y_B_min             = B['ymin']
-      x_B_max             = B['xmin'] + B['width']
-      y_B_max             = B['ymin'] + B['height']
+    x_B_min             = B['xmin']
+    y_B_min             = B['ymin']
+    x_B_max             = B['xmin'] + B['width']
+    y_B_max             = B['ymin'] + B['height']
 
-      # Determine overlap direction (multiple can be true)
+    # Determine overlap direction (multiple can be true)
 
-      if  (x_A_min >= x_B_max or x_A_max <= x_B_min) or (y_A_min >= y_B_max or y_A_max <= y_B_min):    # No horizontal or vertical overlap
+    if  (x_A_min >= x_B_max or x_A_max <= x_B_min) or (y_A_min >= y_B_max or y_A_max <= y_B_min):    # No horizontal or vertical overlap
 
-            overlapped          = False
-            locations           = [False, False, False, False, False, False]
+        overlapped          = False
+        locations           = [False, False, False, False, False, False]
 
-      else:
+    else:
 
-            overlapped        = True
-          
-            if  ( (x_A_min <= x_B_min <= x_A_max) and (x_A_min <= x_B_max <= x_A_max) and 
-                  (y_A_min <= y_B_min <= y_A_max) and (y_A_min <= y_B_max <= y_A_max) ):
-                        A_fully_encloses_B = True
-            else:
-                        A_fully_encloses_B = False
+        overlapped        = True
+        
+        if  ( (x_A_min <= x_B_min <= x_A_max) and (x_A_min <= x_B_max <= x_A_max) and 
+                (y_A_min <= y_B_min <= y_A_max) and (y_A_min <= y_B_max <= y_A_max) ):
+                    A_fully_encloses_B = True
+        else:
+                    A_fully_encloses_B = False
 
-            if  ( (x_B_min <= x_A_min <= x_B_max) and (x_B_min <= x_A_max <= x_B_max) and 
-                  (y_B_min <= y_A_min <= y_B_max) and (y_B_min <= y_A_max <= y_B_max) ):
-                        B_fully_encloses_A = True
-            else:
-                        B_fully_encloses_A = False
+        if  ( (x_B_min <= x_A_min <= x_B_max) and (x_B_min <= x_A_max <= x_B_max) and 
+                (y_B_min <= y_A_min <= y_B_max) and (y_B_min <= y_A_max <= y_B_max) ):
+                    B_fully_encloses_A = True
+        else:
+                    B_fully_encloses_A = False
 
-            if  x_A_min > x_B_min and x_A_min < x_B_max:
-                        west_edge_overlap = True
-            else:
-                        west_edge_overlap = False
+        if  x_A_min > x_B_min and x_A_min < x_B_max:
+                    west_edge_overlap = True
+        else:
+                    west_edge_overlap = False
 
-            if  x_A_max > x_B_min and x_A_max < x_B_max:
-                        east_edge_overlap = True
-            else:
-                        east_edge_overlap = False
+        if  x_A_max > x_B_min and x_A_max < x_B_max:
+                    east_edge_overlap = True
+        else:
+                    east_edge_overlap = False
 
-            if  y_A_max > y_B_min and y_A_max < y_B_max:
-                        north_edge_overlap = True
-            else:
-                        north_edge_overlap = False
+        if  y_A_max > y_B_min and y_A_max < y_B_max:
+                    north_edge_overlap = True
+        else:
+                    north_edge_overlap = False
 
-            if  y_A_min > y_B_min and y_A_min < y_B_max:
-                        south_edge_overlap = True
-            else:
-                        south_edge_overlap = False
-            
-            locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
+        if  y_A_min > y_B_min and y_A_min < y_B_max:
+                    south_edge_overlap = True
+        else:
+                    south_edge_overlap = False
+        
+        locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
 
-    # Determine overlap coordinates
+# Determine overlap coordinates
+
+    if not overlapped:
+        overlap = {}
+        #print("party!")
+    else:
+        if A_fully_encloses_B:
+                #print('A fully encloses B!')
+                x_Overlap_min = x_B_min
+                x_Overlap_max = x_B_max
+                y_Overlap_min = y_B_min
+                y_Overlap_max = y_B_max
+        elif B_fully_encloses_A:
+                #print('B fully encloses A!')
+                x_Overlap_min = x_A_min
+                x_Overlap_max = x_A_max
+                y_Overlap_min = y_A_min
+                y_Overlap_max = y_A_max
+        elif north_edge_overlap and east_edge_overlap and west_edge_overlap:
+                #print('Overlap at north, east and west edge!')
+                x_Overlap_min = x_A_min
+                x_Overlap_max = x_A_max
+                y_Overlap_min = y_B_min
+                y_Overlap_max = y_A_max
+        elif north_edge_overlap and east_edge_overlap and south_edge_overlap:
+                #print('Overlap at north, east and south edge!')
+                x_Overlap_min = x_A_min
+                x_Overlap_max = x_B_max
+                y_Overlap_min = y_A_min
+                y_Overlap_max = y_A_max
+        elif north_edge_overlap and west_edge_overlap and south_edge_overlap:
+                #print('Overlap at north, west and south edge!')
+                x_Overlap_min = x_B_min
+                x_Overlap_max = x_A_max
+                y_Overlap_min = y_A_min
+                y_Overlap_max = y_B_max
+        elif south_edge_overlap and east_edge_overlap and west_edge_overlap:
+                #print('Overlap at south, east and west edge!')
+                x_Overlap_min = x_A_min
+                x_Overlap_max = x_A_max
+                y_Overlap_min = y_A_min
+                y_Overlap_max = y_B_max
+        elif north_edge_overlap and east_edge_overlap:
+                #print('Overlap at north and east edge!')
+                x_Overlap_min = x_B_min
+                x_Overlap_max = x_A_max
+                y_Overlap_min = y_B_min
+                y_Overlap_max = y_A_max
+        elif north_edge_overlap and west_edge_overlap:
+                #print('Overlap at north and west edge!')
+                x_Overlap_min = x_A_min
+                x_Overlap_max = x_B_max
+                y_Overlap_min = y_B_min
+                y_Overlap_max = y_A_max
+        elif north_edge_overlap and south_edge_overlap:
+                #print('Overlap at north and south edge!')
+                x_Overlap_min = x_B_min
+                x_Overlap_max = x_B_max
+                y_Overlap_min = y_A_min
+                y_Overlap_max = y_A_max
+        elif south_edge_overlap and east_edge_overlap:
+                #print('Overlap at south and east edge!')
+                x_Overlap_min = x_B_min
+                x_Overlap_max = x_A_max
+                y_Overlap_min = y_A_min
+                y_Overlap_max = y_B_max
+        elif south_edge_overlap and west_edge_overlap:
+                #print('Overlap at south and west edge!')
+                x_Overlap_min = x_A_min
+                x_Overlap_max = x_B_max
+                y_Overlap_min = y_A_min
+                y_Overlap_max = y_B_max
+        elif east_edge_overlap and west_edge_overlap:
+                #print('Overlap at east and west edge')
+                x_Overlap_min = x_A_min
+                x_Overlap_max = x_A_max
+                y_Overlap_min = y_B_min
+                y_Overlap_max = y_B_max
+        elif north_edge_overlap:
+                #print('Overlap at north edge!')
+                x_Overlap_min = x_B_min
+                x_Overlap_max = x_B_max
+                y_Overlap_min = y_B_min
+                y_Overlap_max = y_A_max
+        elif east_edge_overlap:
+                #print('Overlap at east edge!')
+                x_Overlap_min = x_B_min
+                x_Overlap_max = x_A_max
+                y_Overlap_min = y_B_min
+                y_Overlap_max = y_B_max
+        elif south_edge_overlap:
+                #print('Overlap at south edge!')
+                x_Overlap_min = x_B_min
+                x_Overlap_max = x_B_max
+                y_Overlap_min = y_A_min
+                y_Overlap_max = y_B_max
+        elif west_edge_overlap:
+                #print('Overlap at west edge!')
+                x_Overlap_min = x_A_min
+                x_Overlap_max = x_B_max
+                y_Overlap_min = y_B_min
+                y_Overlap_max = y_B_max       
+
+        overlap_width       = x_Overlap_max - x_Overlap_min
     
-      if not overlapped:
-            overlap = {}
-            #print("party!")
-      else:
-            if A_fully_encloses_B:
-                  #print('A fully encloses B!')
-                  x_Overlap_min = x_B_min
-                  x_Overlap_max = x_B_max
-                  y_Overlap_min = y_B_min
-                  y_Overlap_max = y_B_max
-            elif B_fully_encloses_A:
-                  #print('B fully encloses A!')
-                  x_Overlap_min = x_A_min
-                  x_Overlap_max = x_A_max
-                  y_Overlap_min = y_A_min
-                  y_Overlap_max = y_A_max
-            elif north_edge_overlap and east_edge_overlap and west_edge_overlap:
-                  #print('Overlap at north, east and west edge!')
-                  x_Overlap_min = x_A_min
-                  x_Overlap_max = x_A_max
-                  y_Overlap_min = y_B_min
-                  y_Overlap_max = y_A_max
-            elif north_edge_overlap and east_edge_overlap and south_edge_overlap:
-                  #print('Overlap at north, east and south edge!')
-                  x_Overlap_min = x_A_min
-                  x_Overlap_max = x_B_max
-                  y_Overlap_min = y_A_min
-                  y_Overlap_max = y_A_max
-            elif north_edge_overlap and west_edge_overlap and south_edge_overlap:
-                  #print('Overlap at north, west and south edge!')
-                  x_Overlap_min = x_B_min
-                  x_Overlap_max = x_A_max
-                  y_Overlap_min = y_A_min
-                  y_Overlap_max = y_B_max
-            elif south_edge_overlap and east_edge_overlap and west_edge_overlap:
-                  #print('Overlap at south, east and west edge!')
-                  x_Overlap_min = x_A_min
-                  x_Overlap_max = x_A_max
-                  y_Overlap_min = y_A_min
-                  y_Overlap_max = y_B_max
-            elif north_edge_overlap and east_edge_overlap:
-                  #print('Overlap at north and east edge!')
-                  x_Overlap_min = x_B_min
-                  x_Overlap_max = x_A_max
-                  y_Overlap_min = y_B_min
-                  y_Overlap_max = y_A_max
-            elif north_edge_overlap and west_edge_overlap:
-                  #print('Overlap at north and west edge!')
-                  x_Overlap_min = x_A_min
-                  x_Overlap_max = x_B_max
-                  y_Overlap_min = y_B_min
-                  y_Overlap_max = y_A_max
-            elif north_edge_overlap and south_edge_overlap:
-                  #print('Overlap at north and south edge!')
-                  x_Overlap_min = x_B_min
-                  x_Overlap_max = x_B_max
-                  y_Overlap_min = y_A_min
-                  y_Overlap_max = y_A_max
-            elif south_edge_overlap and east_edge_overlap:
-                  #print('Overlap at south and east edge!')
-                  x_Overlap_min = x_B_min
-                  x_Overlap_max = x_A_max
-                  y_Overlap_min = y_A_min
-                  y_Overlap_max = y_B_max
-            elif south_edge_overlap and west_edge_overlap:
-                  #print('Overlap at south and west edge!')
-                  x_Overlap_min = x_A_min
-                  x_Overlap_max = x_B_max
-                  y_Overlap_min = y_A_min
-                  y_Overlap_max = y_B_max
-            elif east_edge_overlap and west_edge_overlap:
-                  #print('Overlap at east and west edge')
-                  x_Overlap_min = x_A_min
-                  x_Overlap_max = x_A_max
-                  y_Overlap_min = y_B_min
-                  y_Overlap_max = y_B_max
-            elif north_edge_overlap:
-                  #print('Overlap at north edge!')
-                  x_Overlap_min = x_B_min
-                  x_Overlap_max = x_B_max
-                  y_Overlap_min = y_B_min
-                  y_Overlap_max = y_A_max
-            elif east_edge_overlap:
-                  #print('Overlap at east edge!')
-                  x_Overlap_min = x_B_min
-                  x_Overlap_max = x_A_max
-                  y_Overlap_min = y_B_min
-                  y_Overlap_max = y_B_max
-            elif south_edge_overlap:
-                  #print('Overlap at south edge!')
-                  x_Overlap_min = x_B_min
-                  x_Overlap_max = x_B_max
-                  y_Overlap_min = y_A_min
-                  y_Overlap_max = y_B_max
-            elif west_edge_overlap:
-                  #print('Overlap at west edge!')
-                  x_Overlap_min = x_A_min
-                  x_Overlap_max = x_B_max
-                  y_Overlap_min = y_B_min
-                  y_Overlap_max = y_B_max       
+        overlap_height      = y_Overlap_max - y_Overlap_min
 
-            overlap_width       = x_Overlap_max - x_Overlap_min
-      
-            overlap_height      = y_Overlap_max - y_Overlap_min
-
-            overlap             = { "xmin"   : x_Overlap_min,
-                                    "ymin"   : y_Overlap_min,
-                                    "width"  : overlap_width,
-                                    "height" : overlap_height}
-          
-      return overlap, locations
+        overlap             = { "xmin"   : x_Overlap_min,
+                                "ymin"   : y_Overlap_min,
+                                "width"  : overlap_width,
+                                "height" : overlap_height}
+        
+    return overlap, locations
     
 
 def calculate_participant_area(A : dict) -> float:
 
-      return A['width'] * A['height']
+    return A['width'] * A['height']
 
 
 def calculate_layout_area(layout_zone : dict) -> float:
 
-      total_layout_area = layout_zone['width'] * layout_zone['height']      
+    total_layout_area = layout_zone['width'] * layout_zone['height']      
 
-      return total_layout_area
+    return total_layout_area
 
 
 def calculate_euclidean_distance(A : dict, B : dict) -> float:
 
-      center_A_x  = A['xmin'] + 0.5 * A['width']
+    center_A_x  = A['xmin'] + 0.5 * A['width']
 
-      center_A_y  = A['ymin'] + 0.5 * A['height']
+    center_A_y  = A['ymin'] + 0.5 * A['height']
 
-      center_B_x  = B['xmin'] + 0.5 * B['width']
+    center_B_x  = B['xmin'] + 0.5 * B['width']
 
-      center_B_y  = B['ymin'] + 0.5 * B['height']
+    center_B_y  = B['ymin'] + 0.5 * B['height']
 
-      distance    = math.sqrt((center_A_x - center_B_x)**2 + (center_A_y - center_B_y)**2)
+    distance    = math.sqrt((center_A_x - center_B_x)**2 + (center_A_y - center_B_y)**2)
 
-      return distance
+    return distance
 
 
 ## SWARM specifics   
@@ -332,31 +332,31 @@ def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone i
 
 def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:                         # Equation 7.33 p. 120
 
-      total_layout_area             = calculate_layout_area(layout_zone)
+    total_layout_area             = calculate_layout_area(layout_zone)
 
-      widths                        = [sub_dict.get('width') for sub_dict in participants.values()]
+    widths                        = [sub_dict.get('width') for sub_dict in participants.values()]
 
-      heights                       = [sub_dict.get('height') for sub_dict in participants.values()]
+    heights                       = [sub_dict.get('height') for sub_dict in participants.values()]
 
-      summed_participants_area      = sum([a * b for a, b in zip(widths, heights)])
+    summed_participants_area      = sum([a * b for a, b in zip(widths, heights)])
 
-      leeway_coeffcient             = math.sqrt(total_layout_area/summed_participants_area)
+    leeway_coeffcient             = math.sqrt(total_layout_area/summed_participants_area)
 
-      return leeway_coeffcient
+    return leeway_coeffcient
 
 
 def calculate_relaxation_threshold(leeway_coeffcient : float, A : dict, B : dict) -> float:                 # Equation 7.42 p. 121
 
-      idx_B                   = B['idx']
+    idx_B                   = B['idx']
 
-      emphasis                = A['connections'][idx_B]
+    emphasis                = A['connections'][idx_B]
 
-      area_A                  = calculate_participant_area(A)
-      area_B                  = calculate_participant_area(B)
+    area_A                  = calculate_participant_area(A)
+    area_B                  = calculate_participant_area(B)
 
-      relaxation_threshold    = (leeway_coeffcient/(math.sqrt(2) * emphasis)) * (math.sqrt(area_A) + math.sqrt(area_B))
+    relaxation_threshold    = (leeway_coeffcient/(math.sqrt(2) * emphasis)) * (math.sqrt(area_A) + math.sqrt(area_B))
 
-      return relaxation_threshold
+    return relaxation_threshold
 
 
 def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float:                             # Equation 7.48 p 122
@@ -379,8 +379,8 @@ def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float: 
             tension             = ((distance + 0.5 - relaxation_threshold * emphasis)**2 - 0.25 + relaxation_threshold * emphasis) * strength * emphasis
     
     else:
-        
-        tension                 = 0
+
+        tension                 = 0.0
 
     return tension
 
@@ -589,106 +589,106 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
 
 
 def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict, layout_zone : dict) -> dict:   # Budging Move p.137
-    
-        northern_boundary   = []
-        western_boundary    = []
-        southern_boundary   = []
-        eastern_boundary    = []
 
-        # Get vertex coordinates
+    northern_boundary   = []
+    western_boundary    = []
+    southern_boundary   = []
+    eastern_boundary    = []
+
+    # Get vertex coordinates
+        
+    if vertex == "north-east":
+        print('Free at north-east!')
+
+        x   = A['xmin'] + A['width']
+        y   = A['ymin'] + A['height']
+
+    elif vertex == "south-east":
+        print('Free at south-east!')
+
+        x   = A['xmin'] + A['width']
+        y   = A['ymin']
+
+    elif vertex == 'south-west':
+        print('Free at south-west!')
+
+        x   = A['xmin']
+        y   = A['ymin']
+
+    elif vertex == "north-west":
+        print('Free at north-west!')
+
+        x   = A['xmin']
+        y   = A['ymin'] + A['height']
+
+    else:
+        print("No correct vertex given!")
+
+    # Check for pairwise collisions
+
+    for idx in participants:
+        
+        B   = participants[idx]
+
+        B_somewhere_above_vertex            = B['ymin'] > y     # This can only be checked so easily due to the assumption, that B does not overlap the chosen vertex of A
+
+        B_somewhere_right_of_vertex         = B['xmin'] > x     # This can only be checked so easily due to the assumption, that B does not overlap the chosen vertex of A
+
+        vertex_vertical_cuts_edge_of_B      = (B['xmin'] <= x <= B['xmin'] + B['width'])
+
+        vertex_horizontal_cuts_edge_of_B    = (B['ymin'] <= y <= B['ymin'] + B['height'])
+
+        # Check upwards and downwards
+
+        if B_somewhere_above_vertex:
+
+            southern_boundary.append(layout_zone['ymin'])           # If B is above A, the southern boundary is automatically the layout zone minimum in this pairwise comparison
             
-        if vertex == "north-east":
-            print('Free at north-east!')
+            if vertex_vertical_cuts_edge_of_B:
+                northern_boundary.append(B['ymin'])
+            else:
+                northern_boundary.appen(layout_zone['height'])
+        
+        else:
 
-            x   = A['xmin'] + A['width']
-            y   = A['ymin'] + A['height']
+            northern_boundary.append(layout_zone['height'])         # If B is below A, the northern boundary is automatically the layout zone maximum in this pairwise comparison
 
-        elif vertex == "south-east":
-            print('Free at south-east!')
+            if vertex_vertical_cuts_edge_of_B:
+                southern_boundary.append(B['ymin'] + B['height'])
+            else:
+                southern_boundary.append(layout_zone['ymin'])             
+            
+        # Check rightwards and leftwards
+                
+        if B_somewhere_right_of_vertex:
 
-            x   = A['xmin'] + A['width']
-            y   = A['ymin']
-
-        elif vertex == 'south-west':
-            print('Free at south-west!')
-
-            x   = A['xmin']
-            y   = A['ymin']
-
-        elif vertex == "north-west":
-            print('Free at north-west!')
-
-            x   = A['xmin']
-            y   = A['ymin'] + A['height']
+            western_boundary.append(layout_zone['xmin'])            # If B is right of A, the western boundary is automatically the layout zone minimum in this pairwise comparison
+                
+            if vertex_horizontal_cuts_edge_of_B:
+                eastern_boundary.append(B['xmin'])
+            else:
+                eastern_boundary.append(layout_zone['width'])
 
         else:
-            print("No correct vertex given!")
 
-        # Check for pairwise collisions
-
-        for idx in participants:
+            eastern_boundary.append(layout_zone['width'])           # If B is left of A, the eastern boundary is automatically the layout zone maximum in this pairwise comparison
             
-            B   = participants[idx]
-
-            B_somewhere_above_vertex            = B['ymin'] > y     # This can only be checked so easily due to the assumption, that B does not overlap the chosen vertex of A
-
-            B_somewhere_right_of_vertex         = B['xmin'] > x     # This can only be checked so easily due to the assumption, that B does not overlap the chosen vertex of A
-
-            vertex_vertical_cuts_edge_of_B      = (B['xmin'] <= x <= B['xmin'] + B['width'])
-
-            vertex_horizontal_cuts_edge_of_B    = (B['ymin'] <= y <= B['ymin'] + B['height'])
-
-            # Check upwards and downwards
-
-            if B_somewhere_above_vertex:
-
-                southern_boundary.append(layout_zone['ymin'])           # If B is above A, the southern boundary is automatically the layout zone minimum in this pairwise comparison
-                
-                if vertex_vertical_cuts_edge_of_B:
-                    northern_boundary.append(B['ymin'])
-                else:
-                    northern_boundary.appen(layout_zone['height'])
-            
+            if vertex_horizontal_cuts_edge_of_B:
+                western_boundary.append(B['xmin'] + B['width'])
             else:
+                western_boundary.append(layout_zone['xmin'])
 
-                northern_boundary.append(layout_zone['height'])         # If B is below A, the northern boundary is automatically the layout zone maximum in this pairwise comparison
-
-                if vertex_vertical_cuts_edge_of_B:
-                    southern_boundary.append(B['ymin'] + B['height'])
-                else:
-                    southern_boundary.append(layout_zone['ymin'])             
+    # Get boundary values
                 
-            # Check rightwards and leftwards
-                    
-            if B_somewhere_right_of_vertex:
+    secondary_free_space    = {
+            'xmin'     : max(western_boundary),
+            'ymin'     : max(southern_boundary),
+            'width'    : min(eastern_boundary) - max(western_boundary),
+            'height'   : min(northern_boundary) - max(southern_boundary)
 
-                western_boundary.append(layout_zone['xmin'])            # If B is right of A, the western boundary is automatically the layout zone minimum in this pairwise comparison
-                  
-                if vertex_horizontal_cuts_edge_of_B:
-                    eastern_boundary.append(B['xmin'])
-                else:
-                    eastern_boundary.append(layout_zone['width'])
-
-            else:
-
-                eastern_boundary.append(layout_zone['width'])           # If B is left of A, the eastern boundary is automatically the layout zone maximum in this pairwise comparison
-                
-                if vertex_horizontal_cuts_edge_of_B:
-                    western_boundary.append(B['xmin'] + B['width'])
-                else:
-                    western_boundary.append(layout_zone['xmin'])
-
-        # Get boundary values
-                    
-        secondary_free_space    = {
-             'xmin'     : max(western_boundary),
-             'ymin'     : max(southern_boundary),
-             'width'    : min(eastern_boundary) - max(western_boundary),
-             'height'   : min(northern_boundary) - max(southern_boundary)
-
-        }                 
-        
-        return secondary_free_space
+    }                 
+    
+    return secondary_free_space
 
 
 def calculate_yield_polygon(A : dict, participants : dict, layout_zone : dict) -> dict:     # For yield (here called "yielt") move p. 141
