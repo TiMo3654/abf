@@ -784,6 +784,8 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
     relaxed_connections     = 0
 
+    one_sick_overlap        = False
+
 
     for B in participants.values:
         
@@ -855,7 +857,11 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
         # Calculate health
 
-        health_status               = calculate_health(A, B, overlap) and (overlap_counter < critical_amount)       
+        healthy                     = calculate_health(A, B, overlap) and (overlap_counter < critical_amount) and not one_sick_overlap
+
+        if not healthy:
+            
+            one_sick_overlap        = True
 
 
     yield_polygon                   = calculate_yield_polygon(A, participants, layout_zone)
@@ -870,7 +876,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
                     "interference"                  : interference,
                     "turmoil"                       : turmoil,
                     "relaxed-connections"           : relaxed_connections,
-                    "healthy"                       : health_status,
+                    "healthy"                       : healthy,
                     "yield-polygon"                 : yield_polygon,
                     "freespace"                     : free_space,
                     'secondary-freespace-north-east': sfs_ne,
