@@ -273,11 +273,21 @@ def calculate_euclidean_distance(A : dict, B : dict) -> float:
 
 ## SWARM specifics   
 
-def calculate_health(A: dict, participants: dict, critical_amount: int) -> bool:
+def calculate_health(A : dict, participants : dict, critical_amount : int) -> bool:
 
-    overlaps = sum(calculate_overlap(A, B) for B in participants.values())
+    overlaps        = 0
 
-    return overlaps >= critical_amount
+    for idx in participants:
+        
+        B           = participants[idx]
+
+        overlap     = calculate_overlap(A, B)
+
+        overlaps    = overlaps + 1 if overlap else overlaps
+
+    healthy         = (overlaps >= critical_amount)
+
+    return healthy    
 
 
 def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone is participant A for this function
