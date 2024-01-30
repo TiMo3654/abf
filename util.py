@@ -273,49 +273,21 @@ def calculate_euclidean_distance(A : dict, B : dict) -> float:
 
 ## SWARM specifics   
 
-def calculate_wounds(A : dict, B : dict) -> list:    # p. 126
-    
-    new_wound, _                        = calculate_overlap(A,B)
+def calculate_health(A : dict, participants : dict, critical_amount : int) -> bool:
 
-    if new_wound:
+    overlaps        = 0
 
-        new_wound['severity']                   = 1
-
-        wounds                                  = [new_wound]
+    for idx in participants:
         
-        for old_wound in A['wounds']:
-            
-            overlap_with_old_wound, _           = calculate_overlap(new_wound, old_wound)
+        B           = participants[idx]
 
-            if overlap_with_old_wound:
-                
-                intensified_wound               = overlap_with_old_wound
+        overlap     = calculate_overlap(A, B)
 
-                intensified_wound['severity']   = old_wound['severity'] + 1
+        overlaps    = overlaps + 1 if overlap else overlaps
 
-                wounds.append(intensified_wound)  
+    healthy         = (overlaps >= critical_amount)
 
-    else:
-         
-        wounds                                  = []
-
-    return wounds
-
-
-def calculate_health(A : dict, critical_severity : int) -> str:
-
-    sick    = [wound for wound in A['wounds'] if wound['severity'] >= critical_severity]
-
-    health  = "sick" if sick else 'healthy' 
-
-    return health 
-
-
-def ameliorate(A : dict) -> list:
-
-    ameliorated_wounds  = [wound | {"severity" :  wound['severity'] - 1 } for wound in A['wounds'] if wound['severity'] >= 0]
-
-    return ameliorated_wounds        
+    return healthy    
 
 
 def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone is participant A for this function
