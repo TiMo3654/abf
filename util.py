@@ -15,14 +15,14 @@ def generate_participant() -> dict:
 
     participant = {
         "idx"                           : "0",  
+        "connections"                   : {},         #{'idx' : 2}
         "xmin"                          : xmin,
         "ymin"                          : ymin,
         "width"                         : width,
         "height"                        : height,
         "clashes"                       : {},         #{'idx' : 100}
         "aversions"                     : {},         #{'idx' : 17,5}
-        "inference"                     :  0,
-        "connections"                   : {},         #{'idx' : 2}
+        "interference"                  : 0,
         "turmoil"                       : 0,
         "healthy"                       : True,
         "yield-polygon"                 : {},
@@ -418,13 +418,16 @@ def calculate_trouble(A : dict, B : dict) -> float:
     overlap               = calculate_overlap(A, B)[0]
 
     if overlap:
+
         overlap_area      = overlap['width'] * overlap['height']
         idx_B             = B['idx']
-        aversion          = A['aversion'][idx_B]
+        aversion          = A['aversion'][idx_B] if idx_B in A['aversion'] else 0.0
         area_B            = calculate_participant_area(B)
         intensity         = overlap_area * area_B
         trouble           = intensity + aversion
+
     else:
+
         trouble           = 0.0
 
     return trouble
@@ -588,7 +591,7 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
     return free_space
 
 
-def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict, layout_zone : dict) -> dict:   # Budging Move p.137
+def calculate_secondary_free_space(A : dict, vertex : str, participants : dict, layout_zone : dict) -> dict:   # Budging Move p.137
 
     northern_boundary   = []
     western_boundary    = []
@@ -691,6 +694,19 @@ def calclulate_secondary_free_space(A : dict, vertex : str, participants : dict,
     return secondary_free_space
 
 
+def calclulate_all_secondary_free_spaces(A : dict, free_vertices : list, participants : dict, layout_zone : dict) -> tuple:
+     
+    secondary_free_space_north_west = calculate_secondary_free_space(A, 'north-west', participants, layout_zone) if 'north-west' in free_vertices else {}
+
+    secondary_free_space_north_east = calculate_secondary_free_space(A, 'north-east', participants, layout_zone) if 'north-east' in free_vertices else {}
+
+    secondary_free_space_south_east = calculate_secondary_free_space(A, 'south-east', participants, layout_zone) if 'south-east' in free_vertices else {}
+
+    secondary_free_space_south_west = calculate_secondary_free_space(A, 'south-west', participants, layout_zone) if 'south-west' in free_vertices else {}
+
+    return secondary_free_space_north_west, secondary_free_space_north_east, secondary_free_space_south_east, secondary_free_space_south_west
+
+
 def calculate_yield_polygon(A : dict, participants : dict, layout_zone : dict) -> dict:     # For yield (here called "yielt") move p. 141
 
     northern_boundary   = []
@@ -740,8 +756,86 @@ def calculate_yield_polygon(A : dict, participants : dict, layout_zone : dict) -
     return yield_polygon
      
     
+def calculate_conditions(A : dict, participants : dict, layout_zone : dict) -> dict:
+
+    free_edges              = ['north', 'east', 'south', 'west']       
+
+    free_vertices           = ['north-west', 'north-east', 'south-east', 'south-west']
+
+    for B in participants.values:
+        
+        overlap, locations  = calculate_overlap(A, B)                                   # locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
+
+        A_fully_encloses_B  = locations[0]
+        B_fully_encloses_A  = locations[1]
+        west_edge_overlap   = locations[2]
+        east_edge_overlap   = locations[3]
+        north_edge_overlap  = locations[4]
+        south_edge_overlap  = locations[5]
+
+        # Determine free edges
+        if B_fully_encloses_A:
+            free_edges  = []
+        
+        if west_edge_overlap and ('west' in free_edges):
+            free_edges.remove('west')
+
+        if east_edge_overlap and ('east' in free_edges):
+            free_edges.remove('east')
+
+        if north_edge_overlap and ('north' in free_edges):
+            free_edges.remove('north')
+
+        if south_edge_overlap and ('south' in free_edges):
+            free_edges.remove('south')
+
+        # Determine free vertices
+            
+        if north_edge_overlap and west_edge_overlap and ('north-west' in free_vertices):    # Upper left
+            free_vertices.remove('north-west')
+        
+        if north_edge_overlap and east_edge_overlap and ('north-east' in free_vertices):
+            free_vertices.remove('north-east')
+
+        if south_edge_overlap and east_edge_overlap and ('south-east' in free_vertices):
+            free_vertices.remove('south-east')
+
+        if south_edge_overlap and west_edge_overlap and ('south-east' in free_vertices):
+            free_vertices.remove('south-west')
+
+        
 
 
+    yield_polygon                   = calculate_yield_polygon(A, participants, layout_zone)
+
+    free_space                      = calclulate_free_space(A, free_edges, participants, layout_zone)
+
+    sfs_nw, sfs_ne, sfs_se, sfs_sw  = calclulate_all_secondary_free_spaces(A, free_vertices, participants, layout_zone)
+
+
+        
+
+
+
+     
+
+
+    conditions  = {
+                    "clashes"                       : 0,
+                    "aversions"                     : 0,
+                    "interference"                  : 0,
+                    "connections"                   : {},
+                    "turmoil"                       : 0,
+                    "healthy"                       : True,
+                    "yield-polygon"                 : yield_polygon,
+                    "freespace"                     : free_space,
+                    'secondary-freespace-north-east': sfs_ne,
+                    'secondary-freespace-south-east': sfs_se,
+                    'secondary-freespace-south-west': sfs_sw,
+                    'secondary-freespace-north-west': sfs_nw
+    }
+    
+    return conditions
 
 ## MOVEMENTS
 
