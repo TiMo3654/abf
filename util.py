@@ -361,22 +361,28 @@ def calculate_relaxation_threshold(leeway_coeffcient : float, A : dict, B : dict
 
 def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float:                             # Equation 7.48 p 122
 
-      idx_B                   = B['idx']
+    idx_B                   = B['idx']
 
-      emphasis                = A['connections'][idx_B]
+    if idx_B in A['connections']:
 
-      strength                = len(A['connections']) + len(B['connections']) - 1
+        emphasis                = A['connections'][idx_B]
 
-      distance                = calculate_euclidean_distance(A, B)
+        strength                = len(A['connections']) + len(B['connections']) - 1
 
-      relaxation_threshold    = calculate_relaxation_threshold(leeway_coefficient, A, B)
+        distance                = calculate_euclidean_distance(A, B)
 
-      if distance <= relaxation_threshold * emphasis:
-            tension           = distance * strength * emphasis
-      else:
-            tension           = ((distance + 0.5 - relaxation_threshold * emphasis)**2 - 0.25 + relaxation_threshold * emphasis) * strength * emphasis
+        relaxation_threshold    = calculate_relaxation_threshold(leeway_coefficient, A, B)
 
-      return tension
+        if distance <= relaxation_threshold * emphasis:
+            tension             = distance * strength * emphasis
+        else:
+            tension             = ((distance + 0.5 - relaxation_threshold * emphasis)**2 - 0.25 + relaxation_threshold * emphasis) * strength * emphasis
+    
+    else:
+        
+        tension                 = 0
+
+    return tension
 
 
 def calculate_intensity(A : dict, B : dict) -> float:
