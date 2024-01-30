@@ -780,18 +780,18 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
     for B in participants.values:
         
-        overlap, locations  = calculate_overlap(A, B)                                   # locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
+        overlap, locations          = calculate_overlap(A, B)                                   # locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
 
-        overlap_counter     = overlap_counter + 1 if overlap else overlap_counter
+        overlap_counter             = overlap_counter + 1 if overlap else overlap_counter
 
-        idx_B               = B['idx']
+        idx_B                       = B['idx']
 
-        A_fully_encloses_B  = locations[0]
-        B_fully_encloses_A  = locations[1]
-        west_edge_overlap   = locations[2]
-        east_edge_overlap   = locations[3]
-        north_edge_overlap  = locations[4]
-        south_edge_overlap  = locations[5]
+        A_fully_encloses_B          = locations[0]
+        B_fully_encloses_A          = locations[1]
+        west_edge_overlap           = locations[2]
+        east_edge_overlap           = locations[3]
+        north_edge_overlap          = locations[4]
+        south_edge_overlap          = locations[5]
 
         # Determine free edges
 
@@ -826,23 +826,23 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
         # Calculate interference
             
-        clashes                 = calculate_clashes(A, B, overlap)
+        clashes                     = calculate_clashes(A, B, overlap)
 
-        new_clashes[idx_B]      = clashes
+        new_clashes[idx_B]          = clashes
 
-        aversion                = calculate_aversion(A, B, overlap, conciliation_quota)
+        aversion                    = calculate_aversion(A, B, overlap, conciliation_quota)
 
-        new_aversions[idx_B]    = aversion
+        new_aversions[idx_B]        = aversion
             
-        trouble                 = calculate_trouble(A, B, overlap)
+        trouble                     = calculate_trouble(A, B, overlap)
             
-        interference            = interference + trouble
+        interference                = interference + trouble
 
         # Calculate turmoil
 
-        tension                 = calculate_tension(leeway_coeffcient, A, B)
+        tension                     = calculate_tension(leeway_coeffcient, A, B)
 
-        turmoil                 = turmoil + tension
+        turmoil                     = turmoil + tension
 
         # Calculate health
 
