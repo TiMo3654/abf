@@ -24,6 +24,7 @@ def generate_participant() -> dict:
         "aversions"                     : {},         #{'idx' : 17,5}
         "interference"                  : 0,
         "turmoil"                       : 0,
+        "relaxed-connections"           : 0,
         "healthy"                       : True,
         "yield-polygon"                 : {},
         "freespace"                     : {},
@@ -362,12 +363,16 @@ def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float: 
             tension             = distance * strength * emphasis
         else:
             tension             = ((distance + 0.5 - relaxation_threshold * emphasis)**2 - 0.25 + relaxation_threshold * emphasis) * strength * emphasis
-    
+
+        
+        connection_relaxed      = (distance <= relaxation_threshold)    
+
     else:
 
         tension                 = 0.0
+        connection_relaxed      = True  
 
-    return tension
+    return tension, connection_relaxed
 
 
 def calculate_clashes(A : dict, B : dict, overlap : dict) -> int:
@@ -777,6 +782,8 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
     overlap_counter         = 0
 
+    relaxed_connections     = 0
+
 
     for B in participants.values:
         
@@ -840,9 +847,11 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
         # Calculate turmoil
 
-        tension                     = calculate_tension(leeway_coeffcient, A, B)
+        tension, connection_relaxed	= calculate_tension(leeway_coeffcient, A, B)
 
         turmoil                     = turmoil + tension
+
+        relaxed_connections         = relaxed_connections + 1 if connection_relaxed else relaxed_connections
 
         # Calculate health
 
@@ -860,6 +869,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
                     "aversions"                     : new_aversions,
                     "interference"                  : interference,
                     "turmoil"                       : turmoil,
+                    "relaxed-connections"           : relaxed_connections,
                     "healthy"                       : health_status,
                     "yield-polygon"                 : yield_polygon,
                     "freespace"                     : free_space,
