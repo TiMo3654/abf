@@ -370,7 +370,7 @@ def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float: 
     else:
 
         tension                 = 0.0
-        connection_relaxed      = True  
+        connection_relaxed      = False  
 
     return tension, connection_relaxed
 
