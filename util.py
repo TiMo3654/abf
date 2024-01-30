@@ -273,30 +273,15 @@ def calculate_euclidean_distance(A : dict, B : dict) -> float:
 
 ## SWARM specifics   
 
-def calculate_health(A : dict, participants : dict, critical_amount : int) -> bool:
+def calculate_health(A : dict, B : dict, overlap : dict) -> bool:
 
-    overlaps        = 0
-
-    for idx in participants:
+    if overlap:
         
-        B           = participants[idx]
+        healthy = B['healthy']  # in case of an overlap with a healthy other one, A is also healthy otherwise not
 
-        overlap     = calculate_overlap(A, B)
-
-        overlaps    = overlaps + 1 if overlap else overlaps
-
-        if overlap and not B['healthy']:
-            
-            healthy = False
-
-            break
+    else:
         
-        else:
-            
-            healthy         = (overlaps < critical_amount)
-
-            if not healthy:
-                break
+        healthy = True          # in case of no overlap, A is also healthy in this check
 
     return healthy    
 
@@ -385,37 +370,57 @@ def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float: 
     return tension
 
 
-def calculate_intensity(A : dict, B : dict) -> float:
-    
-    overlap             = calculate_overlap(A, B)[0]
+def calculate_clashes(A : dict, B : dict, overlap : dict) -> int:
     
     if overlap:
+
+        idx_B       = B['idx']
+        
+        new_clashes = A['clashes'][idx_B] + 1
+    
+    else:
+         
+        new_clashes = A['clashes'][idx_B]
+
+    return new_clashes
+
+
+def calculate_intensity(A : dict, B : dict, overlap : dict) -> float:
+       
+    if overlap:
+
         overlap_area	= overlap['width'] * overlap['height']
         area_B			= calculate_participant_area(B)
         intensity		= overlap_area * area_B
+
     else:
+
         intensity       = 0.0       
     
     return intensity
 
 
-def calculate_aversion(A : dict, B : dict) -> float:
+def calculate_aversion(A : dict, B : dict, overlap : dict, conciliation_quota : float) -> float:
 
-    idx_B = B['idx']
+    if overlap:
 
-    current_aversion    = A['aversion'][idx_B]
-    current_clashes     = A['clashes'][idx_B]
+        idx_B = B['idx']
 
-    intensity           = calculate_intensity(A,B)
+        current_aversion    = A['aversion'][idx_B]
+        current_clashes     = A['clashes'][idx_B]
 
-    new_aversion        = (current_aversion + intensity) * (current_clashes + 1)
+        intensity           = calculate_intensity(A,B)
+
+        new_aversion        = (current_aversion + intensity) * (current_clashes + 1)
+    
+    else:
+        
+        new_aversion        = A['aversion'][idx_B] * conciliation_quota
 
     return new_aversion 
 
 
-def calculate_trouble(A : dict, B : dict) -> float:
-
-    overlap               = calculate_overlap(A, B)[0]
+def calculate_trouble(A : dict, B : dict, overlap : dict) -> float:
 
     if overlap:
 
@@ -433,28 +438,28 @@ def calculate_trouble(A : dict, B : dict) -> float:
     return trouble
 
 
-def calculate_interference(A : dict, participants : dict) -> float:
+# def calculate_interference(A : dict, participants : dict) -> float:
 
-    interference        = 0
+#     interference        = 0
        
-    for idx in participants:
-        trouble         = calculate_trouble(A, participants[idx])
+#     for idx in participants:
+#         trouble         = calculate_trouble(A, participants[idx])
 
-        interference    += trouble
+#         interference    += trouble
 
-    return interference
+#     return interference
 
 
-def calculate_turmoil(A : dict, participants : dict, leeway_coefficient : float) -> float:
+# def calculate_turmoil(A : dict, participants : dict, leeway_coefficient : float) -> float:
 
-    turmoil             = 0
+#     turmoil             = 0
 
-    for idx in participants:
-        tension         = calculate_tension(leeway_coefficient, A, participants[idx])
+#     for idx in participants:
+#         tension         = calculate_tension(leeway_coefficient, A, participants[idx])
 
-        turmoil         += tension
+#         turmoil         += tension
     
-    return turmoil
+#     return turmoil
 
 
 def calculate_corridor(A : dict, layout_zone : dict, edge : str) -> dict:
@@ -756,15 +761,30 @@ def calculate_yield_polygon(A : dict, participants : dict, layout_zone : dict) -
     return yield_polygon
      
     
-def calculate_conditions(A : dict, participants : dict, layout_zone : dict) -> dict:
+def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> dict:
 
     free_edges              = ['north', 'east', 'south', 'west']       
 
     free_vertices           = ['north-west', 'north-east', 'south-east', 'south-west']
 
+    interference            = 0.0
+
+    turmoil                 = 0.0
+
+    new_clashes             = A['clashes']
+
+    new_aversions           = A['aversions']
+
+    overlap_counter         = 0
+
+
     for B in participants.values:
         
         overlap, locations  = calculate_overlap(A, B)                                   # locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
+
+        overlap_counter     = overlap_counter + 1 if overlap else overlap_counter
+
+        idx_B               = B['idx']
 
         A_fully_encloses_B  = locations[0]
         B_fully_encloses_A  = locations[1]
@@ -774,6 +794,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict) -> d
         south_edge_overlap  = locations[5]
 
         # Determine free edges
+
         if B_fully_encloses_A:
             free_edges  = []
         
@@ -803,30 +824,43 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict) -> d
         if south_edge_overlap and west_edge_overlap and ('south-east' in free_vertices):
             free_vertices.remove('south-west')
 
-        
+        # Calculate interference
+            
+        clashes                 = calculate_clashes(A, B, overlap)
+
+        new_clashes[idx_B]      = clashes
+
+        aversion                = calculate_aversion(A, B, overlap, conciliation_quota)
+
+        new_aversions[idx_B]    = aversion
+            
+        trouble                 = calculate_trouble(A, B, overlap)
+            
+        interference            = interference + trouble
+
+        # Calculate turmoil
+
+        tension                 = calculate_tension(leeway_coeffcient, A, B)
+
+        turmoil                 = turmoil + tension
+
+        # Calculate health
+
+        health_status               = calculate_health(A, B, overlap) and (overlap_counter < critical_amount)       
 
 
     yield_polygon                   = calculate_yield_polygon(A, participants, layout_zone)
 
     free_space                      = calclulate_free_space(A, free_edges, participants, layout_zone)
 
-    sfs_nw, sfs_ne, sfs_se, sfs_sw  = calclulate_all_secondary_free_spaces(A, free_vertices, participants, layout_zone)
-
-
-        
-
-
-
-     
-
+    sfs_nw, sfs_ne, sfs_se, sfs_sw  = calclulate_all_secondary_free_spaces(A, free_vertices, participants, layout_zone)     
 
     conditions  = {
-                    "clashes"                       : 0,
-                    "aversions"                     : 0,
-                    "interference"                  : 0,
-                    "connections"                   : {},
-                    "turmoil"                       : 0,
-                    "healthy"                       : True,
+                    "clashes"                       : new_clashes,
+                    "aversions"                     : new_aversions,
+                    "interference"                  : interference,
+                    "turmoil"                       : turmoil,
+                    "healthy"                       : health_status,
                     "yield-polygon"                 : yield_polygon,
                     "freespace"                     : free_space,
                     'secondary-freespace-north-east': sfs_ne,
