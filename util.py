@@ -24,7 +24,7 @@ def generate_participant() -> dict:
         "inference"                     :  0,
         "connections"                   : {},         #{'idx' : 2}
         "turmoil"                       : 0,
-        "wounds"                        : [],
+        "healthy"                       : True,
         "yield-polygon"                 : {},
         "freespace"                     : {},
         'secondary-freespace-north-east': {},
@@ -738,6 +738,14 @@ def calculate_yield_polygon(A : dict, participants : dict, layout_zone : dict) -
 
 
 ## MOVEMENTS
+
+def rotate(A: dict) -> tuple:
+
+    new_width   = A['height']
+    new_height  = A['width']
+     
+    return new_width, new_height
+
 
 def reenter(A : dict, layout_zone : dict) -> tuple:                      # Only activated and working in case of a totally lost participant
 
