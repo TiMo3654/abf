@@ -285,7 +285,18 @@ def calculate_health(A : dict, participants : dict, critical_amount : int) -> bo
 
         overlaps    = overlaps + 1 if overlap else overlaps
 
-    healthy         = (overlaps >= critical_amount)
+        if overlap and not B['healthy']:
+            
+            healthy = False
+
+            break
+        
+        else:
+            
+            healthy         = (overlaps < critical_amount)
+
+            if not healthy:
+                break
 
     return healthy    
 
