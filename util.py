@@ -1204,6 +1204,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 moved_A_conditions                  = calculate_conditions(new_A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
 
+                new_A.update(moved_A_conditions)
+
                 new_A['last-move']                  = 'budge'
 
                 action_classification               = classify_action(new_A)
