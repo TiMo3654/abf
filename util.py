@@ -1010,43 +1010,12 @@ def linger(A: dict) -> tuple:
     return A['xmin'], A['ymin']
 
 
-def budge(A: dict) -> tuple:   # direction = secondary free space orientation
+def budge(A: dict, direction : str) -> tuple:   
 
-    if A['secondary-free-space-north-west']:
-        x_min_new       = int(A['secondary-free-space-north-west']['xmin'] + 0.5 * A['secondary-free-space-north-west']['width'] - 0.5 * A['width'])
-        y_min_new       = int(A['secondary-free-space-north-west']['ymin'] + 0.5 * A['secondary-free-space-north-west']['height'] - 0.5 * A['height'])
-
-        center_sfs_nw   = (x_min_new, y_min_new)
-    else:
-        center_sfs_nw   = ()
-
-    if A['secondary-free-space-north-east']:
-        x_min_new       = int(A['secondary-free-space-north-east']['xmin'] + 0.5 * A['secondary-free-space-north-east']['width'] - 0.5 * A['width'])
-        y_min_new       = int(A['secondary-free-space-north-east']['ymin'] + 0.5 * A['secondary-free-space-north-east']['height'] - 0.5 * A['height'])
-
-        center_sfs_ne   = (x_min_new, y_min_new)
-    else:
-        center_sfs_ne   = ()
-
-    
-    if A['secondary-free-space-south-east']:
-        x_min_new       = int(A['secondary-free-space-south-east']['xmin'] + 0.5 * A['secondary-free-space-south-east']['width'] - 0.5 * A['width'])
-        y_min_new       = int(A['secondary-free-space-south-east']['ymin'] + 0.5 * A['secondary-free-space-south-east']['height'] - 0.5 * A['height'])
-
-        center_sfs_se   = (x_min_new, y_min_new)
-    else:
-        center_sfs_se   = ()
-            
-    if A['secondary-free-space-south-west']:
-        x_min_new       = int(A['secondary-free-space-south-west']['xmin'] + 0.5 * A['secondary-free-space-south-west']['width'] - 0.5 * A['width'])
-        y_min_new       = int(A['secondary-free-space-south-west']['ymin'] + 0.5 * A['secondary-free-space-south-west']['height'] - 0.5 * A['height'])
-
-        center_sfs_sw   = (x_min_new, y_min_new)
-    else:
-        center_sfs_sw   = ()  
+    x_min_new       = int(A[direction]['xmin'] + 0.5 * A[direction]['width'] - 0.5 * A['width'])
+    y_min_new       = int(A[direction]['ymin'] + 0.5 * A[direction]['height'] - 0.5 * A['height'])
      
-
-    return center_sfs_nw, center_sfs_ne, center_sfs_se, center_sfs_sw
+    return x_min_new, y_min_new
 
 
 def swap(A: dict, B: dict) -> tuple:
@@ -1223,7 +1192,42 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             # explore budging
 
-            new_A                           = copy.deepcopy(A)
+            free_secondary_spaces                   = []
+
+            if A['secondary-free-space-north-west']:
+                free_secondary_spaces.append('secondary-free-space-north-west')
+
+            if A['secondary-free-space-north-east']:
+                free_secondary_spaces.append('secondary-free-space-north-east')
+
+            if A['secondary-free-space-south-east']:
+                free_secondary_spaces.append('secondary-free-space-south-east')
+
+            if A['secondary-free-space-south-west']:
+                free_secondary_spaces.append('secondary-free-space-north-west')
+
+
+            for direction in free_secondary_spaces:
+                
+                new_A                               = copy.deepcopy(A)
+
+                new_A['xmin'], new_A['ymin']        = budge(new_A, direction)
+
+                moved_A_conditions                  = calculate_conditions(new_A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+
+                new_A['last-move']                  = 'budge'
+
+                action_classification               = classify_action(new_A)
+
+                if action_classification == 'adjuvant':
+                    
+                    return list(new_A)  # direct exit in case of adjuvant move
+                
+                elif action_classification == 'valid':
+                    
+                    possible_next_positions.append(new_A)
+
+
 
 
 
