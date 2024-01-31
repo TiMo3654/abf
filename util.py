@@ -1010,33 +1010,43 @@ def linger(A: dict) -> tuple:
     return A['xmin'], A['ymin']
 
 
-def budge(A: dict, secondary_free_space : str) -> tuple:
-     
-    if secondary_free_space == 'north-east':
-         
-        x_min_new   = int(A['secondary-freespace-north-east']['xmin'] + 0.5 * A['secondary-freespace-north-east']['width'] - 0.5 * A['width'])
-        y_min_new   = int(A['secondary-freespace-north-east']['ymin'] + 0.5 * A['secondary-freespace-north-east']['height'] - 0.5 * A['height'])
+def budge(A: dict) -> tuple:   # direction = secondary free space orientation
 
-    elif secondary_free_space == 'south-east':
-         
-        x_min_new   = int(A['secondary-freespace-south-east']['xmin'] + 0.5 * A['secondary-freespace-south-east']['width'] - 0.5 * A['width'])
-        y_min_new   = int(A['secondary-freespace-south-east']['ymin'] + 0.5 * A['secondary-freespace-south-east']['height'] - 0.5 * A['height'])
+    if A['secondary-free-space-north-west']:
+        x_min_new       = int(A['secondary-free-space-north-west']['xmin'] + 0.5 * A['secondary-free-space-north-west']['width'] - 0.5 * A['width'])
+        y_min_new       = int(A['secondary-free-space-north-west']['ymin'] + 0.5 * A['secondary-free-space-north-west']['height'] - 0.5 * A['height'])
 
-    elif secondary_free_space == 'south-west':
-        
-        x_min_new   = int(A['secondary-freespace-south-west']['xmin'] + 0.5 * A['secondary-freespace-south-west']['width'] - 0.5 * A['width'])
-        y_min_new   = int(A['secondary-freespace-south-west']['ymin'] + 0.5 * A['secondary-freespace-south-west']['height'] - 0.5 * A['height'])
-
-    elif secondary_free_space == 'north-west':
-        
-        x_min_new   = int(A['secondary-freespace-north-west']['xmin'] + 0.5 * A['secondary-freespace-north-west']['width'] - 0.5 * A['width'])
-        y_min_new   = int(A['secondary-freespace-north-west']['ymin'] + 0.5 * A['secondary-freespace-north-west']['height'] - 0.5 * A['height'])
-
+        center_sfs_nw   = (x_min_new, y_min_new)
     else:
-         
-        print('No secondary free space given!')
+        center_sfs_nw   = ()
 
-    return x_min_new, y_min_new
+    if A['secondary-free-space-north-east']:
+        x_min_new       = int(A['secondary-free-space-north-east']['xmin'] + 0.5 * A['secondary-free-space-north-east']['width'] - 0.5 * A['width'])
+        y_min_new       = int(A['secondary-free-space-north-east']['ymin'] + 0.5 * A['secondary-free-space-north-east']['height'] - 0.5 * A['height'])
+
+        center_sfs_ne   = (x_min_new, y_min_new)
+    else:
+        center_sfs_ne   = ()
+
+    
+    if A['secondary-free-space-south-east']:
+        x_min_new       = int(A['secondary-free-space-south-east']['xmin'] + 0.5 * A['secondary-free-space-south-east']['width'] - 0.5 * A['width'])
+        y_min_new       = int(A['secondary-free-space-south-east']['ymin'] + 0.5 * A['secondary-free-space-south-east']['height'] - 0.5 * A['height'])
+
+        center_sfs_se   = (x_min_new, y_min_new)
+    else:
+        center_sfs_se   = ()
+            
+    if A['secondary-free-space-south-west']:
+        x_min_new       = int(A['secondary-free-space-south-west']['xmin'] + 0.5 * A['secondary-free-space-south-west']['width'] - 0.5 * A['width'])
+        y_min_new       = int(A['secondary-free-space-south-west']['ymin'] + 0.5 * A['secondary-free-space-south-west']['height'] - 0.5 * A['height'])
+
+        center_sfs_sw   = (x_min_new, y_min_new)
+    else:
+        center_sfs_sw   = ()  
+     
+
+    return center_sfs_nw, center_sfs_ne, center_sfs_se, center_sfs_sw
 
 
 def swap(A: dict, B: dict) -> tuple:
@@ -1149,13 +1159,13 @@ def classify_action(A : dict) -> str:
 
 def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 
-    new_A                   = copy.deepcopy(A)
-
     possible_next_positions = []
 
     # start of the action exploration
 
-    if new_A['protrusion-status'] == 'lost':
+    if A['protrusion-status'] == 'lost':
+
+        new_A                   = copy.deepcopy(A)
         
         new_A['xmin'], new_A['ymin']    = reenter(new_A, layout_zone)
 
@@ -1167,9 +1177,11 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         return list(new_A)
 
-    else:
+    else:   # A is prone or safe
          
         # explore centering
+
+        new_A                           = copy.deepcopy(A)
          
         new_A['xmin'], new_A['ymin']    = center(new_A)
 
@@ -1205,7 +1217,17 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
             return list(new_A)  # direct exit in case of adjuvant move
         
         
-        # explore budging
+        # explore budging, swapping, pairing, hustling only if A is safe, otherwise only centering, evasion or yielding is possible
+
+        if A['protrusion-status'] == 'safe':
+
+            # explore budging
+
+            new_A                           = copy.deepcopy(A)
+
+
+
+
 
 
 
