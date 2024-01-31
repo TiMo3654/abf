@@ -27,6 +27,7 @@ def generate_participant() -> dict:
         "turmoil"                       : 0,
         "relaxed-connections"           : 0,
         "protrusion-status"             : 'safe',
+        "protrusion-extend"             : 0,
         "healthy"                       : True,
         "compliant"                     : True,
         "yield-polygon"                 : {},
@@ -879,7 +880,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
     # Calculate protrusion
 
-    protrusion_status, _            = calculate_protrusion(layout_zone, A)
+    protrusion_status, extend       = calculate_protrusion(layout_zone, A)
 
     # Calculate space values
 
@@ -896,6 +897,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
                     "turmoil"                       : turmoil,
                     "relaxed-connections"           : relaxed_connections,
                     "protrusion-status"             : protrusion_status,
+                    "protrusion-extend"             : extend,
                     "healthy"                       : healthy,
                     "compliant"                     : compliance,
                     "yield-polygon"                 : yield_polygon,
@@ -994,7 +996,7 @@ def evade(A : dict, layout_zone : dict, layout_zone_edge : str) -> list:
         
         print('No correct edge given!')      
 
-    return [(x_min_new_at_left_vertex, y_min_new_at_left_vertex), (x_min_new_at_center, y_min_new_at_center), (x_min_new_at_right_vertex, y_min_new_at_right_vertex)]
+    return (x_min_new_at_left_vertex, y_min_new_at_left_vertex), (x_min_new_at_center, y_min_new_at_center), (x_min_new_at_right_vertex, y_min_new_at_right_vertex)
 
 
 def center(A: dict) -> tuple:
@@ -1218,7 +1220,29 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                     
                     possible_next_positions.append(new_A)
 
-    return 0
+            # explore swapping (calculate only the next -> if a good move is found one can exit early  without the need to calculate the rest)
+            
+            # explore pairing
+                    
+            # explore hustling
+                    
+        else:   # participant is prone
+             
+            # explore evasion
+            
+            north_edge_overlap  = A['protrusion-extend'][1] < 0
+            south_edge_overlap  = A['protrusion-extend'][1] > 0
+
+            east_edge_overlap   = A['protrusion-extend'][0] < 0
+            west_edge_overlap   = A['protrusion-extend'][0] > 0
+
+            pos1, pos2, pos3    = evade() 
+             
+            
+                    
+                
+
+    return possible_next_positions
 
 
 def action_evaluation(possible_next_positions : list, evaluation_metric : str) -> dict:
