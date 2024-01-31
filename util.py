@@ -1,5 +1,6 @@
 import random
 import math
+import copy
 from matplotlib import pyplot as plt, patches
 
 ## Test functions
@@ -25,13 +26,16 @@ def generate_participant() -> dict:
         "interference"                  : 0,
         "turmoil"                       : 0,
         "relaxed-connections"           : 0,
+        "protrusion-status"             : 'safe',
         "healthy"                       : True,
+        "compliant"                     : True,
         "yield-polygon"                 : {},
         "freespace"                     : {},
         'secondary-freespace-north-east': {},
         'secondary-freespace-south-east': {},
         'secondary-freespace-south-west': {},
-        'secondary-freespace-north-west': {}
+        'secondary-freespace-north-west': {},
+        "last-move"                     : 'center'
     }
 
     return participant
@@ -764,6 +768,13 @@ def calculate_yield_polygon(A : dict, participants : dict, layout_zone : dict) -
     }     
 
     return yield_polygon
+
+
+def calculate_compliance(A : dict) -> bool:
+     
+    # placeholder
+
+    return True
      
     
 def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> dict:
@@ -858,11 +869,19 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
         # Calculate health
 
         healthy                     = calculate_health(A, B, overlap) and (overlap_counter < critical_amount) and not one_sick_overlap
-
-        if not healthy:
             
-            one_sick_overlap        = True
+        one_sick_overlap            = not healthy
 
+    
+    # Calculate compliance
+        
+    compliance                      = calculate_compliance(A)
+
+    # Calculate protrusion
+
+    protrusion_status, _            = calculate_protrusion(layout_zone, A)
+
+    # Calculate space values
 
     yield_polygon                   = calculate_yield_polygon(A, participants, layout_zone)
 
@@ -876,7 +895,9 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
                     "interference"                  : interference,
                     "turmoil"                       : turmoil,
                     "relaxed-connections"           : relaxed_connections,
+                    "protrusion-status"             : protrusion_status,
                     "healthy"                       : healthy,
+                    "compliant"                     : compliance,
                     "yield-polygon"                 : yield_polygon,
                     "freespace"                     : free_space,
                     'secondary-freespace-north-east': sfs_ne,
@@ -1105,6 +1126,97 @@ def yielt(A : dict) -> tuple:      # Intentional typo in "yield" to avoid keywor
     y_min_new_A             = y_center_yield_poly - 0.5 * A['height']
     
     return x_min_new_A, y_min_new_A
+
+
+## Action exploration and evaluation
+
+def classify_action(A : dict) -> str:
+     
+    if (A['protrusion-status'] == 'safe') and A['healthy'] and A['compliant'] and (A['interference'] == 0) and (A['relaxed-connections'] == len(A['connections'])):
+        
+        action_classification   = 'adjuvant'
+    
+    elif (A['protrusion-status'] == 'safe') and A['healthy'] and A['compliant']:
+        
+        action_classification   = 'valid'
+
+    else:
+         
+        action_classification   = 'invalid'
+
+    return action_classification
+
+
+def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
+
+    new_A                   = copy.deepcopy(A)
+
+    possible_next_positions = []
+
+    # start of the action exploration
+
+    if new_A['protrusion-status'] == 'lost':
+        
+        new_A['xmin'], new_A['ymin']    = reenter(new_A, layout_zone)
+
+        moved_A_conditions              = calculate_conditions(new_A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+
+        new_A.update(moved_A_conditions)
+
+        new_A['last-move']              = 'reenter'
+
+        return list(new_A)
+
+    else:
+         
+        # explore centering
+         
+        new_A['xmin'], new_A['ymin']    = center(new_A)
+
+        moved_A_conditions              = calculate_conditions(new_A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+
+        new_A.update(moved_A_conditions)
+
+        new_A['last-move']              = 'center'
+
+        action_classification           = classify_action(new_A)
+
+        if action_classification == 'adjuvant':
+            
+            return list(new_A)  # direct exit in case of adjuvant move
+        
+        elif action_classification == 'valid':
+             
+            possible_next_positions.append(new_A)
+
+
+        # explore lingering
+            
+        new_A                           = copy.deepcopy(A)
+
+        new_A['xmin'], new_A['ymin']    = linger(A)
+
+        new_A['last-move']              = 'linger'
+
+        action_classification           = classify_action(new_A)
+
+        if action_classification == 'adjuvant':
+            
+            return list(new_A)  # direct exit in case of adjuvant move
+        
+        
+        # explore budging
+
+
+
+
+    return 0
+
+
+def action_evaluation(possible_next_positions : list, evaluation_metric : str) -> dict:
+     
+    return 0
+
 
 
 
