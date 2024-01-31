@@ -1134,7 +1134,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
     if A['protrusion-status'] == 'lost':
 
-        new_A                   = copy.deepcopy(A)
+        new_A                           = copy.deepcopy(A)
         
         new_A['xmin'], new_A['ymin']    = reenter(new_A, layout_zone)
 
@@ -1192,20 +1192,9 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             # explore budging
 
-            free_secondary_spaces                   = []
-
-            if A['secondary-free-space-north-west']:
-                free_secondary_spaces.append('secondary-free-space-north-west')
-
-            if A['secondary-free-space-north-east']:
-                free_secondary_spaces.append('secondary-free-space-north-east')
-
-            if A['secondary-free-space-south-east']:
-                free_secondary_spaces.append('secondary-free-space-south-east')
-
-            if A['secondary-free-space-south-west']:
-                free_secondary_spaces.append('secondary-free-space-north-west')
-
+            free_secondary_spaces                   = [f'secondary-free-space-{corner}' 
+                                                       for corner in ['north-west', 'north-east', 'south-east', 'south-west'] 
+                                                       if A[f'secondary-free-space-{corner}']]
 
             for direction in free_secondary_spaces:
                 
@@ -1226,15 +1215,6 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                 elif action_classification == 'valid':
                     
                     possible_next_positions.append(new_A)
-
-
-
-
-
-
-
-
-
 
     return 0
 
