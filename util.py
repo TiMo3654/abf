@@ -1220,7 +1220,43 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                     
                     possible_next_positions.append([new_A])
 
-            # explore swapping or pairing (calculate only the next -> if a good move is found one can exit early  without the need to calculate the rest)
+            # explore hustling
+                    
+            hustled_participants                = []
+            
+            for idx_B in A['overlap-with-idx']:
+                
+                new_B                           = copy.deepcopy(participants[idx_B])
+
+                new_participants_for_B          = copy.deepcopy(participants)
+
+                new_participants_for_B.remove(idx_B) 
+
+                new_participants_for_B          = new_participants_for_B | A
+
+                new_B['xmin'], new_B['ymin']    = hustle(A, new_B)
+
+                moved_B_conditions              = calculate_conditions(new_B, new_participants_for_B, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+
+                new_B.update(moved_B_conditions)
+
+                action_classification_B         = classify_action(new_B)
+
+                if action_classification_B != 'invalid':
+                    
+                    hustled_participants.append(new_B)
+
+                else:
+                    
+                    hustled_participants = []
+
+                    break
+
+            if hustled_participants:
+                
+                possible_next_positions.append(hustled_participants)            
+            
+            # explore swapping or pairing
             
             for B in participants.values:
                 
@@ -1243,7 +1279,11 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 new_A_swap.update(moved_A_conditions)
 
-                new_participants_for_B              = copy.deepcopy(participants).remove(B['idx']) | new_A_swap
+                new_participants_for_B              = copy.deepcopy(participants)
+
+                new_participants_for_B.remove(B['idx'])
+
+                new_participants_for_B              = new_participants_for_B | new_A_swap
 
                 moved_B_conditions                  = calculate_conditions(new_B_swap, new_participants_for_B, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
 
