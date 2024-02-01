@@ -777,7 +777,8 @@ def calculate_compliance(A : dict) -> bool:
     # placeholder
 
     return True
-     
+
+    
     
 def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> dict:
 
@@ -1040,44 +1041,39 @@ def swap(A: dict, B: dict) -> tuple:
 
 
 def pair(A : dict, B : dict, pair_direction : str) -> tuple:
-     
-    if pair_direction == 'horizontal-push-right':
-         
-        x_min_new_A = int(B['xmin'] - 0.5 * A['width'])
-        x_min_new_B = int(B['xmin'] + 0.5 * A['width'])
+            
+    x_min_new_A_hpr     = int(B['xmin'] - 0.5 * A['width'])
+    x_min_new_B_hpr     = int(B['xmin'] + 0.5 * A['width'])
 
-        y_min_new_A = B['ymin']
-        y_min_new_B = B['ymin']
+    y_min_new_A_hpr     = B['ymin']
+    y_min_new_B_hpr     = B['ymin']
 
-    elif pair_direction == 'horizontal-push-left':
-         
-        x_min_new_A = int(B['xmin'] + B['width'] - 0.5 * A['width'])
-        x_min_new_B = int(B['xmin'] - 0.5 * A['width'])
-
-        y_min_new_A = B['ymin']
-        y_min_new_B = B['ymin']
-
-    elif pair_direction == 'vertikal-push-up':
-         
-        x_min_new_A = B['xmin']
-        x_min_new_B = B['xmin']
-
-        y_min_new_A = int(B['ymin'] - 0.5 * A['height'])
-        y_min_new_B = int(B['ymin'] + 0.5 * A['height'])
-
-    elif pair_direction == 'vertikal-push-down':
-         
-        x_min_new_A = B['xmin']
-        x_min_new_B = B['xmin']
-
-        y_min_new_A = int(B['ymin'] + B['height'] - 0.5 * A['height'])
-        y_min_new_B = int(B['ymin'] - 0.5 * A['height'])
-
-    else:
         
-        print('No valid pair direction!')
+    x_min_new_A_hpl     = int(B['xmin'] + B['width'] - 0.5 * A['width'])
+    x_min_new_B_hpl     = int(B['xmin'] - 0.5 * A['width'])
 
-    return (x_min_new_A, y_min_new_A), (x_min_new_B, y_min_new_B)
+    y_min_new_A_hpl     = B['ymin']
+    y_min_new_B_hpl     = B['ymin']
+
+        
+    x_min_new_A_vpu     = B['xmin']
+    x_min_new_B_vpu     = B['xmin']
+
+    y_min_new_A_vpu     = int(B['ymin'] - 0.5 * A['height'])
+    y_min_new_B_vpu     = int(B['ymin'] + 0.5 * A['height'])
+
+        
+    x_min_new_A_vpd     = B['xmin']
+    x_min_new_B_vpd     = B['xmin']
+
+    y_min_new_A_vpd     = int(B['ymin'] + B['height'] - 0.5 * A['height'])
+    y_min_new_B_vpd     = int(B['ymin'] - 0.5 * A['height'])
+
+
+    return (((x_min_new_A_hpr, y_min_new_A_hpr), (x_min_new_B_hpr, y_min_new_B_hpr)), 
+            ((x_min_new_A_hpl, y_min_new_A_hpl), (x_min_new_B_hpl, y_min_new_B_hpl)), 
+            ((x_min_new_A_vpu, y_min_new_A_vpu), (x_min_new_B_vpu, y_min_new_B_vpu)),
+            ((x_min_new_A_vpd, y_min_new_A_vpd), (x_min_new_B_vpd, y_min_new_B_vpd)))
 
 
 def hustle(A : dict, B : dict) -> tuple:
@@ -1228,9 +1224,19 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                     
                     possible_next_positions.append(new_A)
 
-            # explore swapping (calculate only the next -> if a good move is found one can exit early  without the need to calculate the rest)
+            # explore swapping or pairing (calculate only the next -> if a good move is found one can exit early  without the need to calculate the rest)
             
-            # explore pairing
+            for B in participants.values:
+                
+                new_A_swap                          = copy.deepcopy(A)
+                new_B_swap                          = copy.deepcopy(B)
+
+                new_A_pair                          = copy.deepcopy(A)
+                new_B_pair                          = copy.deepcopy(B)
+
+                new_B_swap['freespace']             = calclulate_free_space
+
+
                     
             # explore hustling
                     
