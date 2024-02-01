@@ -1240,19 +1240,21 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 new_B.update(moved_B_conditions)
 
+                new_B['last-move']              = 'got hustled by ' + A['idx']
+
                 action_classification_B         = classify_action(new_B)
 
                 if action_classification_B != 'invalid':
                     
                     hustled_participants.append(new_B)
 
-                else:
-                    
-                    hustled_participants = []
-
-                    break
-
             if hustled_participants:
+
+                new_A                           = copy.deepcopy(A)
+
+                new_A['last-move']              = 'hustle'
+
+                hustled_participants.append(new_A)
                 
                 possible_next_positions.append(hustled_participants)            
             
@@ -1279,6 +1281,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 new_A_swap.update(moved_A_conditions)
 
+                new_A_swap['last-move']             = 'swap with ' + new_B_swap['idx']
+
                 new_participants_for_B              = copy.deepcopy(participants)
 
                 new_participants_for_B.remove(B['idx'])
@@ -1288,6 +1292,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                 moved_B_conditions                  = calculate_conditions(new_B_swap, new_participants_for_B, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
 
                 new_B_swap.update(moved_B_conditions)
+
+                new_B_swap['last-move']             = 'swap with ' + new_A_swap['idx']
 
                 action_classification_A             = classify_action(new_A_swap)
                 action_classification_B             = classify_action(new_B_swap)
