@@ -955,57 +955,81 @@ def reenter(A : dict, layout_zone : dict) -> tuple:                      # Only 
     return x_min_new, y_min_new
 
 
-def evade(A : dict, layout_zone : dict, layout_zone_edge : str) -> list:
+def evade(A : dict, layout_zone : dict, layout_zone_edge : str, align_position : str) -> list:
 
     if layout_zone_edge == 'north':
+
+        if align_position == 'left':
          
-        x_min_new_at_left_vertex    = layout_zone['xmin']
-        y_min_new_at_left_vertex    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+            x_min_new   = layout_zone['xmin']
+            y_min_new   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
 
-        x_min_new_at_center         = int(layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width'])
-        y_min_new_at_center         = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+        elif align_position == 'center':
 
-        x_min_new_at_right_vertex   = layout_zone['xmin'] + layout_zone['width'] - A['width']
-        y_min_new_at_right_vertex   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+            x_min_new   = int(layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width'])
+            y_min_new   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+
+        else: #right
+
+            x_min_new   = layout_zone['xmin'] + layout_zone['width'] - A['width']
+            y_min_new   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
 
     elif layout_zone_edge == 'east':    # Rotate layout zone clockwise virtually for edge orientation
+
+        if align_position == 'left':
          
-        x_min_new_at_left_vertex    = layout_zone['xmin'] + layout_zone['width'] - A['width']
-        y_min_new_at_left_vertex    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+            x_min_new   = layout_zone['xmin'] + layout_zone['width'] - A['width']
+            y_min_new   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+        
+        elif align_position == 'center':
 
-        x_min_new_at_center         = layout_zone['xmin'] + layout_zone['width'] - A['width']
-        y_min_new_at_center         = int((layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height']))
+            x_min_new   = layout_zone['xmin'] + layout_zone['width'] - A['width']
+            y_min_new   = int((layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height']))
 
-        x_min_new_at_right_vertex   = layout_zone['xmin'] + layout_zone['width'] - A['width']
-        y_min_new_at_right_vertex   = layout_zone['ymin']
+        else:
+
+            x_min_new   = layout_zone['xmin'] + layout_zone['width'] - A['width']
+            y_min_new   = layout_zone['ymin']
 
     elif layout_zone_edge == 'south':
          
-        x_min_new_at_left_vertex    = layout_zone['xmin']
-        y_min_new_at_left_vertex    = layout_zone['ymin']
+        if align_position == 'left':
 
-        x_min_new_at_center         = int(layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width'])
-        y_min_new_at_center         = layout_zone['ymin']
+            x_min_new    = layout_zone['xmin']
+            y_min_new    = layout_zone['ymin']
 
-        x_min_new_at_right_vertex   = layout_zone['xmin'] + layout_zone['width'] - A['width']
-        y_min_new_at_right_vertex   = layout_zone['ymin']
+        elif align_position == 'center':
+
+            x_min_new    = int(layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width'])
+            y_min_new    = layout_zone['ymin']
+
+        else:
+
+            x_min_new  = layout_zone['xmin'] + layout_zone['width'] - A['width']
+            y_min_new  = layout_zone['ymin']
 
     elif layout_zone_edge == 'west':    # Rotate layout zone counter-clockwise virtually for edge naming orientation
+
+        if align_position == 'left':
          
-        x_min_new_at_left_vertex    = layout_zone['xmin']
-        y_min_new_at_left_vertex    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+            x_min_new    = layout_zone['xmin']
+            y_min_new    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
 
-        x_min_new_at_center         = layout_zone['xmin']
-        y_min_new_at_center         = int((layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height']))
+        elif align_position == 'center':
 
-        x_min_new_at_right_vertex   = layout_zone['xmin']
-        y_min_new_at_right_vertex   = layout_zone['ymin']
+            x_min_new    = layout_zone['xmin']
+            y_min_new    = int((layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height']))
+
+        else:
+
+            x_min_new   = layout_zone['xmin']
+            y_min_new   = layout_zone['ymin']
 
     else:
         
         print('No correct edge given!')      
 
-    return (x_min_new_at_left_vertex, y_min_new_at_left_vertex), (x_min_new_at_center, y_min_new_at_center), (x_min_new_at_right_vertex, y_min_new_at_right_vertex)
+    return x_min_new, y_min_new
 
 
 def center(A: dict) -> tuple:
@@ -1040,37 +1064,37 @@ def swap(A: dict, B: dict) -> tuple:
     return x_min_new_A, y_min_new_A, x_min_new_B, y_min_new_B
 
 
-def pair(A : dict, B : dict) -> tuple:
-            
-    x_min_new_A_hpr     = int(B['xmin'] - 0.5 * A['width'])
-    x_min_new_B_hpr     = int(B['xmin'] + 0.5 * A['width'])
-    y_min_new_A_hpr     = B['ymin']
-    y_min_new_B_hpr     = B['ymin']
+def pair(A : dict, B : dict, direction : str) -> tuple:
 
+    if direction == 'horizontal-push-right' :
+    
+        x_min_new_A     = int(B['xmin'] - 0.5 * A['width'])
+        x_min_new_B     = int(B['xmin'] + 0.5 * A['width'])
+        y_min_new_A     = B['ymin']
+        y_min_new_B     = B['ymin']
+
+    elif direction == 'horizontal-push-left' :
         
-    x_min_new_A_hpl     = int(B['xmin'] + B['width'] - 0.5 * A['width'])
-    x_min_new_B_hpl     = int(B['xmin'] - 0.5 * A['width'])
-    y_min_new_A_hpl     = B['ymin']
-    y_min_new_B_hpl     = B['ymin']
+        x_min_new_A     = int(B['xmin'] + B['width'] - 0.5 * A['width'])
+        x_min_new_B     = int(B['xmin'] - 0.5 * A['width'])
+        y_min_new_A     = B['ymin']
+        y_min_new_B     = B['ymin']
 
-        
-    x_min_new_A_vpu     = B['xmin']
-    x_min_new_B_vpu     = B['xmin']
-    y_min_new_A_vpu     = int(B['ymin'] - 0.5 * A['height'])
-    y_min_new_B_vpu     = int(B['ymin'] + 0.5 * A['height'])
+    elif direction == 'vertical-push-up' :
 
-        
-    x_min_new_A_vpd     = B['xmin']
-    x_min_new_B_vpd     = B['xmin']
-    y_min_new_A_vpd     = int(B['ymin'] + B['height'] - 0.5 * A['height'])
-    y_min_new_B_vpd     = int(B['ymin'] - 0.5 * A['height'])
+        x_min_new_A     = B['xmin']
+        x_min_new_B     = B['xmin']
+        y_min_new_A     = int(B['ymin'] - 0.5 * A['height'])
+        y_min_new_B     = int(B['ymin'] + 0.5 * A['height'])
+
+    elif direction == 'vertical-push-down':
+        x_min_new_A     = B['xmin']
+        x_min_new_B     = B['xmin']
+        y_min_new_A     = int(B['ymin'] + B['height'] - 0.5 * A['height'])
+        y_min_new_B     = int(B['ymin'] - 0.5 * A['height'])
 
 
-    return (((x_min_new_A_hpr, y_min_new_A_hpr), (x_min_new_B_hpr, y_min_new_B_hpr)), 
-            ((x_min_new_A_hpl, y_min_new_A_hpl), (x_min_new_B_hpl, y_min_new_B_hpl)), 
-            ((x_min_new_A_vpu, y_min_new_A_vpu), (x_min_new_B_vpu, y_min_new_B_vpu)),
-            ((x_min_new_A_vpd, y_min_new_A_vpd), (x_min_new_B_vpd, y_min_new_B_vpd)))
-
+    return x_min_new_A, y_min_new_A, x_min_new_B, y_min_new_B
 
 def hustle(A : dict, B : dict) -> tuple:
     
@@ -1093,7 +1117,7 @@ def hustle(A : dict, B : dict) -> tuple:
 
     y_min_new_B         = B['ymin'] + delta_y
 
-    return x_min_new_B, y_min_new_B
+    return A['xmin'], A['ymin'], x_min_new_B, y_min_new_B
 
 
 def yielt(A : dict) -> tuple:      # Intentional typo in "yield" to avoid keyword
@@ -1128,6 +1152,40 @@ def classify_action(A : dict) -> str:
     return action_classification
 
 
+def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action : function) -> tuple:
+
+    adjuvant_action                 = []
+    valid_action                    = []
+
+    new_A                           = copy.deepcopy(A)
+        
+    new_A['xmin'], new_A['ymin']    = action(new_A)
+
+    moved_A_conditions              = calculate_conditions(new_A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+
+    new_A.update(moved_A_conditions)
+
+    new_A['last-move']              = action.__name__
+
+    if new_A['last-move'] == 'reenter' or new_A['last-move'] == 'yielt':    # classification irrelevant in this case
+        
+        valid_action.append(new_A)
+
+    else:
+
+        action_classification           = classify_action(new_A)
+
+        if action_classification == 'adjuvant':
+            
+            adjuvant_action.append(new_A)  
+        
+        elif action_classification == 'valid':
+                
+            valid_action.append(new_A)     
+    
+    return adjuvant_action, valid_action
+
+
 def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 
     possible_next_positions = []
@@ -1151,6 +1209,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
     else:   # A is prone or safe
          
         # explore centering
+
+        #action                          = lambda P: budge(P, 'north-east')
 
         new_A                           = copy.deepcopy(A)
          
@@ -1307,6 +1367,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                     possible_next_positions.append([new_A_swap, new_B_swap])
 
                 # Pair operation
+                    
+                
 
 
 
