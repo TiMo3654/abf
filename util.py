@@ -1195,48 +1195,47 @@ def classify_action(A : dict) -> str:
 
 def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action : function) -> tuple:
 
-    adjuvant_action                 = []
-    valid_action                    = []
+    adjuvant_position                   = []
+    valid_position                      = []
 
-    new_origins                     = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B)
+    moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B)
 
-    for new_origin in new_origins:
+    for participant in moved_participants:
     
-        new_A                           = copy.deepcopy(A)
-        new_participants                = copy.deepcopy(participants)
-
-        new_A['xmin'], new_A['ymin']    = new_origin
-
-        if new_A['idx'] in new_participants:
-            
-            new_participants.remove(new_A['idx'])   # make sure, that the currentyl evaluated participnat is not in the participant list
-
         # Implement action correction here
 
-        moved_A_conditions              = calculate_conditions(new_A, new_participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+        moved_participant_conditions    = calculate_conditions(participant, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
 
-        new_A.update(moved_A_conditions)
+        participant.update(moved_participant_conditions)
 
-        new_A['last-move']              = action.__name__
+        participant['last-move']        = action.__name__
 
-        if new_A['last-move'] == 'reenter' or new_A['last-move'] == 'yielt':    # classification irrelevant in this case
+        if participant['last-move'] == 'reenter' or participant['last-move'] == 'yielt':    # classification irrelevant in this case
             
-            valid_action.append(new_A)
+            valid_position.append(participant)
 
         else:
 
-            action_classification           = classify_action(new_A)
+            action_classification       = classify_action(participant)
 
             if action_classification == 'adjuvant':
                 
-                adjuvant_action.append(new_A)  
+                adjuvant_position.append(participant)  
             
             elif action_classification == 'valid':
                     
-                valid_action.append(new_A)     
-    
-    return adjuvant_action, valid_action
+                valid_position.append(participant)
 
+            else:   # invalid action
+
+                adjuvant_position       = []
+                valid_position          = []
+
+                break  
+    
+    return adjuvant_position, valid_position
+
+# TODO: add early exit in adjuvant case and list appending in valid case
 
 def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 
@@ -1246,59 +1245,23 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
     if A['protrusion-status'] == 'lost':
 
-        new_A                           = copy.deepcopy(A)
-        
-        new_A['xmin'], new_A['ymin']    = reenter(new_A, layout_zone)
+        action                              = lambda P: reenter(P, layout_zone)
 
-        moved_A_conditions              = calculate_conditions(new_A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
-
-        new_A.update(moved_A_conditions)
-
-        new_A['last-move']              = 'reenter'
-
-        return list([new_A])
+        adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
     else:   # A is prone or safe
          
         # explore centering
 
-        #action                          = lambda P: budge(P, 'north-east')
+        action                              = lambda P: center(P)
 
-        new_A                           = copy.deepcopy(A)
-         
-        new_A['xmin'], new_A['ymin']    = center(new_A)
-
-        moved_A_conditions              = calculate_conditions(new_A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
-
-        new_A.update(moved_A_conditions)
-
-        new_A['last-move']              = 'center'
-
-        action_classification           = classify_action(new_A)
-
-        if action_classification == 'adjuvant':
-            
-            return list([new_A])  # direct exit in case of adjuvant move
-        
-        elif action_classification == 'valid':
-             
-            possible_next_positions.append([new_A])
-
+        adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
         # explore lingering
             
-        new_A                           = copy.deepcopy(A)
+        action                              = lambda P: linger(P)
 
-        new_A['xmin'], new_A['ymin']    = linger(A)
-
-        new_A['last-move']              = 'linger'
-
-        action_classification           = classify_action(new_A)
-
-        if action_classification == 'adjuvant':
-            
-            return list([new_A])  # direct exit in case of adjuvant move
-        
+        adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)        
         
         # explore budging, swapping, pairing, hustling only if A is safe, otherwise only centering, evasion or yielding is possible
 
@@ -1311,139 +1274,50 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                                                        if A[f'secondary-free-space-{corner}']]
 
             for direction in free_secondary_spaces:
+
+                action                              = lambda P: budge(P, direction)
+
+                adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
                 
-                new_A                               = copy.deepcopy(A)
-
-                new_A['xmin'], new_A['ymin']        = budge(new_A, direction)
-
-                moved_A_conditions                  = calculate_conditions(new_A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
-
-                new_A.update(moved_A_conditions)
-
-                new_A['last-move']                  = 'budge'
-
-                action_classification               = classify_action(new_A)
-
-                if action_classification == 'adjuvant':
-                    
-                    return list([new_A])  # direct exit in case of adjuvant move
-                
-                elif action_classification == 'valid':
-                    
-                    possible_next_positions.append([new_A])
-
             # explore hustling
-                    
-            hustled_participants                = []
-            
+                                
             for idx_B in A['overlap-with-idx']:
                 
-                new_B                           = copy.deepcopy(participants[idx_B])
+                B   = participants[idx_B]
 
-                new_participants_for_B          = copy.deepcopy(participants)
+                action                              = lambda P: hustle(P, B)
 
-                new_participants_for_B.remove(idx_B) 
+                adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
-                new_participants_for_B          = new_participants_for_B | A
-
-                new_B['xmin'], new_B['ymin']    = hustle(A, new_B)
-
-                moved_B_conditions              = calculate_conditions(new_B, new_participants_for_B, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
-
-                new_B.update(moved_B_conditions)
-
-                new_B['last-move']              = 'got hustled by ' + A['idx']
-
-                action_classification_B         = classify_action(new_B)
-
-                if action_classification_B != 'invalid':
-                    
-                    hustled_participants.append(new_B)
-
-            if hustled_participants:
-
-                new_A                           = copy.deepcopy(A)
-
-                new_A['last-move']              = 'hustle'
-
-                hustled_participants.append(new_A)
-                
-                possible_next_positions.append(hustled_participants)            
             
-            # explore swapping or pairing
+            # explore swapping
             
             for B in participants.values:
+                 
+                action                              = lambda P: swap(P, B)
+
+                adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
                 
-                new_A_swap                          = copy.deepcopy(A)
-                new_B_swap                          = copy.deepcopy(B)
-
-                new_A_pair                          = copy.deepcopy(A)
-                new_B_pair                          = copy.deepcopy(B)
-
-                # Swap operation
-
-                new_participants_for_A              = copy.deepcopy(participants)
-                new_participants_for_B              = copy.deepcopy(participants)
-
-                new_A_swap['xmin'], new_A_swap['ymin'], new_B_swap['xmin'], new_B_swap['ymin']  = swap(A,B)
-
-                new_participants_for_A.update(new_B_swap)
-
-                moved_A_conditions                  = calculate_conditions(new_A_swap, new_participants_for_A, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
-
-                new_A_swap.update(moved_A_conditions)
-
-                new_A_swap['last-move']             = 'swap with ' + new_B_swap['idx']
-
-                new_participants_for_B              = copy.deepcopy(participants)
-
-                new_participants_for_B.remove(B['idx'])
-
-                new_participants_for_B              = new_participants_for_B | new_A_swap
-
-                moved_B_conditions                  = calculate_conditions(new_B_swap, new_participants_for_B, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
-
-                new_B_swap.update(moved_B_conditions)
-
-                new_B_swap['last-move']             = 'swap with ' + new_A_swap['idx']
-
-                action_classification_A             = classify_action(new_A_swap)
-                action_classification_B             = classify_action(new_B_swap)
-
-                if action_classification_A == 'adjuvant' and action_classification_B == 'adjuvant':
-                    
-                    return list([new_A_swap, new_B_swap])
                 
-                elif action_classification_A != 'invalid' and action_classification_B != 'invalid':
-                     
-                    possible_next_positions.append([new_A_swap, new_B_swap])
-
-                # Pair operation
-                    
+            # explore pairing
                 
+            for B in participants.values:
+                 
+                action                              = lambda P: pair(P, B)
 
-
-
-
-                    
-            # explore hustling
+                adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)                  
                     
         else:   # participant is prone
              
             # explore evasion
             
-            north_edge_overlap  = A['protrusion-extend'][1] < 0
-            south_edge_overlap  = A['protrusion-extend'][1] > 0
+            action                                  = lambda P: evade(P, B)
 
-            east_edge_overlap   = A['protrusion-extend'][0] < 0
-            west_edge_overlap   = A['protrusion-extend'][0] > 0
+            adjuvant_position, valid_position       = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)  
 
-            pos1, pos2, pos3    = evade() 
-             
+            # explore yield           
             
                     
-                
-
     return possible_next_positions
 
 
