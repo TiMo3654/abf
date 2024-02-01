@@ -24,6 +24,7 @@ def generate_participant() -> dict:
         "clashes"                       : {},         #{'idx' : 100}
         "aversions"                     : {},         #{'idx' : 17,5}
         "interference"                  : 0,
+        "overlap-with-idx"              : [],
         "turmoil"                       : 0,
         "relaxed-connections"           : 0,
         "protrusion-status"             : 'safe',
@@ -798,6 +799,8 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
     one_sick_overlap        = False
 
+    overlap_with_idx        = []
+
 
     for B in participants.values:
         
@@ -806,6 +809,9 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
         overlap_counter             = overlap_counter + 1 if overlap else overlap_counter
 
         idx_B                       = B['idx']
+
+        if overlap:
+            overlap_with_idx.append(idx_B)
 
         A_fully_encloses_B          = locations[0]
         B_fully_encloses_A          = locations[1]
@@ -871,7 +877,8 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
         healthy                     = calculate_health(A, B, overlap) and (overlap_counter < critical_amount) and not one_sick_overlap
             
-        one_sick_overlap            = not healthy
+        if not healthy:    
+            one_sick_overlap        = True
 
     
     # Calculate compliance
@@ -894,6 +901,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
                     "clashes"                       : new_clashes,
                     "aversions"                     : new_aversions,
                     "interference"                  : interference,
+                    "overlap-with-idx"              : overlap_with_idx,
                     "turmoil"                       : turmoil,
                     "relaxed-connections"           : relaxed_connections,
                     "protrusion-status"             : protrusion_status,
