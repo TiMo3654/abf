@@ -1037,35 +1037,31 @@ def swap(A: dict, B: dict) -> tuple:
     x_min_new_B     = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'] - 0.5 * B['width'])
     y_min_new_B     = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'] - 0.5 * B['height'])
 
-    return (x_min_new_A, y_min_new_A), (x_min_new_B, y_min_new_B)
+    return x_min_new_A, y_min_new_A, x_min_new_B, y_min_new_B
 
 
-def pair(A : dict, B : dict, pair_direction : str) -> tuple:
+def pair(A : dict, B : dict) -> tuple:
             
     x_min_new_A_hpr     = int(B['xmin'] - 0.5 * A['width'])
     x_min_new_B_hpr     = int(B['xmin'] + 0.5 * A['width'])
-
     y_min_new_A_hpr     = B['ymin']
     y_min_new_B_hpr     = B['ymin']
 
         
     x_min_new_A_hpl     = int(B['xmin'] + B['width'] - 0.5 * A['width'])
     x_min_new_B_hpl     = int(B['xmin'] - 0.5 * A['width'])
-
     y_min_new_A_hpl     = B['ymin']
     y_min_new_B_hpl     = B['ymin']
 
         
     x_min_new_A_vpu     = B['xmin']
     x_min_new_B_vpu     = B['xmin']
-
     y_min_new_A_vpu     = int(B['ymin'] - 0.5 * A['height'])
     y_min_new_B_vpu     = int(B['ymin'] + 0.5 * A['height'])
 
         
     x_min_new_A_vpd     = B['xmin']
     x_min_new_B_vpd     = B['xmin']
-
     y_min_new_A_vpd     = int(B['ymin'] + B['height'] - 0.5 * A['height'])
     y_min_new_B_vpd     = int(B['ymin'] - 0.5 * A['height'])
 
@@ -1150,7 +1146,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         new_A['last-move']              = 'reenter'
 
-        return list(new_A)
+        return list([new_A])
 
     else:   # A is prone or safe
          
@@ -1170,11 +1166,11 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         if action_classification == 'adjuvant':
             
-            return list(new_A)  # direct exit in case of adjuvant move
+            return list([new_A])  # direct exit in case of adjuvant move
         
         elif action_classification == 'valid':
              
-            possible_next_positions.append(new_A)
+            possible_next_positions.append([new_A])
 
 
         # explore lingering
@@ -1189,7 +1185,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         if action_classification == 'adjuvant':
             
-            return list(new_A)  # direct exit in case of adjuvant move
+            return list([new_A])  # direct exit in case of adjuvant move
         
         
         # explore budging, swapping, pairing, hustling only if A is safe, otherwise only centering, evasion or yielding is possible
@@ -1218,11 +1214,11 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 if action_classification == 'adjuvant':
                     
-                    return list(new_A)  # direct exit in case of adjuvant move
+                    return list([new_A])  # direct exit in case of adjuvant move
                 
                 elif action_classification == 'valid':
                     
-                    possible_next_positions.append(new_A)
+                    possible_next_positions.append([new_A])
 
             # explore swapping or pairing (calculate only the next -> if a good move is found one can exit early  without the need to calculate the rest)
             
@@ -1234,7 +1230,39 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                 new_A_pair                          = copy.deepcopy(A)
                 new_B_pair                          = copy.deepcopy(B)
 
-                new_B_swap['freespace']             = calclulate_free_space
+                # Swap operation
+
+                new_participants_for_A              = copy.deepcopy(participants)
+                new_participants_for_B              = copy.deepcopy(participants)
+
+                new_A_swap['xmin'], new_A_swap['ymin'], new_B_swap['xmin'], new_B_swap['ymin']  = swap(A,B)
+
+                new_participants_for_A.update(new_B_swap)
+
+                moved_A_conditions                  = calculate_conditions(new_A_swap, new_participants_for_A, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+
+                new_A_swap.update(moved_A_conditions)
+
+                new_participants_for_B              = copy.deepcopy(participants).remove(B['idx']) | new_A_swap
+
+                moved_B_conditions                  = calculate_conditions(new_B_swap, new_participants_for_B, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+
+                new_B_swap.update(moved_B_conditions)
+
+                action_classification_A             = classify_action(new_A_swap)
+                action_classification_B             = classify_action(new_B_swap)
+
+                if action_classification_A == 'adjuvant' and action_classification_B == 'adjuvant':
+                    
+                    return list([new_A_swap, new_B_swap])
+                
+                elif action_classification_A != 'invalid' and action_classification_B != 'invalid':
+                     
+                    possible_next_positions.append([new_A_swap, new_B_swap])
+
+                # Pair operation
+
+
 
 
                     
