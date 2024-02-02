@@ -1,5 +1,9 @@
 ## MOVEMENTS
 
+import copy
+
+from util import *
+
 def rotate(A: dict) -> tuple:
 
     new_width   = A['height']

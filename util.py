@@ -1,6 +1,5 @@
 import random
 import math
-import copy
 from matplotlib import pyplot as plt, patches
 
 ## Test functions
