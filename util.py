@@ -1202,8 +1202,9 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
     adjuvant_position                   = []
     valid_position                      = []
+    invalid_position                    = []
 
-    moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B)
+    moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) / the action make deep copies of A and B
 
     for participant in moved_participants:
     
@@ -1233,18 +1234,21 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
             else:   # invalid action
 
+                invalid_position.append(participant)
                 adjuvant_position       = []
                 valid_position          = []
 
                 break  
     
-    return adjuvant_position, valid_position
+    return adjuvant_position, valid_position, invalid_position
 
 # TODO: add early exit in adjuvant case and list appending in valid case ANhand der Länge der zurückgegeben Listen bestimmbar
 
+# Use map() fuction to try out different layout variants of the same participant?
+
 def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 
-    possible_next_positions = []
+    possible_next_positions = []    # [ [A_center], [A_budge], [A_swap, B_swap] ... ]
 
     # start of the action exploration
 
@@ -1252,21 +1256,35 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         action                              = lambda P: reenter(P, layout_zone)
 
-        adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+        _, valid_position, __               = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
+        return [valid_position]
+    
     else:   # A is prone or safe
          
         # explore centering
 
         action                              = lambda P: center(P)
 
-        adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+        adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+
+        if adjuvant_position:            
+            return [adjuvant_position]  # [ [A_center] ]
+        
+        if valid_position:            
+            possible_next_positions.append(valid_position) # [ [A_center] ]
 
         # explore lingering
             
         action                              = lambda P: linger(P)
 
-        adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)        
+        adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)      
+
+        if adjuvant_position:            
+            return [adjuvant_position]  # [ [A_linger] ]
+        
+        if valid_position:            
+            possible_next_positions.append(valid_position)  # [ [A_center], [A_linger] ]
         
         # explore budging, swapping, pairing, hustling only if A is safe, otherwise only centering, evasion or yielding is possible
 
@@ -1282,7 +1300,13 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 action                              = lambda P: budge(P, direction)
 
-                adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+                adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+
+                if adjuvant_position:            
+                    return [adjuvant_position]
+        
+                if valid_position:            
+                    possible_next_positions.append(valid_position)
                 
             # explore hustling
                                 
@@ -1294,24 +1318,36 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
+
             
             # explore swapping
             
             for B in participants.values:
                  
-                action                              = lambda P: swap(P, B)
+                action                                              = lambda P: swap(P, B)
 
-                adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+                adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
                 
+                if len(adjuvant_position) == 2:            
+                    return [adjuvant_position]
+        
+                if len(invalid_position) == 0:            
+                    possible_next_positions.append(valid_position)
                 
             # explore pairing
                 
             for B in participants.values:
                  
-                action                              = lambda P: pair(P, B)
+                action                                              = lambda P: pair(P, B)
 
-                adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)                  
-                    
+                adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)                  
+
+                if len(adjuvant_position) == 2:            
+                    return [adjuvant_position]
+        
+                if len(invalid_position) == 0:            
+                    possible_next_positions.append(valid_position)   
+
         else:   # participant is prone
              
             # explore evasion
@@ -1324,10 +1360,25 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                 
                     action                                  = lambda P: evade(P, layout_zone, edge, position)
 
-                    adjuvant_position, valid_position       = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)  
+                    adjuvant_position, valid_position, _    = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)  
 
-            # explore yield           
+                if adjuvant_position:            
+                    return [adjuvant_position]
+        
+                if valid_position:            
+                    possible_next_positions.append(valid_position)
+                
+        # explore yield in case of not lost and interference
+
+        if len(possible_next_positions) == 0 and A['interference'] != 0:             
+
+            action                              = lambda P: yielt(P)
+
+            _, valid_position, __               = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)         
             
+            if valid_position:            
+                possible_next_positions.append(valid_position)
+
                     
     return possible_next_positions
 
