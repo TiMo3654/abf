@@ -224,7 +224,7 @@ def hustle(A : dict, participants : dict) -> list:
 
         new_B               = copy.deepcopy(B)
         
-        overlap, _  = calculate_overlap(A, new_B)
+        overlap, _          = calculate_overlap(A, new_B)
 
         #print(overlap)
 
