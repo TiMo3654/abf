@@ -3,6 +3,8 @@ from moves import *
 from util import *
 from conditions import *
 
+import math
+
 ## Action exploration and evaluation
 
 def classify_action(A : dict) -> str:
@@ -28,13 +30,20 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
     valid_position                      = []
     invalid_position                    = []
 
+    actual_participants                 = copy.deepcopy(participants)
+
     moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) / the action make deep copies of A and B
+
+    for participant in moved_participants:
+        
+        actual_participants.update(participant)         # consider the newest positions
+    
 
     for participant in moved_participants:
     
         # Implement action correction here
 
-        moved_participant_conditions    = calculate_conditions(participant, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+        moved_participant_conditions    = calculate_conditions(participant, actual_participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
 
         participant.update(moved_participant_conditions)
 
@@ -59,10 +68,6 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
             else:   # invalid action
 
                 invalid_position.append(participant)
-                adjuvant_position       = []
-                valid_position          = []
-
-                break  
     
     return adjuvant_position, valid_position, invalid_position
 
@@ -132,15 +137,13 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                 
             # explore hustling
                                 
-            for idx_B in A['overlap-with-idx']:
-                
-                B   = participants[idx_B]
+            action                              = lambda P: hustle(P, participants)
 
-                action                              = lambda P: hustle(P, B)
+            adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
-                adjuvant_position, valid_position   = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
-
-
+            # hustle funktion umbauen
+            # in der hustle funktion alle die Überlappen verschieben und zurückgeben
+            # die mit invalidem status rauswerfen
             
             # explore swapping
             
@@ -205,6 +208,30 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
     return possible_next_positions
 
 
-def action_evaluation(possible_next_positions : list, evaluation_metric : str) -> dict:
+
+## Action evaluation
+
+# def determine_best_move(possible_next_positions : list) -> list
+
+#     prospective_interference_minimum    = math.inf
+
+#     for postions in possible_next_positions:
+
+#         summed_interference = 
+
+        
+
+
+# def action_evaluation(possible_next_positions : list, evaluation_metric : str) -> dict:
+
+#     if evaluation_metric == 'interference-only':
+    
+
+
+#     elif evaluation_metric == 'interference-and-turmoil':
+
+#     else:
+
+#         print('No valid metric given!')
      
-    return 0
+#     return 0

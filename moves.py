@@ -3,6 +3,9 @@
 import copy
 from util import *
 
+#TODO: Implement action correction
+#TODO: set last move variable in the actual move function
+
 def rotate(A: dict) -> tuple:
 
     new_width   = A['height']
@@ -209,34 +212,42 @@ def pair(A : dict, B : dict, direction : str) -> list:
     return [new_A, new_B]
 
 
-def hustle(A : dict, B : dict) -> list:
+def hustle(A : dict, participants : dict) -> list:
 
     new_A                           = copy.deepcopy(A)
-    new_B                           = copy.deepcopy(B)
-    
-    overlap, locations  = calculate_overlap(A, B)
 
-    #print(overlap)
+    moved_participants              = []
 
-    if overlap['width'] <= overlap['height']:
+    for idx in A['overlap-with-idx']:
 
-        delta_x         = overlap['width'] if B['xmin'] >= A['xmin'] else overlap['width'] * -1
-        delta_y         = 0
+        B                   = participants[idx]
 
-    else:
-         
-        delta_x         = 0
-        delta_y         = overlap['height'] if B['ymin'] >= A['ymin'] else overlap['height'] * -1
+        new_B               = copy.deepcopy(B)
+        
+        overlap, _  = calculate_overlap(A, new_B)
+
+        #print(overlap)
+
+        if overlap['width'] <= overlap['height']:
+
+            delta_x         = overlap['width'] if B['xmin'] >= A['xmin'] else overlap['width'] * -1
+            delta_y         = 0
+
+        else:
+            
+            delta_x         = 0
+            delta_y         = overlap['height'] if B['ymin'] >= A['ymin'] else overlap['height'] * -1
 
 
-    x_min_new_B         = B['xmin'] + delta_x
+        x_min_new_B         = B['xmin'] + delta_x
 
-    y_min_new_B         = B['ymin'] + delta_y
+        y_min_new_B         = B['ymin'] + delta_y
 
-    new_A['xmin'], new_A['ymin']    = A['xmin'], A['ymin']
-    new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
+        new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
 
-    return [new_A, new_B]
+        moved_participants.append(new_B)
+
+    return [new_A] + moved_participants
 
 
 def yielt(A : dict) -> list:      # Intentional typo in "yield" to avoid keyword
