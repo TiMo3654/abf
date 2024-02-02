@@ -36,7 +36,7 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
     for participant in moved_participants:
         
-        actual_participants.update(participant)         # consider the newest positions
+        actual_participants.update(participant)         # consider the newest positions (important for hustle)
     
 
     for participant in moved_participants:
@@ -141,9 +141,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
-            # hustle funktion umbauen
-            # in der hustle funktion alle die Überlappen verschieben und zurückgeben
-            # die mit invalidem status rauswerfen
+            if adjuvant_position or valid_position:
+                possible_next_positions.append(adjuvant_position + valid_position)  # new positions for all participants in valid positions
             
             # explore swapping
             
