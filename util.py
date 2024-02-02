@@ -319,7 +319,7 @@ def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone i
 
         protrusion_extend       = ()
         
-    return protrusion, protrusion_extend   # The protrusion extend is signed and can therefore be simply added to the origin of a rectangle to correct a prone state
+    return protrusion, protrusion_extend, locations[2:]   # The protrusion extend is signed and can therefore be simply added to the origin of a rectangle to correct a prone state
 
 
 def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:                         # Equation 7.33 p. 120
@@ -888,7 +888,11 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
     # Calculate protrusion
 
-    protrusion_status, extend       = calculate_protrusion(layout_zone, A)
+    protrusion_status, extend, edges = calculate_protrusion(layout_zone, A)
+
+    protruded_zone_edges             = [edge 
+                                        for i,edge in enumerate(['west', 'east', 'north', 'south']) 
+                                        if edges[i]]
 
     # Calculate space values
 
@@ -907,6 +911,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
                     "relaxed-connections"           : relaxed_connections,
                     "protrusion-status"             : protrusion_status,
                     "protrusion-extend"             : extend,
+                    "protruded-edges"               : protruded_zone_edges,
                     "healthy"                       : healthy,
                     "compliant"                     : compliance,
                     "yield-polygon"                 : yield_polygon,
@@ -1235,7 +1240,7 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
     
     return adjuvant_position, valid_position
 
-# TODO: add early exit in adjuvant case and list appending in valid case
+# TODO: add early exit in adjuvant case and list appending in valid case ANhand der Länge der zurückgegeben Listen bestimmbar
 
 def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 
@@ -1310,10 +1315,16 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
         else:   # participant is prone
              
             # explore evasion
-            
-            action                                  = lambda P: evade(P, B)
 
-            adjuvant_position, valid_position       = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)  
+            align_positions = ['left', 'center', 'right']
+
+            for edge in A['protruded-zone-edges']:
+
+                for position in align_positions:
+                
+                    action                                  = lambda P: evade(P, layout_zone, edge, position)
+
+                    adjuvant_position, valid_position       = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)  
 
             # explore yield           
             
