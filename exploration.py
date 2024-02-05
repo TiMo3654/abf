@@ -35,8 +35,10 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
     moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the actions make deep copies of the moved participants
 
     for participant in moved_participants:
+
+        participant_idx                 = participant['idx']
         
-        actual_participants.update(participant)         # consider the newest positions (important for hustle)
+        actual_participants.update({participant_idx : participant})         # consider the newest positions (important for hustle)
     
 
     for participant in moved_participants:
@@ -255,6 +257,8 @@ def execute_action(all_participants : dict, best_postions : list) -> dict:
 
     for participant in best_postions:
 
-        all_participants_updated.update(participant)
+        participant_idx         = participant['idx']
+
+        all_participants_updated.update({participant_idx : participant})
 
     return all_participants_updated
