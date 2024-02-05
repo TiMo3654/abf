@@ -24,7 +24,7 @@ def classify_action(A : dict) -> str:
     return action_classification
 
 
-def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action : function) -> tuple:
+def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action) -> tuple:
 
     adjuvant_position                   = []
     valid_position                      = []
@@ -48,8 +48,6 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
         moved_participant_conditions    = calculate_conditions(participant, actual_participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
 
         participant.update(moved_participant_conditions)
-
-        participant['last-move']        = action.__name__
 
         if participant['last-move'] == 'reenter' or participant['last-move'] == 'yielt':    # classification irrelevant in this case
             
