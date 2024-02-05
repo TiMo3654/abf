@@ -44,7 +44,7 @@ def generate_participant() -> dict:
     return participant
 
 
-def plot_participants(participants):
+def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax : int):
 
     plt.rcParams["figure.figsize"] = [7.00, 3.50]
     plt.rcParams["figure.autolayout"] = True
@@ -54,6 +54,16 @@ def plot_participants(participants):
     figure, ax = plt.subplots(1)
     ax.plot([0], c='white')
 
+    # Plot layout zone
+
+    origin = (layout_zone['xmin'], layout_zone['ymin'])
+
+    rectangle = patches.Rectangle(origin, layout_zone['width'], layout_zone['height'], edgecolor='red',
+    facecolor='red', linewidth=2, fill = False)
+
+    ax.add_patch(rectangle)
+
+    # Plot participants
     i = 0
 
     for key in participants:
@@ -62,15 +72,20 @@ def plot_participants(participants):
 
         origin = (p['xmin'], p['ymin'])
 
-        rectangle = patches.Rectangle(origin, p['width'], p['height'], edgecolor=colors[i],
-        facecolor=colors[i], linewidth=2, fill = False)
+        rectangle   = patches.Rectangle(origin, p['width'], p['height'], edgecolor=colors[i],
+                        facecolor=colors[i], linewidth=2, fill = True, alpha = 0.5)
+
+        center_x    = p['xmin'] + 0.5 * p['width']
+        center_y    = p['ymin'] + 0.5 * p['height']
+
+        plt.text(center_x, center_y, p['idx'])
 
         i += 1
 
         ax.add_patch(rectangle)
 
-    plt.ylim(0,120)
-    plt.xlim(0,120)
+    plt.ylim(0,ymax)
+    plt.xlim(0,xmax)
 
     plt.grid()
     plt.show()
