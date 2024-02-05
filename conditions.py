@@ -106,10 +106,10 @@ def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float: 
 
 
 def calculate_clashes(A : dict, B : dict, overlap : dict) -> int:
+
+    idx_B           = B['idx']
     
     if overlap:
-
-        idx_B       = B['idx']
         
         new_clashes = A['clashes'][idx_B] + 1
     
@@ -139,7 +139,7 @@ def calculate_aversion(A : dict, B : dict, overlap : dict, conciliation_quota : 
 
     if overlap:
 
-        idx_B = B['idx']
+        idx_B               = B['idx']
 
         current_aversion    = A['aversion'][idx_B]
         current_clashes     = A['clashes'][idx_B]
@@ -527,7 +527,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
     overlap_with_idx        = []
 
 
-    for B in participants.values:
+    for B in list(participants.values()):
         
         overlap, locations          = calculate_overlap(A, B)                                   # locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
 
@@ -577,10 +577,12 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
             free_vertices.remove('south-west')
 
         # Calculate interference
-            
-        clashes                     = calculate_clashes(A, B, overlap)
-
-        new_clashes[idx_B]          = clashes
+        
+        if idx_B in A['clashes']:
+            clashes                     = calculate_clashes(A, B, overlap)
+            new_clashes[idx_B]          = clashes
+        else:
+            new_clashes[idx_B]          = 1 if overlap else 0
 
         aversion                    = calculate_aversion(A, B, overlap, conciliation_quota)
 
