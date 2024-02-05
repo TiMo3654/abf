@@ -4,7 +4,6 @@ import copy
 from util import *
 
 #TODO: Implement action correction
-#TODO: set last move variable in the actual move function
 
 def rotate(A: dict) -> tuple:
 
@@ -40,6 +39,8 @@ def reenter(A : dict, layout_zone : dict) -> list:                      # Only a
     y_min_new                           = (layout_zone['ymin'] + layout_zone['height'] - A['height']) if participant_above_layout_zone else y_min_new
 
     new_A['xmin'], new_A['ymin']        = x_min_new, y_min_new
+
+    new_A['last-move']                  = 'reenter'
     
     return [new_A]
 
@@ -122,6 +123,8 @@ def evade(A : dict, layout_zone : dict, layout_zone_edge : str, align_position :
 
     new_A['xmin'], new_A['ymin']    = x_min_new, y_min_new    
 
+    new_A['last-move']              = 'evade'
+
     return [new_A]
 
 
@@ -134,12 +137,16 @@ def center(A: dict) -> list:
 
     new_A['xmin'], new_A['ymin']    = x_min_new, y_min_new
 
+    new_A['last-move']              = 'center'
+
     return [new_A]
 
 
 def linger(A: dict) -> list:
 
-    new_A   = copy.deepcopy(A)
+    new_A               = copy.deepcopy(A)
+
+    new_A['last-move']  = 'linger'
      
     return [new_A]
 
@@ -148,10 +155,12 @@ def budge(A: dict, direction : str) -> list:
 
     new_A                           = copy.deepcopy(A)
 
-    x_min_new       = int(A[direction]['xmin'] + 0.5 * A[direction]['width'] - 0.5 * A['width'])
-    y_min_new       = int(A[direction]['ymin'] + 0.5 * A[direction]['height'] - 0.5 * A['height'])
+    x_min_new                       = int(A[direction]['xmin'] + 0.5 * A[direction]['width'] - 0.5 * A['width'])
+    y_min_new                       = int(A[direction]['ymin'] + 0.5 * A[direction]['height'] - 0.5 * A['height'])
 
     new_A['xmin'], new_A['ymin']    = x_min_new, y_min_new
+
+    new_A['last-move']              = 'budge'
      
     return [new_A]
 
@@ -169,6 +178,8 @@ def swap(A: dict, B: dict) -> list:
 
     new_A['xmin'], new_A['ymin']    = x_min_new_A, y_min_new_A
     new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
+
+    new_A['last-move']              = 'swap with ' + new_B['idx']
 
     return [new_A, new_B]
 
@@ -208,6 +219,7 @@ def pair(A : dict, B : dict, direction : str) -> list:
     new_A['xmin'], new_A['ymin']    = x_min_new_A, y_min_new_A
     new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
 
+    new_A['last-move']                  = 'pair with ' + new_B['idx']
 
     return [new_A, new_B]
 
@@ -247,21 +259,25 @@ def hustle(A : dict, participants : dict) -> list:
 
         moved_participants.append(new_B)
 
+    new_A['last-move']                  = 'hustle'
+
     return [new_A] + moved_participants
 
 
 def yielt(A : dict) -> list:      # Intentional typo in "yield" to avoid keyword
 
-    new_A             = copy.deepcopy(A)
+    new_A                           = copy.deepcopy(A)
      
-    x_center_yield_poly     = A['yield-polygon']['xmin'] + 0.5 * A['yield-polygon']['width']
+    x_center_yield_poly             = A['yield-polygon']['xmin'] + 0.5 * A['yield-polygon']['width']
 
-    y_center_yield_poly     = A['yield-polygon']['ymin'] + 0.5 * A['yield-polygon']['height']
+    y_center_yield_poly             = A['yield-polygon']['ymin'] + 0.5 * A['yield-polygon']['height']
 
-    x_min_new_A             = x_center_yield_poly - 0.5 * A['width']
+    x_min_new_A                     = x_center_yield_poly - 0.5 * A['width']
 
-    y_min_new_A             = y_center_yield_poly - 0.5 * A['height']
+    y_min_new_A                     = y_center_yield_poly - 0.5 * A['height']
 
     new_A['xmin'], new_A['ymin']    = x_min_new_A, y_min_new_A
+
+    new_A['last-move']              = 'yield'
     
     return [new_A]
