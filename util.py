@@ -28,6 +28,7 @@ def generate_participant() -> dict:
         "relaxed-connections"           : 0,
         "protrusion-status"             : 'safe',
         "protrusion-extend"             : 0,
+        "protruded-edges"               :[],
         "healthy"                       : True,
         "compliant"                     : True,
         "yield-polygon"                 : {},
@@ -36,7 +37,8 @@ def generate_participant() -> dict:
         'secondary-freespace-south-east': {},
         'secondary-freespace-south-west': {},
         'secondary-freespace-north-west': {},
-        "last-move"                     : 'center'
+        "last-move"                     : 'center',
+        "color"                         : 'black'
     }
 
     return participant
@@ -61,7 +63,7 @@ def plot_participants(participants):
         origin = (p['xmin'], p['ymin'])
 
         rectangle = patches.Rectangle(origin, p['width'], p['height'], edgecolor=colors[i],
-        facecolor=colors[i], linewidth=1)
+        facecolor=colors[i], linewidth=2, fill = False)
 
         i += 1
 
