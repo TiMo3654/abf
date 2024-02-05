@@ -1,8 +1,59 @@
 import random
 import math
 from matplotlib import pyplot as plt, patches
+import matplotlib.colors as mcolors
 
 ## Test functions
+
+def generate_unconnected_participants(amount : int, layout_zone : dict, seed : int) -> dict:
+
+    random.seed(seed)
+
+    colors = list(mcolors.CSS4_COLORS.keys())
+
+    participants    = {}
+        
+    for i in range(amount):
+            
+        xmin        = random.randint(0,layout_zone['width'])
+        ymin        = random.randint(0,layout_zone['height'])
+
+        width       = random.randint(10,60)
+        height      = random.randint(10,60)
+
+
+        participant = {
+            "idx"                           : i,  
+            "connections"                   : {},         #{'idx' : 2}
+            "xmin"                          : xmin,
+            "ymin"                          : ymin,
+            "width"                         : width,
+            "height"                        : height,
+            "clashes"                       : {},         #{'idx' : 100}
+            "aversions"                     : {},         #{'idx' : 17,5}
+            "interference"                  : 0,
+            "overlap-with-idx"              : [],
+            "turmoil"                       : 0,
+            "relaxed-connections"           : 0,
+            "protrusion-status"             : '',
+            "protrusion-extend"             : 0,
+            "protruded-edges"               : [],
+            "healthy"                       : True,
+            "compliant"                     : True,
+            "yield-polygon"                 : {},
+            "freespace"                     : {},
+            'secondary-freespace-north-east': {},
+            'secondary-freespace-south-east': {},
+            'secondary-freespace-south-west': {},
+            'secondary-freespace-north-west': {},
+            "last-move"                     : '',
+            "color"                         : random.choice(colors)
+        }
+
+        participants[str(i)]    = participant
+
+    return participants
+
 
 def generate_participant() -> dict:
 
@@ -49,7 +100,7 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
     plt.rcParams["figure.figsize"] = [7.00, 3.50]
     plt.rcParams["figure.autolayout"] = True
 
-    colors = ['blue', 'orange', 'black']
+    #colors = ['blue', 'orange', 'black']
 
     figure, ax = plt.subplots(1)
     ax.plot([0], c='white')
@@ -72,8 +123,8 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
 
         origin = (p['xmin'], p['ymin'])
 
-        rectangle   = patches.Rectangle(origin, p['width'], p['height'], edgecolor=colors[i],
-                        facecolor=colors[i], linewidth=2, fill = True, alpha = 0.5)
+        rectangle   = patches.Rectangle(origin, p['width'], p['height'], edgecolor=p['color'],
+                        facecolor=p['color'], linewidth=2, fill = True, alpha = 0.9)
 
         center_x    = p['xmin'] + 0.5 * p['width']
         center_y    = p['ymin'] + 0.5 * p['height']
