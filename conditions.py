@@ -107,15 +107,21 @@ def calculate_tension(leeway_coefficient : float, A : dict, B : dict) -> float: 
 
 def calculate_clashes(A : dict, B : dict, overlap : dict) -> int:
 
-    idx_B           = B['idx']
+    idx_B               = B['idx']
+
+    if idx_B in A['clashes']:
     
-    if overlap:
+        if overlap:
+            
+            new_clashes = A['clashes'][idx_B] + 1
         
-        new_clashes = A['clashes'][idx_B] + 1
-    
+        else:
+            
+            new_clashes = A['clashes'][idx_B]
+
     else:
-         
-        new_clashes = A['clashes'][idx_B]
+
+        new_clashes     = 1 if overlap else 0
 
     return new_clashes
 
@@ -137,20 +143,26 @@ def calculate_intensity(A : dict, B : dict, overlap : dict) -> float:
 
 def calculate_aversion(A : dict, B : dict, overlap : dict, conciliation_quota : float) -> float:
 
-    if overlap:
+    idx_B               = B['idx']
 
-        idx_B               = B['idx']
+    intensity           = calculate_intensity(A,B, overlap)
 
-        current_aversion    = A['aversion'][idx_B]
-        current_clashes     = A['clashes'][idx_B]
+    if idx_B in A['aversion']:
 
-        intensity           = calculate_intensity(A,B)
+        if overlap:
 
-        new_aversion        = (current_aversion + intensity) * (current_clashes + 1)
-    
-    else:
+            current_aversion    = A['aversion'][idx_B]
+            current_clashes     = A['clashes'][idx_B]
+
+            new_aversion        = (current_aversion + intensity) * (current_clashes + 1)
         
-        new_aversion        = A['aversion'][idx_B] * conciliation_quota
+        else:
+            
+            new_aversion        = A['aversion'][idx_B] * conciliation_quota
+
+    else:
+
+        new_aversion            = intensity if overlap else 0.0
 
     return new_aversion 
 
@@ -578,11 +590,10 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
         # Calculate interference
         
-        if idx_B in A['clashes']:
-            clashes                     = calculate_clashes(A, B, overlap)
-            new_clashes[idx_B]          = clashes
-        else:
-            new_clashes[idx_B]          = 1 if overlap else 0
+
+        clashes                     = calculate_clashes(A, B, overlap)
+
+        new_clashes[idx_B]          = clashes
 
         aversion                    = calculate_aversion(A, B, overlap, conciliation_quota)
 
