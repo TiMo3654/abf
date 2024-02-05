@@ -147,18 +147,18 @@ def calculate_aversion(A : dict, B : dict, overlap : dict, conciliation_quota : 
 
     intensity           = calculate_intensity(A,B, overlap)
 
-    if idx_B in A['aversion']:
+    if idx_B in A['aversions']:
 
         if overlap:
 
-            current_aversion    = A['aversion'][idx_B]
+            current_aversion    = A['aversions'][idx_B]
             current_clashes     = A['clashes'][idx_B]
 
             new_aversion        = (current_aversion + intensity) * (current_clashes + 1)
         
         else:
             
-            new_aversion        = A['aversion'][idx_B] * conciliation_quota
+            new_aversion        = A['aversions'][idx_B] * conciliation_quota
 
     else:
 
@@ -173,7 +173,7 @@ def calculate_trouble(A : dict, B : dict, overlap : dict) -> float:
 
         overlap_area      = overlap['width'] * overlap['height']
         idx_B             = B['idx']
-        aversion          = A['aversion'][idx_B] if idx_B in A['aversion'] else 0.0
+        aversion          = A['aversions'][idx_B] if idx_B in A['aversions'] else 0.0
         area_B            = calculate_participant_area(B)
         intensity         = overlap_area * area_B
         trouble           = intensity + aversion
@@ -353,31 +353,29 @@ def calculate_secondary_free_space(A : dict, vertex : str, participants : dict, 
     # Get vertex coordinates
         
     if vertex == "north-east":
-        print('Free at north-east!')
+        #print('Free at north-east!')
 
         x   = A['xmin'] + A['width']
         y   = A['ymin'] + A['height']
 
     elif vertex == "south-east":
-        print('Free at south-east!')
+        #print('Free at south-east!')
 
         x   = A['xmin'] + A['width']
         y   = A['ymin']
 
     elif vertex == 'south-west':
-        print('Free at south-west!')
+        #print('Free at south-west!')
 
         x   = A['xmin']
         y   = A['ymin']
 
     elif vertex == "north-west":
-        print('Free at north-west!')
+        #print('Free at north-west!')
 
         x   = A['xmin']
         y   = A['ymin'] + A['height']
 
-    else:
-        print("No correct vertex given!")
 
     # Check for pairwise collisions
 
@@ -402,7 +400,7 @@ def calculate_secondary_free_space(A : dict, vertex : str, participants : dict, 
             if vertex_vertical_cuts_edge_of_B:
                 northern_boundary.append(B['ymin'])
             else:
-                northern_boundary.appen(layout_zone['height'])
+                northern_boundary.append(layout_zone['height'])
         
         else:
 

@@ -23,7 +23,7 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, seed : i
 
 
         participant = {
-            "idx"                           : i,  
+            "idx"                           : str(i),  
             "connections"                   : {},         #{'idx' : 2}
             "xmin"                          : xmin,
             "ymin"                          : ymin,
