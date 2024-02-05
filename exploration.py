@@ -246,3 +246,15 @@ def determine_best_move(possible_next_positions : list) -> list:
 #         print('No valid metric given!')
      
 #     return 0
+
+## Action execution
+
+def execute_action(all_participants : dict, best_postions : list) -> dict:
+
+    all_participants_updated    = copy.deepcopy(all_participants)
+
+    for participant in best_postions:
+
+        all_participants_updated.update(participant)
+
+    return all_participants_updated
