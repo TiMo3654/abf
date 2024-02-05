@@ -32,7 +32,7 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
     actual_participants                 = copy.deepcopy(participants)
 
-    moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) / the action make deep copies of A and B
+    moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the action make deep copies of A and B
 
     for participant in moved_participants:
         
@@ -75,8 +75,8 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
 def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 
-    possible_next_positions = []    # [ [A_center], [A_budge], [A_swap, B_swap] ... ]
-
+    possible_next_positions = []    # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
+ 
     # start of the action exploration
 
     if A['protrusion-status'] == 'lost':
@@ -156,7 +156,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                     return [adjuvant_position]
         
                 if len(invalid_position) == 0:            
-                    possible_next_positions.append(valid_position)
+                    possible_next_positions.append(adjuvant_position + valid_position)
                 
             # explore pairing
                 
@@ -170,7 +170,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                     return [adjuvant_position]
         
                 if len(invalid_position) == 0:            
-                    possible_next_positions.append(valid_position)   
+                    possible_next_positions.append(adjuvant_position + valid_position)   
 
         else:   # participant is prone
              
