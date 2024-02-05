@@ -135,8 +135,8 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
 
         ax.add_patch(rectangle)
 
-    plt.ylim(0,ymax)
-    plt.xlim(0,xmax)
+    plt.ylim(-10,ymax)
+    plt.xlim(-10,xmax)
 
     plt.grid()
     plt.show()
