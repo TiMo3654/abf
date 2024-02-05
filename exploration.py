@@ -32,7 +32,7 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
     actual_participants                 = copy.deepcopy(participants)
 
-    moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the action make deep copies of A and B
+    moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the actions make deep copies of the moved participants
 
     for participant in moved_participants:
         
@@ -210,16 +210,28 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
 ## Action evaluation
 
-# def determine_best_move(possible_next_positions : list) -> list
+def determine_best_move(possible_next_positions : list) -> list:
 
-#     prospective_interference_minimum    = math.inf
+    prospective_interference_minimum    = math.inf
 
-#     for postions in possible_next_positions:
+    for idx, positions in enumerate(possible_next_positions):   # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
 
-#         summed_interference = 
+        summed_interference             = 0
+
+        for moved_participant in positions: # [A_hustle, B_hustle, F_hustle, G_hustle]
+
+            summed_interference         = summed_interference + moved_participant['interference']   # TODO: Do not count interference twice in case of mutual overlap
+
+        if summed_interference < prospective_interference_minimum:
+
+            prospective_interference_minimum    = summed_interference
+
+            best_position                       = idx
+
+    return possible_next_positions[best_position]
 
         
-
+#TODO: Add turmoil metric to the choice of the next move metric
 
 # def action_evaluation(possible_next_positions : list, evaluation_metric : str) -> dict:
 
