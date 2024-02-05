@@ -228,9 +228,13 @@ def hustle(A : dict, participants : dict) -> list:
 
     new_A                           = copy.deepcopy(A)
 
+    print('A ' + A['idx'])
+
     moved_participants              = []
 
     for idx in A['overlap-with-idx']:
+
+        print(idx)
 
         B                   = participants[idx]
 
@@ -238,7 +242,7 @@ def hustle(A : dict, participants : dict) -> list:
         
         overlap, _          = calculate_overlap(A, new_B)
 
-        #print(overlap)
+        print(overlap)
 
         if overlap['width'] <= overlap['height']:
 

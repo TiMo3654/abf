@@ -37,7 +37,7 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, seed : i
             "relaxed-connections"           : 0,
             "protrusion-status"             : '',
             "protrusion-extend"             : 0,
-            "protruded-edges"               : [],
+            "protruded-zone-edges"          : [],
             "healthy"                       : True,
             "compliant"                     : True,
             "yield-polygon"                 : {},

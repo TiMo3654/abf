@@ -119,9 +119,9 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             # explore budging
 
-            free_secondary_spaces                   = [f'secondary-free-space-{corner}' 
+            free_secondary_spaces                   = [f'secondary-freespace-{corner}' 
                                                        for corner in ['north-west', 'north-east', 'south-east', 'south-west'] 
-                                                       if A[f'secondary-free-space-{corner}']]
+                                                       if A[f'secondary-freespace-{corner}']]
 
             for direction in free_secondary_spaces:
 
@@ -146,7 +146,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
             
             # explore swapping
             
-            for B in participants.values:
+            for B in list(participants.values()):
                  
                 action                                              = lambda P: swap(P, B)
 
@@ -159,18 +159,22 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                     possible_next_positions.append(adjuvant_position + valid_position)
                 
             # explore pairing
+                    
+            pairing_direction   = ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']
                 
-            for B in participants.values:
+            for B in list(participants.values()):
+
+                for direction in pairing_direction:
                  
-                action                                              = lambda P: pair(P, B)
+                    action                                              = lambda P: pair(P, B, direction)
 
-                adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)                  
+                    adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)                  
 
-                if len(adjuvant_position) == 2:            
-                    return [adjuvant_position]
-        
-                if len(invalid_position) == 0:            
-                    possible_next_positions.append(adjuvant_position + valid_position)   
+                    if len(adjuvant_position) == 2:            
+                        return [adjuvant_position]
+            
+                    if len(invalid_position) == 0:            
+                        possible_next_positions.append(adjuvant_position + valid_position)   
 
         else:   # participant is prone
              

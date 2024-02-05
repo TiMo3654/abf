@@ -174,8 +174,7 @@ def calculate_trouble(A : dict, B : dict, overlap : dict) -> float:
         overlap_area      = overlap['width'] * overlap['height']
         idx_B             = B['idx']
         aversion          = A['aversions'][idx_B] if idx_B in A['aversions'] else 0.0
-        area_B            = calculate_participant_area(B)
-        intensity         = overlap_area * area_B
+        intensity         = calculate_intensity(A,B,overlap)
         trouble           = intensity + aversion
 
     else:
@@ -335,9 +334,14 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
             'height'  : y_max_free_space - y_min_free_space
         }
 
-    else:
+    else:   # If no free edges are available, then the free space is defined as the participants current position and area to enable swap operations
 
-        free_space = {}                                             # If no free edges are available, then there is no free space
+        free_space          = {
+            'xmin'    : A['xmin'],
+            'ymin'    : A['ymin'],
+            'width'   : A['width'],
+            'height'  : A['height']
+        }                                             
 
 
     return free_space
@@ -646,7 +650,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
                     "relaxed-connections"           : relaxed_connections,
                     "protrusion-status"             : protrusion_status,
                     "protrusion-extend"             : extend,
-                    "protruded-edges"               : protruded_zone_edges,
+                    "protruded-zone-edges"          : protruded_zone_edges,
                     "healthy"                       : healthy,
                     "compliant"                     : compliance,
                     "yield-polygon"                 : yield_polygon,
