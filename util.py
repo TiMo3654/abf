@@ -8,7 +8,7 @@ import time
 
 ## Test functions
 
-def generate_unconnected_participants(amount : int, layout_zone : dict, seed : int) -> dict:
+def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : int, maxY : int, seed : int) -> dict:
 
     random.seed(seed)
 
@@ -21,8 +21,8 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, seed : i
         xmin        = random.randint(0,layout_zone['width'])
         ymin        = random.randint(0,layout_zone['height'])
 
-        width       = random.randint(10,60)
-        height      = random.randint(10,60)
+        width       = random.randint(5,maxX)
+        height      = random.randint(5,maxY)
 
 
         participant = {
