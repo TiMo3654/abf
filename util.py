@@ -2,6 +2,9 @@ import random
 import math
 from matplotlib import pyplot as plt, patches
 import matplotlib.colors as mcolors
+from IPython import display
+import pylab as pl
+import time
 
 ## Test functions
 
@@ -139,7 +142,13 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
     plt.xlim(-10,xmax)
 
     plt.grid()
-    plt.show()
+    #plt.show()
+
+    display.clear_output(wait=True)
+    display.display(pl.gcf())
+    time.sleep(1.0)
+
+    plt.close()
 
     return 0
 
