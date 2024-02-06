@@ -34,6 +34,8 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, conciliati
 
     for i in range(len(participants)):
 
+        new_participants        = determine_initial_conditions(new_participants, layout_zone, conciliation_quota, critical_amount)
+
         A                       = new_participants.pop(str(i))  # TODO: Handle idx list instead of basic ascending numbers
 
         possible_new_positions  = action_exploration(A, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)

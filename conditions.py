@@ -587,7 +587,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
         if south_edge_overlap and east_edge_overlap and ('south-east' in free_vertices):
             free_vertices.remove('south-east')
 
-        if south_edge_overlap and west_edge_overlap and ('south-east' in free_vertices):
+        if south_edge_overlap and west_edge_overlap and ('south-west' in free_vertices):
             free_vertices.remove('south-west')
 
         # Calculate interference

@@ -97,7 +97,7 @@ def generate_participant() -> dict:
 
 def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax : int):
 
-    plt.rcParams["figure.figsize"] = [7.00, 3.50]
+    plt.rcParams["figure.figsize"] = [7.00, 7.00]
     plt.rcParams["figure.autolayout"] = True
 
     #colors = ['blue', 'orange', 'black']
