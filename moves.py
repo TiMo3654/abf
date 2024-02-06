@@ -5,12 +5,16 @@ from util import *
 
 #TODO: Implement action correction
 
-def rotate(A: dict) -> tuple:
+def rotate(A: dict) -> list:
 
-    new_width   = A['height']
-    new_height  = A['width']
+    new_A               = copy.deepcopy(A)
+
+    new_A['width']      = A['height']
+    new_A['height']     = A['width']
+
+    new_A['last-move']  = 'rotate'
      
-    return new_width, new_height
+    return [new_A]
 
 
 def reenter(A : dict, layout_zone : dict) -> list:                      # Only activated and working in case of a totally lost participant
