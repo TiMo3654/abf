@@ -12,6 +12,6 @@ def calculate_dead_space(participants : dict, layout_zone : dict) -> float:
     summed_participants_area        = sum([a * b for a, b in zip(widths, heights)])
 
     
-    dead_space                      = summed_participants_area/total_layout_area
+    dead_space                      = 100 - (summed_participants_area/total_layout_area)*100
 
     return dead_space
