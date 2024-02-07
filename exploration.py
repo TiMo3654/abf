@@ -214,42 +214,47 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
 ## Action evaluation
 
-def determine_best_move(possible_next_positions : list) -> list:
+def determine_best_move(possible_next_positions : list, partcipants : dict, metric : str) -> list:
 
     prospective_interference_minimum    = math.inf
+
+    relaxation_delta_minimum            = 0
+
 
     for idx, positions in enumerate(possible_next_positions):   # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
 
         summed_interference             = 0
 
-        for moved_participant in positions: # [A_hustle, B_hustle, F_hustle, G_hustle]
+        for moved_participant in positions: # [A_hustle, B_hustle, F_hustle, G_hustle] or [A_center]
 
             summed_interference         = summed_interference + moved_participant['interference']   # TODO: Do not count interference twice in case of mutual overlap
 
-        if summed_interference < prospective_interference_minimum:
+            relaxation_delta            = partcipants[moved_participant['idx']]['relaxed-connections'] - moved_participant['relaxed-connections']
+        
+        if metric == 'interference':
 
-            prospective_interference_minimum    = summed_interference
+            if summed_interference < prospective_interference_minimum:
 
-            best_position                       = idx
+                prospective_interference_minimum    = summed_interference
+
+                best_position                       = idx
+
+        elif metric == 'turmoil':
+
+            if relaxation_delta < relaxation_delta_minimum:     # relaxing action
+
+                relaxation_delta_minimum            = relaxation_delta
+
+                best_position                       = idx
+        
+        else:
+
+            print('No correct metric given!')
+
 
     return possible_next_positions[best_position]
 
-        
-#TODO: Add turmoil metric to the choice of the next move metric
 
-# def action_evaluation(possible_next_positions : list, evaluation_metric : str) -> dict:
-
-#     if evaluation_metric == 'interference-only':
-    
-
-
-#     elif evaluation_metric == 'interference-and-turmoil':
-
-#     else:
-
-#         print('No valid metric given!')
-     
-#     return 0
 
 ## Action execution
 

@@ -26,7 +26,7 @@ def determine_initial_conditions(participants : dict, layout_zone : dict, concil
 
 
 
-def one_round_of_interaction(participants : dict, layout_zone : dict, conciliation_quota : float, critical_amount : int) -> dict:
+def one_round_of_interaction(participants : dict, layout_zone : dict, metric : str, conciliation_quota : float, critical_amount : int) -> dict:
 
     leeway_coefficient              = calculate_leeway_coefficient(layout_zone, participants)
 
@@ -46,7 +46,7 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, conciliati
 
         #possible_new_positions_rot  = action_exploration(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
-        new_position                = determine_best_move(possible_new_positions) #+ possible_new_positions_rot
+        new_position                = determine_best_move(possible_new_positions, participants, metric) #+ possible_new_positions_rot
 
         for moved_participant in new_position:
             
