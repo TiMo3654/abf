@@ -5,6 +5,7 @@ import matplotlib.colors as mcolors
 from IPython import display
 import pylab as pl
 import time
+import copy
 
 ## Test functions
 
@@ -58,44 +59,51 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
     return participants
 
 
-def generate_participant() -> dict:
+def random_place_mcnc(participants_list : list, layout_zone : dict, seed : int) -> dict:
 
-    xmin        = random.randint(-10,100)
-    ymin        = random.randint(-10,100)
+    random.seed(seed)
 
-    width       = random.randint(1,60)
-    height      = random.randint(1,60)
+    participants_dict           = {}
 
+    colors                      = list(mcolors.CSS4_COLORS.keys())
 
-    participant = {
-        "idx"                           : "0",  
-        "connections"                   : {},         #{'idx' : 2}
-        "xmin"                          : xmin,
-        "ymin"                          : ymin,
-        "width"                         : width,
-        "height"                        : height,
-        "clashes"                       : {},         #{'idx' : 100}
-        "aversions"                     : {},         #{'idx' : 17,5}
-        "interference"                  : 0,
-        "overlap-with-idx"              : [],
-        "turmoil"                       : 0,
-        "relaxed-connections"           : 0,
-        "protrusion-status"             : 'safe',
-        "protrusion-extend"             : 0,
-        "protruded-edges"               :[],
-        "healthy"                       : True,
-        "compliant"                     : True,
-        "yield-polygon"                 : {},
-        "freespace"                     : {},
-        'secondary-freespace-north-east': {},
-        'secondary-freespace-south-east': {},
-        'secondary-freespace-south-west': {},
-        'secondary-freespace-north-west': {},
-        "last-move"                     : 'center',
-        "color"                         : 'black'
-    }
+    swarm_specifics             = { "clashes"                       : {},         #{'idx' : 100}
+                                    "aversions"                     : {},         #{'idx' : 17,5}
+                                    "interference"                  : 0,
+                                    "overlap-with-idx"              : [],
+                                    "turmoil"                       : 0,
+                                    "relaxed-connections"           : 0,
+                                    "protrusion-status"             : '',
+                                    "protrusion-extend"             : 0,
+                                    "protruded-zone-edges"          : [],
+                                    "healthy"                       : True,
+                                    "compliant"                     : True,
+                                    "yield-polygon"                 : {},
+                                    "freespace"                     : {},
+                                    'secondary-freespace-north-east': {},
+                                    'secondary-freespace-south-east': {},
+                                    'secondary-freespace-south-west': {},
+                                    'secondary-freespace-north-west': {},
+                                    "last-move"                     : '' }
 
-    return participant
+    for participant in participants_list[:-1]:  # The last entry is the network
+
+        participant_new             = copy.deepcopy(participant)
+        
+        xmin                        = random.randint(0,layout_zone['width'])
+        ymin                        = random.randint(0,layout_zone['height'])
+
+        participant_new['xmin']     = xmin
+        participant_new['ymin']     = ymin
+        participant_new['color']    = random.choice(colors)
+
+        participant_new             = participant_new | swarm_specifics
+
+        participants_dict.update({participant_new['idx'] : participant_new})
+
+    
+    return participants_dict       
+
 
 
 def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax : int):
