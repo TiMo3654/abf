@@ -12,9 +12,11 @@ def determine_initial_conditions(participants : dict, layout_zone : dict, concil
 
     new_participants            = copy.deepcopy(participants)
 
-    for i in range(len(participants)):
+    id_list                     = [p['idx'] for p in (new_participants.values())]
 
-        participant             = new_participants.pop(str(i))
+    for idx in id_list:
+
+        participant             = new_participants.pop(idx)
 
         participant_conditions  = calculate_conditions(participant, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
