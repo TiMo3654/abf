@@ -5,7 +5,7 @@ from util import *
 
 #TODO: Implement action correction
 
-def rotate(A: dict) -> list:
+def rotate(A: dict) -> dict:
 
     new_A               = copy.deepcopy(A)
 
@@ -14,7 +14,7 @@ def rotate(A: dict) -> list:
 
     new_A['last-move']  = 'rotate'
      
-    return [new_A]
+    return new_A
 
 
 def reenter(A : dict, layout_zone : dict) -> list:                      # Only activated and working in case of a totally lost participant

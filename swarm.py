@@ -34,17 +34,19 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, conciliati
 
     for i in range(len(participants)):
 
-        new_participants            = determine_initial_conditions(new_participants, layout_zone, conciliation_quota, critical_amount)
+        new_participants            = determine_initial_conditions(new_participants, layout_zone, conciliation_quota, critical_amount)  # Each participant gets the currrent position of all other blocks (no old information)
 
         A                           = new_participants.pop(str(i))  # TODO: Handle idx list instead of basic ascending numbers
 
-        A_rotated                   = rotate(A)
+        #A_rotated                   = rotate(A)
+        #A_rotated_conditions        = calculate_conditions(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
+        #A_rotated.update(A_rotated_conditions)
 
         possible_new_positions      = action_exploration(A, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
-        possible_new_positions_rot  = action_exploration(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
+        #possible_new_positions_rot  = action_exploration(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
-        new_position                = determine_best_move(possible_new_positions + possible_new_positions_rot)
+        new_position                = determine_best_move(possible_new_positions) #+ possible_new_positions_rot
 
         for moved_participant in new_position:
             
