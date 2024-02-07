@@ -32,11 +32,13 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, metric : s
 
     new_participants                = copy.deepcopy(participants)
 
-    for i in range(len(participants)):
+    id_list                         = [p['idx'] for p in (new_participants.values())]
+
+    for idx in id_list:
 
         new_participants            = determine_initial_conditions(new_participants, layout_zone, conciliation_quota, critical_amount)  # Each participant gets the currrent position of all other blocks (no old information)
 
-        A                           = new_participants.pop(str(i))  # TODO: Handle idx list instead of basic ascending numbers
+        A                           = new_participants.pop(idx)  
 
         #A_rotated                   = rotate(A)
         #A_rotated_conditions        = calculate_conditions(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
