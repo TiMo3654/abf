@@ -54,6 +54,6 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, metric : s
 
         for moved_participant in new_position:
             
-            new_participants.update({moved_participant['idx'] : moved_participant})      
+            new_participants.update({moved_participant['idx'] : moved_participant})   
 
     return new_participants

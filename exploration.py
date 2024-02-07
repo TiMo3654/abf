@@ -7,9 +7,21 @@ import math
 
 ## Action exploration and evaluation
 
+def check_non_trivial_action(A : dict, A_new : dict) -> bool:
+
+    moving_distance         = calculate_euclidean_distance(A, A_new)
+
+    minimal_moving_distance = A['freespace']['width'] * 0.4 if (A['freespace']['width'] > A['freespace']['height']) else A['freespace']['height'] * 0.4
+
+    return (moving_distance > minimal_moving_distance)
+
+
 def classify_action(A : dict) -> str:
+
+    # if A['idx'] == '0':
+    #     print(A['overlap-with-idx'])
      
-    if (A['protrusion-status'] == 'safe') and A['healthy'] and A['compliant'] and (A['interference'] == 0) and (A['relaxed-connections'] == len(A['connections'])):
+    if (A['protrusion-status'] == 'safe') and A['healthy'] and A['compliant'] and (len(A['overlap-with-idx']) == 0) and (A['relaxed-connections'] == len(A['connections'])):
         
         action_classification   = 'adjuvant'
     
@@ -30,7 +42,7 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
     valid_position                      = []
     invalid_position                    = []
 
-    actual_participants                 = copy.deepcopy(participants)
+    actual_participants                 = copy.deepcopy(participants) # A not included yet
 
     moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the actions make deep copies of the moved participants
 
@@ -38,36 +50,40 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
         participant_idx                 = participant['idx']
         
-        actual_participants.update({participant_idx : participant})         # consider the newest positions (important for hustle)
+        actual_participants.update({participant_idx : participant})         # consider the newest positions (important for hustle) -> All participant including A are in this dict
     
 
     for participant in moved_participants:
     
         # Implement action correction here
 
-        moved_participant_conditions    = calculate_conditions(participant, actual_participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+        participant_new                 = actual_participants.pop(participant['idx'])   # Remove the leading participant from the overall dict to calculate the conditions (No overlap with itself)
 
-        participant.update(moved_participant_conditions)
+        moved_participant_conditions    = calculate_conditions(participant_new, actual_participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
 
-        if participant['last-move'] == 'reenter' or participant['last-move'] == 'yielt':    # classification irrelevant in this case
+        participant_new.update(moved_participant_conditions)
+
+        if participant_new['last-move'] == 'reenter' or participant_new['last-move'] == 'yielt':    # classification irrelevant in this case
             
-            valid_position.append(participant)
+            valid_position.append(participant_new)
 
         else:
 
-            action_classification       = classify_action(participant)
+            action_classification       = classify_action(participant_new)
 
             if action_classification == 'adjuvant':
                 
-                adjuvant_position.append(participant)  
+                adjuvant_position.append(participant_new)  
             
             elif action_classification == 'valid':
                     
-                valid_position.append(participant)
+                valid_position.append(participant_new)
 
             else:   # invalid action
 
-                invalid_position.append(participant)
+                invalid_position.append(participant_new)
+
+        actual_participants.update({participant_new['idx'] : participant_new})  # Put the moved participant back into the dictionary for the condition calculation of the other moved participants
     
     return adjuvant_position, valid_position, invalid_position
 
@@ -95,10 +111,14 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
-        if adjuvant_position:            
+        #print(adjuvant_position)
+
+        if adjuvant_position:   
+            print('center is adjuvant')         
             return [adjuvant_position]  # [ [A_center] ]
         
-        if valid_position:            
+        if valid_position:      
+            #print('center is valid')       
             possible_next_positions.append(valid_position) # [ [A_center] ]
 
         # explore lingering
@@ -107,7 +127,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)      
 
-        if adjuvant_position:            
+        if adjuvant_position:    
+            print('linger is adjuvant')        
             return [adjuvant_position]  # [ [A_linger] ]
         
         if valid_position:            

@@ -184,29 +184,6 @@ def calculate_trouble(A : dict, B : dict, overlap : dict) -> float:
     return trouble
 
 
-# def calculate_interference(A : dict, participants : dict) -> float:
-
-#     interference        = 0
-       
-#     for idx in participants:
-#         trouble         = calculate_trouble(A, participants[idx])
-
-#         interference    += trouble
-
-#     return interference
-
-
-# def calculate_turmoil(A : dict, participants : dict, leeway_coefficient : float) -> float:
-
-#     turmoil             = 0
-
-#     for idx in participants:
-#         tension         = calculate_tension(leeway_coefficient, A, participants[idx])
-
-#         turmoil         += tension
-    
-#     return turmoil
-
 
 def calculate_corridor(A : dict, layout_zone : dict, edge : str) -> dict:
     
