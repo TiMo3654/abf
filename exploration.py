@@ -11,7 +11,7 @@ def check_non_trivial_action(A : dict, A_new : dict) -> bool:
 
     moving_distance         = calculate_euclidean_distance(A, A_new)
 
-    minimal_moving_distance = A['freespace']['width'] * 0.4 if (A['freespace']['width'] > A['freespace']['height']) else A['freespace']['height'] * 0.4
+    minimal_moving_distance = A['freespace']['width'] * 0.01 if (A['freespace']['width'] > A['freespace']['height']) else A['freespace']['height'] * 0.01
 
     return (moving_distance > minimal_moving_distance)
 
@@ -113,8 +113,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         #print(adjuvant_position)
 
-        if adjuvant_position:   
-            print('center is adjuvant')         
+        if adjuvant_position and check_non_trivial_action(A, adjuvant_position[0]):   
+            #print('center is adjuvant')         
             return [adjuvant_position]  # [ [A_center] ]
         
         if valid_position:      
@@ -128,7 +128,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
         adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)      
 
         if adjuvant_position:    
-            print('linger is adjuvant')        
+            #print('linger is adjuvant')        
             return [adjuvant_position]  # [ [A_linger] ]
         
         if valid_position:            

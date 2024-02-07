@@ -154,7 +154,7 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
 
     display.clear_output(wait=True)
     display.display(pl.gcf())
-    time.sleep(1.0)
+    time.sleep(0.5)
 
     plt.close()
 
