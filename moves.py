@@ -250,7 +250,7 @@ def hustle(A : dict, participants : dict) -> list:
 
         if overlap['width'] <= overlap['height']:
 
-            delta_x         = overlap['width'] if B['xmin'] >= A['xmin'] else overlap['width'] * -1
+            delta_x         = overlap['width'] if B['xmin'] > A['xmin'] else overlap['width'] * -1
             delta_y         = 0
 
         else:

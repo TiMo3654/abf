@@ -50,11 +50,7 @@ def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> flo
 
     total_layout_area             = calculate_layout_area(layout_zone)
 
-    widths                        = [sub_dict.get('width') for sub_dict in participants.values()]
-
-    heights                       = [sub_dict.get('height') for sub_dict in participants.values()]
-
-    summed_participants_area      = sum([a * b for a, b in zip(widths, heights)])
+    summed_participants_area      = calculate_all_participants_area(participants)
 
     leeway_coeffcient             = math.sqrt(total_layout_area/summed_participants_area)
 

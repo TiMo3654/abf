@@ -59,6 +59,56 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
     return participants
 
 
+def generate_unconnected_equal_quadratic_participants(amount : int, layout_zone : dict, edge_length : int, seed : int) -> dict:
+
+    random.seed(seed)
+
+    colors = list(mcolors.CSS4_COLORS.keys())
+
+    participants    = {}
+        
+    for i in range(amount):
+            
+        xmin        = random.randint(0,layout_zone['width'])
+        ymin        = random.randint(0,layout_zone['height'])
+
+        width       = edge_length
+        height      = edge_length
+
+
+        participant = {
+            "idx"                           : str(i),  
+            "connections"                   : {},         #{'idx' : 2}
+            "xmin"                          : xmin,
+            "ymin"                          : ymin,
+            "width"                         : width,
+            "height"                        : height,
+            "clashes"                       : {},         #{'idx' : 100}
+            "aversions"                     : {},         #{'idx' : 17,5}
+            "interference"                  : 0,
+            "overlap-with-idx"              : [],
+            "turmoil"                       : 0,
+            "relaxed-connections"           : 0,
+            "protrusion-status"             : '',
+            "protrusion-extend"             : 0,
+            "protruded-zone-edges"          : [],
+            "healthy"                       : True,
+            "compliant"                     : True,
+            "yield-polygon"                 : {},
+            "freespace"                     : {},
+            'secondary-freespace-north-east': {},
+            'secondary-freespace-south-east': {},
+            'secondary-freespace-south-west': {},
+            'secondary-freespace-north-west': {},
+            "last-move"                     : '',
+            "color"                         : random.choice(colors)
+        }
+
+        participants[str(i)]    = participant
+
+    return participants
+
+
 def random_place_mcnc(participants_list : list, layout_zone : dict, seed : int) -> dict:
 
     random.seed(seed)
@@ -135,7 +185,7 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
         origin = (p['xmin'], p['ymin'])
 
         rectangle   = patches.Rectangle(origin, p['width'], p['height'], edgecolor=p['color'],
-                        facecolor=p['color'], linewidth=2, fill = True, alpha = 0.9)
+                        facecolor=p['color'], linewidth=0.5, fill = True, alpha = 0.9)
 
         center_x    = p['xmin'] + 0.5 * p['width']
         center_y    = p['ymin'] + 0.5 * p['height']
@@ -360,6 +410,17 @@ def calculate_euclidean_distance(A : dict, B : dict) -> float:
     distance    = math.sqrt((center_A_x - center_B_x)**2 + (center_A_y - center_B_y)**2)
 
     return distance
+
+
+def calculate_all_participants_area(participants : dict) -> float:
+
+    widths                        = [sub_dict.get('width') for sub_dict in participants.values()]
+
+    heights                       = [sub_dict.get('height') for sub_dict in participants.values()]
+
+    summed_participants_area      = sum([a * b for a, b in zip(widths, heights)])
+
+    return summed_participants_area
 
 
 
