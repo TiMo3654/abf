@@ -109,6 +109,56 @@ def generate_unconnected_equal_quadratic_participants(amount : int, layout_zone 
     return participants
 
 
+def generate_unconnected_wheel_participants(layout_zone : dict, edge_length : int, seed : int) -> dict:
+
+    random.seed(seed)
+
+    colors = list(mcolors.CSS4_COLORS.keys())
+
+    participants    = {}
+        
+    for i in range(5):
+            
+        xmin        = random.randint(0,layout_zone['width'])
+        ymin        = random.randint(0,layout_zone['height'])
+
+        width       = 1.5 * edge_length if (i == 0) else 2 * edge_length
+        height      = 1.5 * edge_length if (i == 0) else 0.5 * edge_length
+
+
+        participant = {
+            "idx"                           : str(i),  
+            "connections"                   : {},         #{'idx' : 2}
+            "xmin"                          : xmin,
+            "ymin"                          : ymin,
+            "width"                         : width,
+            "height"                        : height,
+            "clashes"                       : {},         #{'idx' : 100}
+            "aversions"                     : {},         #{'idx' : 17,5}
+            "interference"                  : 0,
+            "overlap-with-idx"              : [],
+            "turmoil"                       : 0,
+            "relaxed-connections"           : 0,
+            "protrusion-status"             : '',
+            "protrusion-extend"             : 0,
+            "protruded-zone-edges"          : [],
+            "healthy"                       : True,
+            "compliant"                     : True,
+            "yield-polygon"                 : {},
+            "freespace"                     : {},
+            'secondary-freespace-north-east': {},
+            'secondary-freespace-south-east': {},
+            'secondary-freespace-south-west': {},
+            'secondary-freespace-north-west': {},
+            "last-move"                     : '',
+            "color"                         : random.choice(colors)
+        }
+
+        participants[str(i)]    = participant
+
+    return participants
+
+
 def random_place_mcnc(participants_list : list, layout_zone : dict, seed : int) -> dict:
 
     random.seed(seed)
