@@ -11,7 +11,7 @@ def check_non_trivial_action(A : dict, A_new : dict) -> bool:
 
     moving_distance         = calculate_euclidean_distance(A, A_new)
 
-    minimal_moving_distance = A['freespace']['width'] * 0.01 if (A['freespace']['width'] > A['freespace']['height']) else A['freespace']['height'] * 0.01
+    minimal_moving_distance = A['freespace']['height'] * 0.01 if (A['freespace']['width'] > A['freespace']['height']) else A['freespace']['width'] * 0.01
 
     return (moving_distance > minimal_moving_distance)
 
