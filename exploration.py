@@ -158,7 +158,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                 
             # explore hustling
                                 
-            action                              = lambda P: hustle(P, participants)
+            action                              = lambda P: hustle(P, layout_zone, participants)
 
             adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 

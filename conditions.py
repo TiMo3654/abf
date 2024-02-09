@@ -28,7 +28,7 @@ def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone i
         if locations[0]:
             protrusion          = 'safe'
 
-            protrusion_extend   = ()
+            protrusion_extend   = (0,0)
 
         else:
             protrusion          = 'prone'
@@ -41,7 +41,7 @@ def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone i
     else:
         protrusion              = 'lost'
 
-        protrusion_extend       = ()
+        protrusion_extend       = (0,0)
         
     return protrusion, protrusion_extend, locations[2:]   # The protrusion extend is signed and can therefore be simply added to the origin of a rectangle to correct a prone state
 

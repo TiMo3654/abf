@@ -2,6 +2,7 @@
 
 import copy
 from util import *
+from conditions import *
 
 #TODO: Implement action correction
 
@@ -228,7 +229,7 @@ def pair(A : dict, B : dict, direction : str) -> list:
     return [new_A, new_B]
 
 
-def hustle(A : dict, participants : dict) -> list:
+def hustle(A : dict, layout_zone : dict, participants : dict) -> list:
 
     new_A                           = copy.deepcopy(A)
 
@@ -240,30 +241,37 @@ def hustle(A : dict, participants : dict) -> list:
 
         #print(idx)
 
-        B                   = participants[idx]
+        B                               = participants[idx]
 
-        new_B               = copy.deepcopy(B)
+        new_B                           = copy.deepcopy(B)
         
-        overlap, _          = calculate_overlap(A, new_B)
+        overlap, _                      = calculate_overlap(A, new_B)
 
         #print(overlap)
 
         if overlap['width'] <= overlap['height']:
 
-            delta_x         = overlap['width'] if B['xmin'] > A['xmin'] else overlap['width'] * -1
-            delta_y         = 0
+            delta_x                     = overlap['width'] if B['xmin'] > A['xmin'] else overlap['width'] * -1
+            delta_y                     = 0
 
         else:
             
-            delta_x         = 0
-            delta_y         = overlap['height'] if B['ymin'] >= A['ymin'] else overlap['height'] * -1
+            delta_x                     = 0
+            delta_y                     = overlap['height'] if B['ymin'] >= A['ymin'] else overlap['height'] * -1
 
 
-        x_min_new_B         = B['xmin'] + delta_x
+        x_min_new_B                     = B['xmin'] + delta_x
 
-        y_min_new_B         = B['ymin'] + delta_y
+        y_min_new_B                     = B['ymin'] + delta_y
 
         new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
+
+        # Action correction to not push other participants out of the safe zone
+
+        _, extend, _                    = calculate_protrusion(layout_zone, new_B)
+
+        new_B['xmin'], new_B['ymin']    = new_B['xmin'] + extend[0], new_B['ymin'] + extend[1]
+
 
         moved_participants.append(new_B)
 
