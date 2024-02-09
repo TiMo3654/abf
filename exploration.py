@@ -239,41 +239,68 @@ def determine_best_move(possible_next_positions : list, partcipants : dict, metr
 
     prospective_interference_minimum    = math.inf
 
-    relaxation_delta_minimum            = 0
+    relaxation_deltas_list              = []
+
+    summed_interference_list            = []
 
 
     for idx, positions in enumerate(possible_next_positions):   # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
 
         summed_interference             = 0
 
+        summed_relaxation_delta         = 0
+
         for moved_participant in positions: # [A_hustle, B_hustle, F_hustle, G_hustle] or [A_center]
 
             summed_interference         = summed_interference + moved_participant['interference']   # TODO: Do not count interference twice in case of mutual overlap
 
-            relaxation_delta            = partcipants[moved_participant['idx']]['relaxed-connections'] - moved_participant['relaxed-connections']
-        
-        if metric == 'interference':
+            relaxation_delta            = partcipants[moved_participant['idx']]['relaxed-connections'] - moved_participant['relaxed-connections']   # Negative means relaxation
 
-            if summed_interference < prospective_interference_minimum:
+            summed_relaxation_delta     = summed_relaxation_delta + relaxation_delta
 
-                prospective_interference_minimum    = summed_interference
+        # For interference metric
 
-                best_position                       = idx
+        if summed_interference < prospective_interference_minimum:
 
-        elif metric == 'turmoil':
+            prospective_interference_minimum    = summed_interference
 
-            if relaxation_delta < relaxation_delta_minimum:     # relaxing action
+            best_position_due_to_interference   = idx
 
-                relaxation_delta_minimum            = relaxation_delta
+        # For turmoil metric
 
-                best_position                       = idx
-        
-        else:
+        relaxation_deltas_list.append(summed_relaxation_delta)
 
-            print('No correct metric given!')
+        summed_interference_list.append(summed_interference)
 
+    
+    if metric == 'interference':
 
-    return possible_next_positions[best_position]
+        next_position                           = possible_next_positions[best_position_due_to_interference]
+
+    else:   # 'turmoil'
+
+        most_relaxed_connections                = min(summed_relaxation_delta)
+        best_positions_due_to_turmoil_ids       = [i for i, x in enumerate(relaxation_deltas_list) if x == most_relaxed_connections]
+
+        if len(best_positions_due_to_turmoil_ids) == 1: # Only one best relaxing action
+
+            next_position                       = possible_next_positions[best_positions_due_to_turmoil_ids]
+
+        else:   # Multiple best relaxing actions
+
+            prospective_interference_minimum    = math.inf
+
+            for idx in best_positions_due_to_turmoil_ids:
+
+                if summed_interference_list[idx] < prospective_interference_minimum:
+
+                    prospective_interference_minimum                = summed_interference_list[idx]
+
+                    best_position_due_to_interference_and_turmoil   = idx
+
+            next_position                       = possible_next_positions[best_position_due_to_interference_and_turmoil]
+
+    return next_position
 
 
 
