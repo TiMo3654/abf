@@ -235,7 +235,7 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
         origin = (p['xmin'], p['ymin'])
 
         rectangle   = patches.Rectangle(origin, p['width'], p['height'], edgecolor=p['color'],
-                        facecolor=p['color'], linewidth=0.5, fill = True, alpha = 0.9)
+                        facecolor=p['color'], linewidth=0.5, fill = True, alpha = 0.9, hatch = 'x')
 
         center_x    = p['xmin'] + 0.5 * p['width']
         center_y    = p['ymin'] + 0.5 * p['height']
