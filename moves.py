@@ -18,6 +18,20 @@ def rotate(A: dict) -> dict:
     return new_A
 
 
+def action_correction(A: dict, layout_zone : dict) -> dict:
+
+    new_A                           = copy.deepcopy(A)
+
+    _, extend, _                    = calculate_protrusion(layout_zone, new_A)
+
+    new_A['xmin'], new_A['ymin']    = new_A['xmin'] + extend[0], new_A['ymin'] + extend[1]
+
+    return new_A
+
+
+# SWARM Movements
+
+
 def reenter(A : dict, layout_zone : dict) -> list:                      # Only activated and working in case of a totally lost participant
 
     new_A                               = copy.deepcopy(A)
@@ -189,7 +203,7 @@ def swap(A: dict, B: dict) -> list:
     return [new_A, new_B]
 
 
-def pair(A : dict, B : dict, direction : str) -> list:
+def pair(A : dict, B : dict, direction : str, layout_zone : dict) -> list:
 
     new_A                           = copy.deepcopy(A)
     new_B                           = copy.deepcopy(B)
@@ -224,7 +238,10 @@ def pair(A : dict, B : dict, direction : str) -> list:
     new_A['xmin'], new_A['ymin']    = x_min_new_A, y_min_new_A
     new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
 
-    new_A['last-move']                  = 'pair with ' + new_B['idx']
+    # Action correction to not push other participants out of the safe zone
+    new_B                           = action_correction(new_B, layout_zone)
+
+    new_A['last-move']              = 'pair with ' + new_B['idx']
 
     return [new_A, new_B]
 
@@ -245,37 +262,50 @@ def hustle(A : dict, layout_zone : dict, participants : dict) -> list:
 
         new_B                           = copy.deepcopy(B)
         
-        overlap, _                      = calculate_overlap(A, new_B)
+        overlap, locations              = calculate_overlap(A, new_B)
 
-        #print(overlap)
+        if locations[1]:    # B fully encloses A -> A can not hustle but must flee // Added to prevent stuck state in case of full overlap
 
-        if overlap['width'] <= overlap['height']:
+            if B['ymin'] > 0.5 * (layout_zone['ymin'] + layout_zone['height']):     # Enclosure in the upper half of the layout zone -> A flees south
 
-            delta_x                     = overlap['width'] if B['xmin'] > A['xmin'] else overlap['width'] * -1
-            delta_y                     = 0
+                new_A['xmin']               = int(new_B['xmin'] + 0.5 * new_B['width'] - 0.5 * new_A['width'])
+                new_A['ymin']               = int(new_B['ymin'] - 0.5 * new_A['height'])
+
+            else:   # A flees north
+
+                new_A['xmin']               = int(new_B['xmin'] + 0.5 * new_B['width'] - 0.5 * new_A['width'])
+                new_A['ymin']               = int(new_B['ymin'] + new_B['height'] - 0.5 * new_A['height'])
+
+            new_A['last-move']              = 'flee'
+
+            break
 
         else:
-            
-            delta_x                     = 0
-            delta_y                     = overlap['height'] if B['ymin'] >= A['ymin'] else overlap['height'] * -1
+
+            if overlap['width'] <= overlap['height']:
+
+                delta_x                     = overlap['width'] if B['xmin'] > A['xmin'] else overlap['width'] * -1
+                delta_y                     = 0
+
+            else:
+                
+                delta_x                     = 0
+                delta_y                     = overlap['height'] if B['ymin'] >= A['ymin'] else overlap['height'] * -1
 
 
-        x_min_new_B                     = B['xmin'] + delta_x
+            x_min_new_B                     = B['xmin'] + delta_x
 
-        y_min_new_B                     = B['ymin'] + delta_y
+            y_min_new_B                     = B['ymin'] + delta_y
 
-        new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
+            new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
 
-        # Action correction to not push other participants out of the safe zone
-
-        _, extend, _                    = calculate_protrusion(layout_zone, new_B)
-
-        new_B['xmin'], new_B['ymin']    = new_B['xmin'] + extend[0], new_B['ymin'] + extend[1]
+            # Action correction to not push other participants out of the safe zone
+            new_B                           = action_correction(new_B, layout_zone)
 
 
-        moved_participants.append(new_B)
+            moved_participants.append(new_B)
 
-    new_A['last-move']                  = 'hustle'
+            new_A['last-move']                  = 'hustle'
 
     return [new_A] + moved_participants
 

@@ -187,7 +187,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 for direction in pairing_direction:
                  
-                    action                                              = lambda P: pair(P, B, direction)
+                    action                                              = lambda P: pair(P, B, direction, layout_zone)
 
                     adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)                  
 
