@@ -283,7 +283,7 @@ def random_place_mcnc(participants_list : list, layout_zone : dict, seed : int) 
 
 
 
-def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax : int):
+def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax : int, plot_connections = False):
 
     plt.rcParams["figure.figsize"] = [7.00, 7.00]
     plt.rcParams["figure.autolayout"] = True
@@ -303,7 +303,6 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
     ax.add_patch(rectangle)
 
     # Plot participants
-    i = 0
 
     for key in participants:
 
@@ -319,9 +318,20 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
 
         plt.text(center_x, center_y, p['idx'])
 
-        i += 1
-
         ax.add_patch(rectangle)
+
+        if plot_connections:
+
+            for key in p['connections']:
+
+                center_x_other_one  = participants[key]['xmin'] + 0.5 * participants[key]['width']
+                center_y_other_one  = participants[key]['ymin'] + 0.5 * participants[key]['height']
+
+                dx                  = -(center_x - center_x_other_one) 
+                dy                  = -(center_y - center_y_other_one)
+
+                plt.arrow(center_x, center_y, dx, dy)
+
 
     plt.ylim(-10,ymax)
     plt.xlim(-10,xmax)
