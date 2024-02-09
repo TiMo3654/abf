@@ -62,50 +62,7 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
 
 def generate_connected_participants(amount : int, max_num_nets : int, max_num_connections : int, layout_zone : dict, maxX : int, maxY : int, seed : int) -> dict:
 
-    random.seed(seed)
-
-    colors = list(mcolors.CSS4_COLORS.keys())
-
-    participants    = {}
-        
-    for i in range(amount):
-            
-        xmin        = random.randint(0,layout_zone['width'])
-        ymin        = random.randint(0,layout_zone['height'])
-
-        width       = random.randint(5,maxX)
-        height      = random.randint(5,maxY)
-
-
-        participant = {
-            "idx"                           : str(i),  
-            "xmin"                          : xmin,
-            "ymin"                          : ymin,
-            "width"                         : width,
-            "height"                        : height,
-            "connections"                   : {},
-            "clashes"                       : {},         #{'idx' : 100}
-            "aversions"                     : {},         #{'idx' : 17,5}
-            "interference"                  : 0,
-            "overlap-with-idx"              : [],
-            "turmoil"                       : 0,
-            "relaxed-connections"           : 0,
-            "protrusion-status"             : '',
-            "protrusion-extend"             : 0,
-            "protruded-zone-edges"          : [],
-            "healthy"                       : True,
-            "compliant"                     : True,
-            "yield-polygon"                 : {},
-            "freespace"                     : {},
-            'secondary-freespace-north-east': {},
-            'secondary-freespace-south-east': {},
-            'secondary-freespace-south-west': {},
-            'secondary-freespace-north-west': {},
-            "last-move"                     : '',
-            "color"                         : random.choice(colors)
-        }
-
-        participants[str(i)]    = participant
+    participants    = generate_unconnected_participants(amount, layout_zone, maxX, maxY, seed)
 
     # Create connections
 
