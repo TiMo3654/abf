@@ -117,7 +117,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
             #print('center is adjuvant')         
             return [adjuvant_position]  # [ [A_center] ]
         
-        if valid_position:      
+        if valid_position and check_non_trivial_action(A, valid_position[0]):      
             #print('center is valid')       
             possible_next_positions.append(valid_position) # [ [A_center] ]
 
