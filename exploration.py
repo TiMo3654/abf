@@ -279,12 +279,12 @@ def determine_best_move(possible_next_positions : list, partcipants : dict, metr
 
     else:   # 'turmoil'
 
-        most_relaxed_connections                = min(summed_relaxation_delta)
+        most_relaxed_connections                = min(relaxation_deltas_list)
         best_positions_due_to_turmoil_ids       = [i for i, x in enumerate(relaxation_deltas_list) if x == most_relaxed_connections]
 
         if len(best_positions_due_to_turmoil_ids) == 1: # Only one best relaxing action
 
-            next_position                       = possible_next_positions[best_positions_due_to_turmoil_ids]
+            next_position                       = possible_next_positions[best_positions_due_to_turmoil_ids[0]]
 
         else:   # Multiple best relaxing actions
 
