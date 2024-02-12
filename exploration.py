@@ -2,6 +2,7 @@
 from moves import *
 from util import *
 from conditions import *
+from multiprocessing import Pool
 
 import math
 
@@ -89,7 +90,7 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
 # Use map() fuction to try out different layout variants of the same participant?
 
-def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
+def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, num_worker : int = 100) -> list:
 
     possible_next_positions = []    # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
  
@@ -166,7 +167,16 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                 possible_next_positions.append(adjuvant_position + valid_position)  # new positions for all participants in valid positions
             
             # explore swapping
+
+
+            # swap_parallelized                                       = lambda B: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: swap(P, B))
             
+            # with Pool(num_worker) as worker:
+
+            #     res = worker.map(swap_parallelized, list(participants.values()))
+
+            # Mit list comprehension valid+adjuvant zu possible next positions anhängen                
+
             for B in list(participants.values()):
                  
                 action                                              = lambda P: swap(P, B)
