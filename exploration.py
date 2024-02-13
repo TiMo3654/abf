@@ -2,9 +2,11 @@
 from moves import *
 from util import *
 from conditions import *
-from multiprocessing import Pool
+from multiprocess import Pool
 
 import math
+import os
+import functools
 
 ## Action exploration and evaluation
 
@@ -38,6 +40,8 @@ def classify_action(A : dict) -> str:
 
 
 def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action) -> tuple:
+
+    tic                                 = time.time()
 
     adjuvant_position                   = []
     valid_position                      = []
@@ -85,14 +89,22 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
                 invalid_position.append(participant_new)
 
         actual_participants.update({participant_new['idx'] : participant_new})  # Put the moved participant back into the dictionary for the condition calculation of the other moved participants
+
+    toc = time.time()
+
+    #print('explore_action took: ' + str(toc-tic))
     
     return adjuvant_position, valid_position, invalid_position
 
 # Use map() fuction to try out different layout variants of the same participant?
 
-def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, num_worker : int = 100) -> list:
+def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, my_pool) -> list:
 
     possible_next_positions = []    # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
+
+    parallel_workers        = min(len(participants), os.cpu_count() - 1)
+
+    #print(str(A['idx']) + ' takes a turn!')
  
     # start of the action exploration
 
@@ -108,6 +120,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
          
         # explore centering
 
+        tic = time.time()
+
         action                              = lambda P: center(P)
 
         adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
@@ -121,6 +135,11 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
         if valid_position and check_non_trivial_action(A, valid_position[0]):      
             #print('center is valid')       
             possible_next_positions.append(valid_position) # [ [A_center] ]
+
+        toc = time.time()
+
+        print('Center Exploration took: ' +str(toc-tic))
+
 
         # explore lingering
             
@@ -141,6 +160,9 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             # explore budging
 
+            tic = time.time()
+
+
             free_secondary_spaces                   = [f'secondary-freespace-{corner}' 
                                                        for corner in ['north-west', 'north-east', 'south-east', 'south-west'] 
                                                        if A[f'secondary-freespace-{corner}']]
@@ -156,8 +178,14 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
         
                 if valid_position:            
                     possible_next_positions.append(valid_position)
-                
+
+            toc = time.time()
+
+            print('Budge Exploration took: ' +str(toc-tic))
+
             # explore hustling
+
+            tic = time.time()
                                 
             action                              = lambda P: hustle(P, layout_zone, participants)
 
@@ -165,47 +193,111 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             if adjuvant_position or valid_position:
                 possible_next_positions.append(adjuvant_position + valid_position)  # new positions for all participants in valid positions
+
+            toc = time.time()
+
+            print('Hustle Exploration took: ' +str(toc-tic))
+
+            tic = time.time()
             
             # explore swapping
-
-
-            # swap_parallelized                                       = lambda B: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: swap(P, B))
-            
-            # with Pool(num_worker) as worker:
-
-            #     res = worker.map(swap_parallelized, list(participants.values()))
-
-            # Mit list comprehension valid+adjuvant zu possible next positions anhängen                
-
+                
             for B in list(participants.values()):
                  
                 action                                              = lambda P: swap(P, B)
 
                 adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
                 
-                if len(adjuvant_position) == 2:            
-                    return [adjuvant_position]
+                # if len(adjuvant_position) == 2:            
+                #     return [adjuvant_position]
         
                 if len(invalid_position) == 0:            
                     possible_next_positions.append(adjuvant_position + valid_position)
-                
-            # explore pairing
-                    
-            pairing_direction   = ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']
-                
-            for B in list(participants.values()):
 
-                for direction in pairing_direction:
-                 
-                    action                                              = lambda P: pair(P, B, direction, layout_zone)
-
-                    adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)                  
-
-                    if len(adjuvant_position) == 2:            
-                        return [adjuvant_position]
+            # swap_parallelized                                       = lambda B: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: swap(P, B))
             
-                    if len(invalid_position) == 0:            
-                        possible_next_positions.append(adjuvant_position + valid_position)   
+            # res = my_pool.map(swap_parallelized, list(participants.values()))    # returns [([], [], []), ([], [], []), ...] -> Each tuple consists of three lists (adjuvant, valid, invalid)
+
+            # adjuvant_swap_move                                      = [mytup[0] for mytup in res if len(mytup[0]) == 2]
+            # valid_swap_positions                                    = [mytup[0] + mytup[1] for mytup in res if not mytup[2]]   
+
+            # possible_next_positions                                 = possible_next_positions + valid_swap_positions 
+
+            toc = time.time()
+
+            print('Swap Exploration took: ' +str(toc-tic))
+
+            tic = time.time()
+
+            # explore pairing
+
+            # pairing_direction   = ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']
+                
+            # for B in list(participants.values()):
+
+            #     for direction in pairing_direction:
+                 
+            #         action                                              = lambda P: pair(P, B, direction, layout_zone)
+
+            #         adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)                  
+
+            #         if len(adjuvant_position) == 2:            
+            #             return [adjuvant_position]
+            
+            #         if len(invalid_position) == 0:            
+            #             possible_next_positions.append(adjuvant_position + valid_position)
+
+            # for direction in ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']:
+
+            #     pairing_options                                         = [(x, direction) for x in list(participants.values())]    # returns a list of tuples -> Each participant with each pairing direction
+
+            #     pair_parallelized                                       = lambda pair_tuple: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: pair(P, pair_tuple[0], pair_tuple[1], layout_zone)) 
+
+            #     with Pool(parallel_workers) as worker:
+
+            #         res = worker.map(pair_parallelized, pairing_options)    # returns [([], [], []), ([], [], []), ...] -> Each tuple consists of three lists (adjuvant, valid, invalid)
+
+            #     valid_pair_positions                                    = [mytup[0] + mytup[1] for mytup in res if not mytup[2]]   
+
+            #     possible_next_positions                                 = possible_next_positions + valid_pair_positions
+
+            toc = time.time()
+
+            #print('Pair Exploration took: ' +str(toc-tic))
+
+            # if adjuvant_swap_move:
+
+            #     return [adjuvant_swap_move[0]]  # Just take the first adjuvant move if there are more than one
+            
+            # else:
+
+            #     valid_swap_positions                                    = [mytup[0] + mytup[1] for mytup in res if not mytup[2]]   
+
+            #     possible_next_positions                                 = possible_next_positions + valid_swap_positions            
+                    
+            #     # explore pairing
+
+            #     for direction in ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']:
+
+            #         pairing_options                                         = [(x, direction) for x in list(participants.values())]    # returns a list of tuples -> Each participant with each pairing direction
+
+            #         pair_parallelized                                       = lambda pair_tuple: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: pair(P, pair_tuple[0], pair_tuple[1], layout_zone)) 
+
+            #         with Pool(parallel_workers) as worker:
+
+            #             res = worker.map(pair_parallelized, pairing_options)    # returns [([], [], []), ([], [], []), ...] -> Each tuple consists of three lists (adjuvant, valid, invalid)
+
+            #         adjuvant_pair_move                                      = [mytup[0] for mytup in res if len(mytup[0]) == 2]
+
+            #         if adjuvant_pair_move:
+
+            #             return [adjuvant_pair_move[0]]  # Just take the first adjuvant move if there are more than one
+                    
+            #         else:
+
+            #             valid_pair_positions                                    = [mytup[0] + mytup[1] for mytup in res if not mytup[2]]   
+
+            #             possible_next_positions                                 = possible_next_positions + valid_pair_positions 
 
         else:   # participant is prone
              

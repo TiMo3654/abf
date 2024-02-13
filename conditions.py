@@ -1,6 +1,7 @@
 ## SWARM specifics   
 
 import math
+import time
 
 from util import *
 
@@ -493,6 +494,8 @@ def calculate_compliance(A : dict) -> bool:
     
 def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> dict:
 
+    tic                     = time.time()
+
     free_edges              = ['north', 'east', 'south', 'west']       
 
     free_vertices           = ['north-west', 'north-east', 'south-east', 'south-west']
@@ -633,5 +636,9 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
                     'secondary-freespace-south-west': sfs_sw,
                     'secondary-freespace-north-west': sfs_nw
     }
+
+    toc = time.time()
+
+    #print('Condition Calculation took: ' + str(toc-tic))    # typ. 0.0002 seconds on PLASMA Server
     
     return conditions
