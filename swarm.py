@@ -22,9 +22,9 @@ def determine_initial_conditions(participants : dict, layout_zone : dict, concil
 
         participant_conditions  = calculate_conditions(participant, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
-        participant.update(participant_conditions)
+        participant             = participant | participant_conditions
 
-        new_participants.update({participant['idx'] : participant})
+        new_participants        = new_participants | {participant['idx'] : participant}
 
     return new_participants
 
@@ -40,7 +40,7 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, metric : s
 
     id_list                         = [p['idx'] for p in (new_participants.values())]
 
-    for idx in id_list:             # For loop is important here, because the participants have to act sequential
+    for idx in id_list:             # For loop is important here, because the participants have to act sequentially
 
         new_participants            = determine_initial_conditions(new_participants, layout_zone, conciliation_quota, critical_amount)  # Each participant gets the currrent position of all other blocks (no old information)
 
@@ -58,12 +58,6 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, metric : s
         new_position                = determine_best_move(possible_new_positions + possible_new_positions_rot, participants, metric)
 
         new_participants            = new_participants | new_position
-
-        # if new_position:
-
-        #     for moved_participant in new_position:
-                
-        #         new_participants.update({moved_participant['idx'] : moved_participant})   
 
 
     toc                             = time.time()
