@@ -303,9 +303,9 @@ def hustle(A : dict, layout_zone : dict, participants : dict) -> list:
             new_B                           = action_correction(new_B, layout_zone)
 
 
-            moved_participants.append(new_B)
+            moved_participants              = moved_participants + [new_B]
 
-            new_A['last-move']                  = 'hustle'
+            new_A['last-move']              = 'hustle'
 
     return [new_A] + moved_participants
 
