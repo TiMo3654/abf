@@ -8,7 +8,7 @@ from multiprocess.pool import ThreadPool
 import copy
 import time
 
-def determine_initial_conditions(participants : dict, layout_zone : dict, conciliation_quota : float, critical_amount : int):
+def determine_initial_conditions(participants : dict, layout_zone : dict, conciliation_quota : float, critical_amount : int) -> dict:
 
     leeway_coefficient          = calculate_leeway_coefficient(layout_zone, participants)
 

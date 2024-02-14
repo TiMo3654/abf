@@ -51,26 +51,21 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
     moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the actions make deep copies of the moved participants
 
-    for participant in moved_participants:
+    moved_participant_dict              = {moved_participant['idx'] : moved_participant for moved_participant in moved_participants}
 
-        participant_idx                 = participant['idx']
-        
-        actual_participants.update({participant_idx : participant})         # consider the newest positions (important for hustle) -> All participant including A are in this dict
-    
+    actual_participants                 = actual_participants | moved_participant_dict
 
     for participant in moved_participants:
     
-        # Implement action correction here
-
         participant_new                 = actual_participants.pop(participant['idx'])   # Remove the leading participant from the overall dict to calculate the conditions (No overlap with itself)
 
         moved_participant_conditions    = calculate_conditions(participant_new, actual_participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
 
-        participant_new.update(moved_participant_conditions)
+        participant_new                 = participant_new | moved_participant_conditions
 
         if participant_new['last-move'] == 'reenter':    # classification irrelevant in this case
             
-            valid_position.append(participant_new)
+            valid_position              = valid_position + [participant_new]
 
         else:
 
@@ -78,25 +73,25 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
             if action_classification == 'adjuvant':
                 
-                adjuvant_position.append(participant_new)  
+                adjuvant_position       = adjuvant_position + [participant_new]  
             
             elif action_classification == 'valid':
                     
-                valid_position.append(participant_new)
+                valid_position          = valid_position + [participant_new]
 
             else:   # invalid action
 
-                invalid_position.append(participant_new)
+                invalid_position        = invalid_position + [participant_new]
 
-        actual_participants.update({participant_new['idx'] : participant_new})  # Put the moved participant back into the dictionary for the condition calculation of the other moved participants
+        actual_participants             = actual_participants | {participant_new['idx'] : participant_new}  # Put the moved participant back into the dictionary for the condition calculation of the other moved participants
 
     toc = time.time()
 
-    #print('explore_action took: ' + str(toc-tic))
+    print('explore_action took: ' + str(toc-tic))
     
     return adjuvant_position, valid_position, invalid_position
 
-# Use map() fuction to try out different layout variants of the same participant?
+
 
 def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 

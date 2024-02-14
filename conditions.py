@@ -517,6 +517,7 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
     overlap_with_idx        = []
 
 
+
     for B in list(participants.values()):
         
         overlap, locations          = calculate_overlap(A, B)                                   # locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
