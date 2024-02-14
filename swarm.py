@@ -30,7 +30,7 @@ def determine_initial_conditions(participants : dict, layout_zone : dict, concil
 
 
 
-def one_round_of_interaction(participants : dict, layout_zone : dict, metric : str, conciliation_quota : float, critical_amount : int) -> dict:
+def one_round_of_interaction(participants : dict, layout_zone : dict, metric : str, conciliation_quota : float, critical_amount : int, my_pool) -> dict:
 
     tic                             = time.time()
 
@@ -50,12 +50,21 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, metric : s
         A_rotated_conditions        = calculate_conditions(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
         A_rotated                   = A_rotated | A_rotated_conditions
+
+        # possible_A_formats          = [A, A_rotated]
+
+        # explore                     = lambda P: action_exploration(P, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
+
+        # res                         = my_pool.map(explore, possible_A_formats)
+
+        # new_position                = determine_best_move(res[0] + res[1], participants, metric)
         
         possible_new_positions      = action_exploration(A, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
         possible_new_positions_rot  = action_exploration(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
         new_position                = determine_best_move(possible_new_positions + possible_new_positions_rot, participants, metric)
+
 
         new_participants            = new_participants | new_position
 

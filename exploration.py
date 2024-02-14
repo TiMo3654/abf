@@ -87,7 +87,7 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
     toc = time.time()
 
-    print('explore_action took: ' + str(toc-tic))
+    #print('explore_action took: ' + str(toc-tic))
     
     return adjuvant_position, valid_position, invalid_position
 
@@ -129,7 +129,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
         
         if valid_position and check_non_trivial_action(A, valid_position[0]):      
             #print('center is valid')       
-            possible_next_positions.append(valid_position) # [ [A_center] ]
+            possible_next_positions         = possible_next_positions + [valid_position] # [ [A_center] ]
 
         toc = time.time()
 
@@ -147,7 +147,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
             return [adjuvant_position]  # [ [A_linger] ]
         
         if valid_position:            
-            possible_next_positions.append(valid_position)  # [ [A_center], [A_linger] ]
+            possible_next_positions         = possible_next_positions + [valid_position]  # [ [A_center], [A_linger] ]
         
         # explore budging, swapping, pairing, hustling only if A is safe, otherwise only centering, evasion or yielding is possible
 
@@ -172,7 +172,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                     return [adjuvant_position]
         
                 if valid_position:            
-                    possible_next_positions.append(valid_position)
+                    possible_next_positions         = possible_next_positions + [valid_position]
 
             toc = time.time()
 
@@ -187,7 +187,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
             adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
             if adjuvant_position or valid_position:
-                possible_next_positions.append(adjuvant_position + valid_position)  # new positions for all participants in valid positions
+                possible_next_positions         = possible_next_positions + [adjuvant_position + valid_position] # new positions for all participants in valid positions
 
             toc = time.time()
 
@@ -209,9 +209,9 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
             
             else:
 
-                valid_swap_positions                                    = [mytup[0] + mytup[1] for mytup in swap_results if not mytup[2]] 
+                valid_swap_positions                                = [mytup[0] + mytup[1] for mytup in swap_results if not mytup[2]] 
 
-                possible_next_positions                                 = possible_next_positions + valid_swap_positions
+                possible_next_positions                             = possible_next_positions + valid_swap_positions
 
                 toc = time.time()
 
@@ -263,7 +263,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                     return [adjuvant_position]
         
                 if valid_position:            
-                    possible_next_positions.append(valid_position)
+                    possible_next_positions         = possible_next_positions + [valid_position]
                 
         # explore yield in case of not lost and interference
 
@@ -274,7 +274,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
             adjuvant_position, valid_position, __           = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)         
             
             if valid_position or adjuvant_position:            
-                possible_next_positions.append(adjuvant_position + valid_position)
+                possible_next_positions         = possible_next_positions + [adjuvant_position + valid_position]
 
                     
     return possible_next_positions
