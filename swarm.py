@@ -40,7 +40,7 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, metric : s
 
     id_list                         = [p['idx'] for p in (new_participants.values())]
 
-    for idx in id_list:
+    for idx in id_list:             # For loop is important here, because the participants have to act sequential
 
         new_participants            = determine_initial_conditions(new_participants, layout_zone, conciliation_quota, critical_amount)  # Each participant gets the currrent position of all other blocks (no old information)
 
@@ -48,22 +48,25 @@ def one_round_of_interaction(participants : dict, layout_zone : dict, metric : s
 
         A_rotated                   = rotate(A)
         A_rotated_conditions        = calculate_conditions(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
-        A_rotated.update(A_rotated_conditions)
 
+        A_rotated                   = A_rotated | A_rotated_conditions
+        
         possible_new_positions      = action_exploration(A, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
         possible_new_positions_rot  = action_exploration(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
-        new_position                = determine_best_move(possible_new_positions + possible_new_positions_rot, participants, metric) #+ possible_new_positions_rot
+        new_position                = determine_best_move(possible_new_positions + possible_new_positions_rot, participants, metric)
 
-        for moved_participant in new_position:
-            
-            new_participants.update({moved_participant['idx'] : moved_participant})   
+        new_participants            = new_participants | new_position
+
+        # if new_position:
+
+        #     for moved_participant in new_position:
+                
+        #         new_participants.update({moved_participant['idx'] : moved_participant})   
 
 
     toc                             = time.time()
-
-    # print('One Round of Interaction took: ' + str(toc-tic) + ' seconds')
 
     runtime                         = toc - tic
 

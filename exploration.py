@@ -68,7 +68,7 @@ def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coe
 
         participant_new.update(moved_participant_conditions)
 
-        if participant_new['last-move'] == 'reenter' or participant_new['last-move'] == 'yielt':    # classification irrelevant in this case
+        if participant_new['last-move'] == 'reenter':    # classification irrelevant in this case
             
             valid_position.append(participant_new)
 
@@ -138,7 +138,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         toc = time.time()
 
-        print('Center Exploration took: ' +str(toc-tic))
+        #print('Center Exploration took: ' +str(toc-tic))
 
 
         # explore lingering
@@ -181,7 +181,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             toc = time.time()
 
-            print('Budge Exploration took: ' +str(toc-tic))
+            #print('Budge Exploration took: ' +str(toc-tic))
 
             # explore hustling
 
@@ -196,51 +196,59 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             toc = time.time()
 
-            print('Hustle Exploration took: ' +str(toc-tic))
+            #print('Hustle Exploration took: ' +str(toc-tic))
 
             tic = time.time()
             
             # explore swapping
-                
-            for B in list(participants.values()):
-                 
-                action                                              = lambda P: swap(P, B)
 
-                adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
-                
-                # if len(adjuvant_position) == 2:            
-                #     return [adjuvant_position]
-        
-                if len(invalid_position) == 0:            
-                    possible_next_positions.append(adjuvant_position + valid_position)
+            swap_exploration                                        = lambda B: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: swap(P, B))
 
-            toc = time.time()
+            swap_results                                            = [swap_exploration(B) for B in list(participants.values())]
+          
+            adjuvant_swap_move                                      = [mytup[0] for mytup in swap_results if len(mytup[0]) == 2]
 
-            print('Swap Exploration took: ' +str(toc-tic))
+            if adjuvant_swap_move:
 
-            tic = time.time()
-
-            # explore pairing
-
-            pairing_direction   = ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']
-                
-            for B in list(participants.values()):
-
-                for direction in pairing_direction:
-                 
-                    action                                              = lambda P: pair(P, B, direction, layout_zone)
-
-                    adjuvant_position, valid_position, invalid_position = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)                  
-
-                    if len(adjuvant_position) == 2:            
-                        return [adjuvant_position]
+                return adjuvant_swap_move
             
-                    if len(invalid_position) == 0:            
-                        possible_next_positions.append(adjuvant_position + valid_position)
+            else:
 
-            toc = time.time()
+                valid_swap_positions                                    = [mytup[0] + mytup[1] for mytup in swap_results if not mytup[2]] 
 
-            print('Pair Exploration took: ' + str(toc-tic))
+                possible_next_positions                                 = possible_next_positions + valid_swap_positions
+
+                toc = time.time()
+
+                #print('Swap Exploration took: ' +str(toc-tic))
+
+                tic = time.time()
+
+                # explore pairing
+
+                for direction in ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']:
+
+                    pairing_options                                         = [(x, direction) for x in list(participants.values())]    # returns a list of tuples -> Each participant with each pairing direction
+
+                    pair_exploration                                        = lambda pair_tuple: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: pair(P, pair_tuple[0], pair_tuple[1], layout_zone))
+
+                    pair_results                                            = [pair_exploration(B) for B in pairing_options]
+
+                    adjuvant_pair_move                                      = [mytup[0] for mytup in pair_results if len(mytup[0]) == 2]
+
+                    if adjuvant_pair_move:
+
+                        return adjuvant_pair_move
+                    
+                    else:
+                    
+                        valid_pair_positions                                    = [mytup[0] + mytup[1] for mytup in pair_results if not mytup[2]] 
+
+                        possible_next_positions                                 = possible_next_positions + valid_pair_positions
+
+                toc = time.time()
+
+                #print('Pair Exploration took: ' + str(toc-tic))
 
         else:   # participant is prone
              
@@ -266,12 +274,12 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
         if len(possible_next_positions) == 0 and A['interference'] != 0:             
 
-            action                              = lambda P: yielt(P)
+            action                                          = lambda P: yielt(P)
 
-            _, valid_position, __               = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)         
+            adjuvant_position, valid_position, __           = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)         
             
-            if valid_position:            
-                possible_next_positions.append(valid_position)
+            if valid_position or adjuvant_position:            
+                possible_next_positions.append(adjuvant_position + valid_position)
 
                     
     return possible_next_positions
@@ -280,85 +288,83 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
 ## Action evaluation
 
-def determine_best_move(possible_next_positions : list, partcipants : dict, metric : str) -> list:
+def determine_best_move(possible_next_positions : list, partcipants : dict, metric : str) -> dict:
 
-    prospective_interference_minimum    = math.inf
+    next_position                                   = []
 
-    relaxation_deltas_list              = []
+    if possible_next_positions:
 
-    summed_interference_list            = []
-
-
-    for idx, positions in enumerate(possible_next_positions):   # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
-
-        summed_interference             = 0
-
-        summed_relaxation_delta         = 0
-
-        for moved_participant in positions: # [A_hustle, B_hustle, F_hustle, G_hustle] or [A_center]
-
-            summed_interference         = summed_interference + moved_participant['interference']   # TODO: Do not count interference twice in case of mutual overlap
-
-            relaxation_delta            = partcipants[moved_participant['idx']]['relaxed-connections'] - moved_participant['relaxed-connections']   # Negative means relaxation
-
-            summed_relaxation_delta     = summed_relaxation_delta + relaxation_delta
-
-        # For interference metric
-
-        if summed_interference < prospective_interference_minimum:
-
-            prospective_interference_minimum    = summed_interference
-
-            best_position_due_to_interference   = idx
-
-        # For turmoil metric
-
-        relaxation_deltas_list.append(summed_relaxation_delta)
-
-        summed_interference_list.append(summed_interference)
-
-    
-    if metric == 'interference':
-
-        next_position                           = possible_next_positions[best_position_due_to_interference]
-
-    else:   # 'turmoil'
-
-        most_relaxed_connections                = min(relaxation_deltas_list)
-        best_positions_due_to_turmoil_ids       = [i for i, x in enumerate(relaxation_deltas_list) if x == most_relaxed_connections]
-
-        if len(best_positions_due_to_turmoil_ids) == 1: # Only one best relaxing action
-
-            next_position                       = possible_next_positions[best_positions_due_to_turmoil_ids[0]]
-
-        else:   # Multiple best relaxing actions
+        if len(possible_next_positions) != 1:
 
             prospective_interference_minimum    = math.inf
 
-            for idx in best_positions_due_to_turmoil_ids:
+            relaxation_deltas_list              = []
 
-                if summed_interference_list[idx] < prospective_interference_minimum:
-
-                    prospective_interference_minimum                = summed_interference_list[idx]
-
-                    best_position_due_to_interference_and_turmoil   = idx
-
-            next_position                       = possible_next_positions[best_position_due_to_interference_and_turmoil]
-
-    return next_position
+            summed_interference_list            = []
 
 
+            for idx, positions in enumerate(possible_next_positions):   # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
 
-## Action execution
+                summed_interference             = 0
 
-def execute_action(all_participants : dict, best_postions : list) -> dict:
+                summed_relaxation_delta         = 0
 
-    all_participants_updated    = copy.deepcopy(all_participants)
+                for moved_participant in positions: # [A_hustle, B_hustle, F_hustle, G_hustle] or [A_center]
 
-    for participant in best_postions:
+                    summed_interference         = summed_interference + moved_participant['interference']   # TODO: Do not count interference twice in case of mutual overlap
 
-        participant_idx         = participant['idx']
+                    relaxation_delta            = partcipants[moved_participant['idx']]['relaxed-connections'] - moved_participant['relaxed-connections']   # Negative means relaxation
 
-        all_participants_updated.update({participant_idx : participant})
+                    summed_relaxation_delta     = summed_relaxation_delta + relaxation_delta
 
-    return all_participants_updated
+                # For interference metric
+
+                if summed_interference < prospective_interference_minimum:
+
+                    prospective_interference_minimum    = summed_interference
+
+                    best_position_due_to_interference   = idx
+
+                # For turmoil metric
+
+                relaxation_deltas_list.append(summed_relaxation_delta)
+
+                summed_interference_list.append(summed_interference)
+
+            
+            if metric == 'interference':
+
+                next_position                           = possible_next_positions[best_position_due_to_interference]
+
+            else:   # 'turmoil'
+
+                most_relaxed_connections                = min(relaxation_deltas_list)
+                best_positions_due_to_turmoil_ids       = [i for i, x in enumerate(relaxation_deltas_list) if x == most_relaxed_connections]
+
+                if len(best_positions_due_to_turmoil_ids) == 1: # Only one best relaxing action
+
+                    next_position                       = possible_next_positions[best_positions_due_to_turmoil_ids[0]]
+
+                else:   # Multiple best relaxing actions
+
+                    prospective_interference_minimum    = math.inf
+
+                    for idx in best_positions_due_to_turmoil_ids:
+
+                        if summed_interference_list[idx] < prospective_interference_minimum:
+
+                            prospective_interference_minimum                = summed_interference_list[idx]
+
+                            best_position_due_to_interference_and_turmoil   = idx
+
+                    next_position                       = possible_next_positions[best_position_due_to_interference_and_turmoil]
+        
+        else:
+
+            next_position                               = possible_next_positions[0]
+
+    
+    next_position_dict                                  = {moved_participant['idx'] : moved_participant for moved_participant in next_position}
+
+    return next_position_dict
+
