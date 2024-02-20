@@ -1,11 +1,4 @@
-import random
 import math
-from matplotlib import pyplot as plt, patches
-import matplotlib.colors as mcolors
-from IPython import display
-import pylab as pl
-import time
-import copy
 
 def calculate_overlap(A : dict, B : dict) -> tuple:
 
@@ -82,8 +75,8 @@ def calculate_overlap(A : dict, B : dict) -> tuple:
         elif west_edge_overlap:
             x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_A_min, x_B_max, y_B_min, y_B_max
 
-        overlap_width = x_Overlap_max - x_Overlap_min
-        overlap_height = y_Overlap_max - y_Overlap_min
+        overlap_width   = x_Overlap_max - x_Overlap_min
+        overlap_height  = y_Overlap_max - y_Overlap_min
 
         overlap = {
             "xmin": x_Overlap_min,
