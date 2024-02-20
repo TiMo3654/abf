@@ -48,113 +48,49 @@ def calculate_overlap(A : dict, B : dict) -> tuple:
 
     if not overlapped:
         overlap = {}
-        #print("party!")
     else:
         if A_fully_encloses_B:
-                #print('A fully encloses B!')
-                x_Overlap_min = x_B_min
-                x_Overlap_max = x_B_max
-                y_Overlap_min = y_B_min
-                y_Overlap_max = y_B_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_B_min, x_B_max, y_B_min, y_B_max
         elif B_fully_encloses_A:
-                #print('B fully encloses A!')
-                x_Overlap_min = x_A_min
-                x_Overlap_max = x_A_max
-                y_Overlap_min = y_A_min
-                y_Overlap_max = y_A_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_A_min, x_A_max, y_A_min, y_A_max
         elif north_edge_overlap and east_edge_overlap and west_edge_overlap:
-                #print('Overlap at north, east and west edge!')
-                x_Overlap_min = x_A_min
-                x_Overlap_max = x_A_max
-                y_Overlap_min = y_B_min
-                y_Overlap_max = y_A_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_A_min, x_A_max, y_B_min, y_A_max
         elif north_edge_overlap and east_edge_overlap and south_edge_overlap:
-                #print('Overlap at north, east and south edge!')
-                x_Overlap_min = x_A_min
-                x_Overlap_max = x_B_max
-                y_Overlap_min = y_A_min
-                y_Overlap_max = y_A_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_A_min, x_B_max, y_A_min, y_A_max
         elif north_edge_overlap and west_edge_overlap and south_edge_overlap:
-                #print('Overlap at north, west and south edge!')
-                x_Overlap_min = x_B_min
-                x_Overlap_max = x_A_max
-                y_Overlap_min = y_A_min
-                y_Overlap_max = y_B_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_B_min, x_A_max, y_A_min, y_B_max
         elif south_edge_overlap and east_edge_overlap and west_edge_overlap:
-                #print('Overlap at south, east and west edge!')
-                x_Overlap_min = x_A_min
-                x_Overlap_max = x_A_max
-                y_Overlap_min = y_A_min
-                y_Overlap_max = y_B_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_A_min, x_A_max, y_A_min, y_B_max
         elif north_edge_overlap and east_edge_overlap:
-                #print('Overlap at north and east edge!')
-                x_Overlap_min = x_B_min
-                x_Overlap_max = x_A_max
-                y_Overlap_min = y_B_min
-                y_Overlap_max = y_A_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_B_min, x_A_max, y_B_min, y_A_max
         elif north_edge_overlap and west_edge_overlap:
-                #print('Overlap at north and west edge!')
-                x_Overlap_min = x_A_min
-                x_Overlap_max = x_B_max
-                y_Overlap_min = y_B_min
-                y_Overlap_max = y_A_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_A_min, x_B_max, y_B_min, y_A_max
         elif north_edge_overlap and south_edge_overlap:
-                #print('Overlap at north and south edge!')
-                x_Overlap_min = x_B_min
-                x_Overlap_max = x_B_max
-                y_Overlap_min = y_A_min
-                y_Overlap_max = y_A_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_B_min, x_B_max, y_A_min, y_A_max
         elif south_edge_overlap and east_edge_overlap:
-                #print('Overlap at south and east edge!')
-                x_Overlap_min = x_B_min
-                x_Overlap_max = x_A_max
-                y_Overlap_min = y_A_min
-                y_Overlap_max = y_B_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_B_min, x_A_max, y_A_min, y_B_max
         elif south_edge_overlap and west_edge_overlap:
-                #print('Overlap at south and west edge!')
-                x_Overlap_min = x_A_min
-                x_Overlap_max = x_B_max
-                y_Overlap_min = y_A_min
-                y_Overlap_max = y_B_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_A_min, x_B_max, y_A_min, y_B_max
         elif east_edge_overlap and west_edge_overlap:
-                #print('Overlap at east and west edge')
-                x_Overlap_min = x_A_min
-                x_Overlap_max = x_A_max
-                y_Overlap_min = y_B_min
-                y_Overlap_max = y_B_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_A_min, x_A_max, y_B_min, y_B_max
         elif north_edge_overlap:
-                #print('Overlap at north edge!')
-                x_Overlap_min = x_B_min
-                x_Overlap_max = x_B_max
-                y_Overlap_min = y_B_min
-                y_Overlap_max = y_A_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_B_min, x_B_max, y_B_min, y_A_max
         elif east_edge_overlap:
-                #print('Overlap at east edge!')
-                x_Overlap_min = x_B_min
-                x_Overlap_max = x_A_max
-                y_Overlap_min = y_B_min
-                y_Overlap_max = y_B_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_B_min, x_A_max, y_B_min, y_B_max
         elif south_edge_overlap:
-                #print('Overlap at south edge!')
-                x_Overlap_min = x_B_min
-                x_Overlap_max = x_B_max
-                y_Overlap_min = y_A_min
-                y_Overlap_max = y_B_max
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_B_min, x_B_max, y_A_min, y_B_max
         elif west_edge_overlap:
-                #print('Overlap at west edge!')
-                x_Overlap_min = x_A_min
-                x_Overlap_max = x_B_max
-                y_Overlap_min = y_B_min
-                y_Overlap_max = y_B_max       
+            x_Overlap_min, x_Overlap_max, y_Overlap_min, y_Overlap_max = x_A_min, x_B_max, y_B_min, y_B_max
 
-        overlap_width       = x_Overlap_max - x_Overlap_min
-    
-        overlap_height      = y_Overlap_max - y_Overlap_min
+        overlap_width = x_Overlap_max - x_Overlap_min
+        overlap_height = y_Overlap_max - y_Overlap_min
 
-        overlap             = { "xmin"   : x_Overlap_min,
-                                "ymin"   : y_Overlap_min,
-                                "width"  : overlap_width,
-                                "height" : overlap_height}
+        overlap = {
+            "xmin": x_Overlap_min,
+            "ymin": y_Overlap_min,
+            "width": overlap_width,
+            "height": overlap_height
+        }
         
     return overlap, locations
     
