@@ -29,38 +29,18 @@ def calculate_overlap(A : dict, B : dict) -> tuple:
     else:
 
         overlapped        = True
-        
-        if  ( (x_A_min <= x_B_min <= x_A_max) and (x_A_min <= x_B_max <= x_A_max) and 
-                (y_A_min <= y_B_min <= y_A_max) and (y_A_min <= y_B_max <= y_A_max) ):
-                    A_fully_encloses_B = True
-        else:
-                    A_fully_encloses_B = False
 
-        if  ( (x_B_min <= x_A_min <= x_B_max) and (x_B_min <= x_A_max <= x_B_max) and 
-                (y_B_min <= y_A_min <= y_B_max) and (y_B_min <= y_A_max <= y_B_max) ):
-                    B_fully_encloses_A = True
-        else:
-                    B_fully_encloses_A = False
+        A_fully_encloses_B      = (x_A_min <= x_B_min <= x_A_max) and (x_A_min <= x_B_max <= x_A_max) and  (y_A_min <= y_B_min <= y_A_max) and (y_A_min <= y_B_max <= y_A_max)
 
-        if  x_A_min > x_B_min and x_A_min < x_B_max:
-                    west_edge_overlap = True
-        else:
-                    west_edge_overlap = False
+        B_fully_encloses_A      = (x_B_min <= x_A_min <= x_B_max) and (x_B_min <= x_A_max <= x_B_max) and (y_B_min <= y_A_min <= y_B_max) and (y_B_min <= y_A_max <= y_B_max)
 
-        if  x_A_max > x_B_min and x_A_max < x_B_max:
-                    east_edge_overlap = True
-        else:
-                    east_edge_overlap = False
+        west_edge_overlap       = (x_A_min > x_B_min) and (x_A_min < x_B_max)
 
-        if  y_A_max > y_B_min and y_A_max < y_B_max:
-                    north_edge_overlap = True
-        else:
-                    north_edge_overlap = False
+        east_edge_overlap       = (x_A_max > x_B_min) and (x_A_max < x_B_max)
 
-        if  y_A_min > y_B_min and y_A_min < y_B_max:
-                    south_edge_overlap = True
-        else:
-                    south_edge_overlap = False
+        north_edge_overlap      = (y_A_max > y_B_min) and (y_A_max < y_B_max)
+
+        south_edge_overlap      = (y_A_min > y_B_min) and (y_A_min < y_B_max)
         
         locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
 
