@@ -115,25 +115,27 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
          
         # explore centering
 
-        tic = time.time()
+        if A['freespace']:
 
-        action                              = lambda P: center(P)
+            tic = time.time()
 
-        adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+            action                              = lambda P: center(P)
 
-        #print(adjuvant_position)
+            adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
-        if adjuvant_position and check_non_trivial_action(A, adjuvant_position[0]):   
-            #print('center is adjuvant')         
-            return [adjuvant_position]  # [ [A_center] ]
-        
-        if valid_position and check_non_trivial_action(A, valid_position[0]):      
-            #print('center is valid')       
-            possible_next_positions         = possible_next_positions + [valid_position] # [ [A_center] ]
+            #print(adjuvant_position)
 
-        toc = time.time()
+            if adjuvant_position and check_non_trivial_action(A, adjuvant_position[0]):   
+                #print('center is adjuvant')         
+                return [adjuvant_position]  # [ [A_center] ]
+            
+            if valid_position and check_non_trivial_action(A, valid_position[0]):      
+                #print('center is valid')       
+                possible_next_positions         = possible_next_positions + [valid_position] # [ [A_center] ]
 
-        #print('Center Exploration took: ' +str(toc-tic))
+            toc = time.time()
+
+            #print('Center Exploration took: ' +str(toc-tic))
 
 
         # explore lingering
@@ -221,9 +223,13 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 # explore pairing
 
+                length_pairing_options = 0
+
                 for direction in ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']:
 
                     pairing_options                                         = [(x, direction) for x in list(participants.values())]    # returns a list of tuples -> Each participant with each pairing direction
+
+                    length_pairing_options                                  = length_pairing_options + len(pairing_options)
 
                     pair_exploration                                        = lambda pair_tuple: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: pair(P, pair_tuple[0], pair_tuple[1], layout_zone))
 
@@ -240,6 +246,8 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                         valid_pair_positions                                    = [mytup[0] + mytup[1] for mytup in pair_results if not mytup[2]] 
 
                         possible_next_positions                                 = possible_next_positions + valid_pair_positions
+
+                print('No. of pairing options explored: ' + str(length_pairing_options))
 
                 toc = time.time()
 

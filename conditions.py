@@ -107,14 +107,8 @@ def calculate_clashes(A : dict, B : dict, overlap : dict) -> int:
     idx_B               = B['idx']
 
     if idx_B in A['clashes']:
-    
-        if overlap:
             
-            new_clashes = A['clashes'][idx_B] + 1
-        
-        else:
-            
-            new_clashes = A['clashes'][idx_B]
+        new_clashes = A['clashes'][idx_B] + 1 if overlap else A['clashes'][idx_B]
 
     else:
 
@@ -168,7 +162,6 @@ def calculate_trouble(A : dict, B : dict, overlap : dict) -> float:
 
     if overlap:
 
-        overlap_area      = overlap['width'] * overlap['height']
         idx_B             = B['idx']
         aversion          = A['aversions'][idx_B] if idx_B in A['aversions'] else 0.0
         intensity         = calculate_intensity(A,B,overlap)
@@ -236,7 +229,7 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
                 
                 B       = participants[idx]
 
-                overlap, locations = calculate_overlap(corridor, B)
+                overlap, _ = calculate_overlap(corridor, B)
 
                 # The minimum y coordinate of an overlap in the northern corridor is the northern border of A's free space
                 # The minimum x coordinate of an overlap in the eastern corridor is the eastern border of A's free space
@@ -310,12 +303,7 @@ def calclulate_free_space(A : dict, free_edges : list, participants : dict, layo
 
     else:   # If no free edges are available, then the free space is defined as the participants current position and area to enable swap operations
 
-        free_space          = {
-            'xmin'    : A['xmin'],
-            'ymin'    : A['ymin'],
-            'width'   : A['width'],
-            'height'  : A['height']
-        }                                             
+        free_space          = {}                                           
 
 
     return free_space
