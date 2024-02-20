@@ -7,6 +7,8 @@ import pylab as pl
 import time
 import copy
 
+from util import *
+
 ## Test functions
 
 def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : int, maxY : int, seed : int) -> dict:
@@ -87,6 +89,70 @@ def generate_connected_participants(amount : int, max_num_nets : int, max_num_co
                 if idx != idc:
                     participants[str(idx)]['connections'].update({str(idc) : 1})
 
+
+    return participants
+
+
+def generate_unconnected_zone_filling_participants(rows : int, cols : int, layout_zone : dict, seed : int) -> dict:
+
+    random.seed(seed)
+
+    colors                  = list(mcolors.CSS4_COLORS.keys())
+
+    participants            = {}
+
+    total_area              = layout_zone["height"] * layout_zone["width"]
+
+    max_participant_height  = layout_zone["height"]/rows
+
+    idx = 0
+        
+    for i in range(rows):
+
+        xstart  = 0
+        xend    = layout_zone["width"]
+
+        for j in range(cols):
+
+            
+            xmin        = random.randint(0,layout_zone['width'])
+            ymin        = random.randint(0,layout_zone['height'])
+
+            width       = random.randint(xstart,xend) if j != cols-1 else (xend - xstart)
+
+            xstart      = xstart + width
+
+            participant = {
+                "idx"                           : str(idx),  
+                "connections"                   : {},         #{'idx' : 2}
+                "xmin"                          : xmin,
+                "ymin"                          : ymin,
+                "width"                         : width,
+                "height"                        : max_participant_height,
+                "clashes"                       : {},         #{'idx' : 100}
+                "aversions"                     : {},         #{'idx' : 17,5}
+                "interference"                  : 0,
+                "overlap-with-idx"              : [],
+                "turmoil"                       : 0,
+                "relaxed-connections"           : 0,
+                "protrusion-status"             : '',
+                "protrusion-extend"             : 0,
+                "protruded-zone-edges"          : [],
+                "healthy"                       : True,
+                "compliant"                     : True,
+                "yield-polygon"                 : {},
+                "freespace"                     : {},
+                'secondary-freespace-north-east': {},
+                'secondary-freespace-south-east': {},
+                'secondary-freespace-south-west': {},
+                'secondary-freespace-north-west': {},
+                "last-move"                     : '',
+                "color"                         : random.choice(colors)
+            }
+
+            participants[str(idx)]    = participant   
+
+            idx += 1
 
     return participants
 
