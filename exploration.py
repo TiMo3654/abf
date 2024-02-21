@@ -2,6 +2,7 @@
 from moves import *
 from util import *
 from conditions import *
+from heuristics import *
 from multiprocess import Pool
 
 import math
@@ -227,7 +228,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 for direction in ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']:
 
-                    pairing_options                                         = [(x, direction) for x in list(participants.values())]    # returns a list of tuples -> Each participant with each pairing direction
+                    pairing_options                                         = [(x, direction) for x in list(participants.values()) if estimate_pair_success(A, x, direction)]    # returns a list of tuples -> Each participant with each pairing direction
 
                     length_pairing_options                                  = length_pairing_options + len(pairing_options)
 
