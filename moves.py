@@ -189,11 +189,15 @@ def swap(A: dict, B: dict) -> list:
     new_A                           = copy.deepcopy(A)
     new_B                           = copy.deepcopy(B)
      
-    x_min_new_A                     = int(B['freespace']['xmin'] + 0.5 * B['freespace']['width'] - 0.5 * A['width'])
-    y_min_new_A                     = int(B['freespace']['ymin'] + 0.5 * B['freespace']['height'] - 0.5 * A['height'])
+    # x_min_new_A                     = int(B['freespace']['xmin'] + 0.5 * B['freespace']['width'] - 0.5 * A['width'])
+    # y_min_new_A                     = int(B['freespace']['ymin'] + 0.5 * B['freespace']['height'] - 0.5 * A['height'])
+    x_min_new_A                     = new_B['xmin']
+    y_min_new_A                     = new_B['ymin']
 
-    x_min_new_B                     = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'] - 0.5 * B['width'])
-    y_min_new_B                     = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'] - 0.5 * B['height'])
+    # x_min_new_B                     = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'] - 0.5 * B['width'])
+    # y_min_new_B                     = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'] - 0.5 * B['height'])
+    x_min_new_B                     = new_A['xmin']
+    y_min_new_B                     = new_A['ymin']
 
     new_A['xmin'], new_A['ymin']    = x_min_new_A, y_min_new_A
     new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B

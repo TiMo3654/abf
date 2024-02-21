@@ -49,7 +49,7 @@ def calculate_protrusion(layout_zone : dict, B : dict) -> tuple:  #layout zone i
 
 def calculate_leeway_coefficient(layout_zone : dict, participants : dict) -> float:                         # Equation 7.33 p. 120
 
-    total_layout_area             = calculate_layout_area(layout_zone)
+    total_layout_area             = calculate_area(layout_zone)
 
     summed_participants_area      = calculate_all_participants_area(participants)
 
@@ -64,8 +64,8 @@ def calculate_relaxation_threshold(leeway_coeffcient : float, A : dict, B : dict
 
     emphasis                = A['connections'][idx_B]
 
-    area_A                  = calculate_participant_area(A)
-    area_B                  = calculate_participant_area(B)
+    area_A                  = calculate_area(A)
+    area_B                  = calculate_area(B)
 
     relaxation_threshold    = (leeway_coeffcient/(math.sqrt(2) * emphasis)) * (math.sqrt(area_A) + math.sqrt(area_B))
 
@@ -121,8 +121,8 @@ def calculate_intensity(A : dict, B : dict, overlap : dict) -> float:
        
     if overlap:
 
-        overlap_area	= overlap['width'] * overlap['height']
-        area_B			= calculate_participant_area(B)
+        overlap_area	= calculate_area(overlap)
+        area_B			= calculate_area(B)
         intensity		= overlap_area * area_B
 
     else:

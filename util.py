@@ -75,18 +75,12 @@ def calculate_overlap(A : dict, B : dict) -> tuple:
         }
         
     return overlap, locations
-    
 
-def calculate_participant_area(A : dict) -> float:
+
+def calculate_area(A : dict) -> float:
 
     return A['width'] * A['height']
 
-
-def calculate_layout_area(layout_zone : dict) -> float:
-
-    total_layout_area = layout_zone['width'] * layout_zone['height']      
-
-    return total_layout_area
 
 
 def calculate_euclidean_distance(A : dict, B : dict) -> float:

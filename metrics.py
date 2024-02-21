@@ -3,7 +3,7 @@ from util import *
 
 def calculate_dead_space(participants : dict, layout_zone : dict) -> float:
 
-    total_layout_area               = calculate_layout_area(layout_zone)
+    total_layout_area               = calculate_area(layout_zone)
 
     widths                          = [sub_dict.get('width') for sub_dict in participants.values()]
 
