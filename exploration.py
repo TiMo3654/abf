@@ -276,7 +276,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                 
         # explore yield in case of not lost and interference
 
-        if len(possible_next_positions) == 0 and A['interference'] != 0:             
+        if len(possible_next_positions) == 0 and A['interference'] != 0 and A['yield-polygon']:             
 
             action                                          = lambda P: yielt(P)
 

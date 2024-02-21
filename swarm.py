@@ -16,6 +16,8 @@ def determine_initial_conditions(participants : dict, layout_zone : dict, concil
 
     id_list                     = [p['idx'] for p in (new_participants.values())]
 
+    #new_participants            = {participant['idx'] : participant | calculate_conditions(participant, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)}
+
     for idx in id_list:
 
         participant             = new_participants.pop(idx)
