@@ -1,30 +1,23 @@
 ## MOVEMENTS
 
 import copy
+from collections import namedtuple
 from util import *
 from conditions import *
+from swarm_types import *
 
-#TODO: Implement action correction
+def rotate(A: namedtuple) -> namedtuple:
 
-def rotate(A: dict) -> dict:
-
-    new_A               = copy.deepcopy(A)
-
-    new_A['width']      = A['height']
-    new_A['height']     = A['width']
-
-    new_A['last-move']  = 'rotate'
+    new_A = A._replace(width = A.height, height = A.width, last_move = 'rotate')
      
     return new_A
 
 
-def action_correction(A: dict, layout_zone : dict) -> dict:
+def action_correction(A: namedtuple, layout_zone : namedtuple) -> namedtuple:
 
-    new_A                           = copy.deepcopy(A)
+    _, extend, _    = calculate_protrusion(layout_zone, A)
 
-    _, extend, _                    = calculate_protrusion(layout_zone, new_A)
-
-    new_A['xmin'], new_A['ymin']    = new_A['xmin'] + extend[0], new_A['ymin'] + extend[1]
+    new_A           = A._replace(xmin = A.xmin + extend[0], ymin = A.ymin + extend[1])
 
     return new_A
 
@@ -32,302 +25,258 @@ def action_correction(A: dict, layout_zone : dict) -> dict:
 # SWARM Movements
 
 
-def reenter(A : dict, layout_zone : dict) -> list:                      # Only activated and working in case of a totally lost participant
+def reenter(A : namedtuple, layout_zone : namedtuple) -> list:                      # Only activated and working in case of a totally lost participant
 
-    new_A                               = copy.deepcopy(A)
+    participant_left_of_layout_zone     = (A.xmin < layout_zone.xmin)
 
-    participant_left_of_layout_zone     = (A['xmin'] < layout_zone['xmin'])
+    participant_right_of_layout_zone    = (A.xmin + A.width >= layout_zone.xmin + layout_zone.width) # To detect if an participant is at the north eastern corner of the layout zone
 
-    participant_right_of_layout_zone    = (A['xmin'] + A['width'] >= layout_zone['xmin'] + layout_zone['width']) # To detect if an participant is at the north eastern corner of the layout zone
-
-    participant_above_layout_zone       = (A['ymin'] >= layout_zone['ymin'] + layout_zone['height'])
+    participant_above_layout_zone       = (A.ymin >= layout_zone.ymin + layout_zone.height)
     
-    participant_below_layout_zone       = (A['ymin'] < layout_zone['ymin'])
+    participant_below_layout_zone       = (A.ymin < layout_zone.ymin)
 
-    x_min_new                           = A['xmin']
+    x_min_new                           = A.xmin
 
-    y_min_new                           = A['ymin']
+    y_min_new                           = A.ymin
 
      
-    x_min_new                           = layout_zone['xmin'] if participant_left_of_layout_zone else x_min_new
+    x_min_new                           = layout_zone.xmin if participant_left_of_layout_zone else x_min_new
 
-    x_min_new                           = (layout_zone['xmin'] + layout_zone['width'] - A['width']) if participant_right_of_layout_zone else x_min_new
+    x_min_new                           = (layout_zone.xmin + layout_zone.width - A.width) if participant_right_of_layout_zone else x_min_new
 
-    y_min_new                           = layout_zone['ymin'] if participant_below_layout_zone else y_min_new
+    y_min_new                           = layout_zone.ymin if participant_below_layout_zone else y_min_new
 
-    y_min_new                           = (layout_zone['ymin'] + layout_zone['height'] - A['height']) if participant_above_layout_zone else y_min_new
+    y_min_new                           = (layout_zone.ymin + layout_zone.height - A.height) if participant_above_layout_zone else y_min_new
 
-    new_A['xmin'], new_A['ymin']        = x_min_new, y_min_new
 
-    new_A['last-move']                  = 'reenter'
+    new_A                               = A._replace(xmin = x_min_new, ymin = y_min_new, last_move = 'reenter')
     
     return [new_A]
 
 
-def evade(A : dict, layout_zone : dict, layout_zone_edge : str, align_position : str) -> list:
-
-    new_A               = copy.deepcopy(A)
+def evade(A : namedtuple, layout_zone : namedtuple, layout_zone_edge : str, align_position : str) -> list:
 
     if layout_zone_edge == 'north':
 
         if align_position == 'left':
          
-            x_min_new   = layout_zone['xmin']
-            y_min_new   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+            x_min_new   = layout_zone.xmin
+            y_min_new   = (layout_zone.ymin + layout_zone.height - A.height)
 
         elif align_position == 'center':
 
-            x_min_new   = int(layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width'])
-            y_min_new   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+            x_min_new   = int(layout_zone.xmin + 0.5 * layout_zone.width - 0.5 * A.width)
+            y_min_new   = (layout_zone.ymin + layout_zone.height - A.height)
 
         else: #right
 
-            x_min_new   = layout_zone['xmin'] + layout_zone['width'] - A['width']
-            y_min_new   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+            x_min_new   = layout_zone.xmin + layout_zone.width - A.width
+            y_min_new   = (layout_zone.ymin + layout_zone.height - A.height)
 
     elif layout_zone_edge == 'east':    # Rotate layout zone clockwise virtually for edge orientation
 
         if align_position == 'left':
          
-            x_min_new   = layout_zone['xmin'] + layout_zone['width'] - A['width']
-            y_min_new   = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+            x_min_new   = layout_zone.xmin + layout_zone.width - A.width
+            y_min_new   = (layout_zone.ymin + layout_zone.height - A.height)
         
         elif align_position == 'center':
 
-            x_min_new   = layout_zone['xmin'] + layout_zone['width'] - A['width']
-            y_min_new   = int((layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height']))
+            x_min_new   = layout_zone.xmin + layout_zone.width - A.width
+            y_min_new   = int((layout_zone.ymin + 0.5 * layout_zone.height -  0.5 * A.height))
 
         else:
 
-            x_min_new   = layout_zone['xmin'] + layout_zone['width'] - A['width']
-            y_min_new   = layout_zone['ymin']
+            x_min_new   = layout_zone.xmin + layout_zone.width - A.width
+            y_min_new   = layout_zone.ymin
 
     elif layout_zone_edge == 'south':
          
         if align_position == 'left':
 
-            x_min_new    = layout_zone['xmin']
-            y_min_new    = layout_zone['ymin']
+            x_min_new    = layout_zone.xmin
+            y_min_new    = layout_zone.ymin
 
         elif align_position == 'center':
 
-            x_min_new    = int(layout_zone['xmin'] + 0.5 * layout_zone['width'] - 0.5 * A['width'])
-            y_min_new    = layout_zone['ymin']
+            x_min_new    = int(layout_zone.xmin + 0.5 * layout_zone.width - 0.5 * A.width)
+            y_min_new    = layout_zone.ymin
 
         else:
 
-            x_min_new  = layout_zone['xmin'] + layout_zone['width'] - A['width']
-            y_min_new  = layout_zone['ymin']
+            x_min_new  = layout_zone.xmin + layout_zone.width - A.width
+            y_min_new  = layout_zone.ymin
 
     elif layout_zone_edge == 'west':    # Rotate layout zone counter-clockwise virtually for edge naming orientation
 
         if align_position == 'left':
          
-            x_min_new    = layout_zone['xmin']
-            y_min_new    = (layout_zone['ymin'] + layout_zone['height'] - A['height'])
+            x_min_new    = layout_zone.xmin
+            y_min_new    = (layout_zone.ymin + layout_zone.height - A.height)
 
         elif align_position == 'center':
 
-            x_min_new    = layout_zone['xmin']
-            y_min_new    = int((layout_zone['ymin'] + 0.5 * layout_zone['height'] -  0.5 * A['height']))
+            x_min_new    = layout_zone.xmin
+            y_min_new    = int((layout_zone.ymin + 0.5 * layout_zone.height -  0.5 * A.height))
 
         else:
 
-            x_min_new   = layout_zone['xmin']
-            y_min_new   = layout_zone['ymin']
+            x_min_new   = layout_zone.xmin
+            y_min_new   = layout_zone.ymin
 
     else:
         
         print('No correct edge given!')  
 
-    new_A['xmin'], new_A['ymin']    = x_min_new, y_min_new    
+    new_A                               = A._replace(xmin = x_min_new, ymin = y_min_new, last_move = 'evade')
 
-    new_A['last-move']              = 'evade'
 
     return [new_A]
 
 
-def center(A: dict) -> list:
-
-    new_A                           = copy.deepcopy(A)
+def center(A: namedtuple) -> list:
      
-    x_min_new                       = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'] - 0.5 * A['width'])
-    y_min_new                       = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'] - 0.5 * A['height'])
+    x_min_new                       = int(A['freespace'].xmin + 0.5 * A['freespace'].width - 0.5 * A.width)
+    y_min_new                       = int(A['freespace'].ymin + 0.5 * A['freespace'].height - 0.5 * A.height)
 
-    new_A['xmin'], new_A['ymin']    = x_min_new, y_min_new
-
-    new_A['last-move']              = 'center'
+    new_A                      = A._replace(xmin = x_min_new, ymin = y_min_new, last_move = 'center')
 
     return [new_A]
 
 
-def linger(A: dict) -> list:
+def linger(A: namedtuple) -> list:
 
-    new_A               = copy.deepcopy(A)
-
-    new_A['last-move']  = 'linger'
+    new_A   = A._replace(last_move = 'linger')
      
     return [new_A]
 
 
-def budge(A: dict, direction : str) -> list:   
+def budge(A: namedtuple, direction : str) -> list:   
 
-    new_A                           = copy.deepcopy(A)
+    secondary_free_space            = getattr(A, direction)
 
-    x_min_new                       = int(A[direction]['xmin'] + 0.5 * A[direction]['width'] - 0.5 * A['width'])
-    y_min_new                       = int(A[direction]['ymin'] + 0.5 * A[direction]['height'] - 0.5 * A['height'])
+    x_min_new                       = int(secondary_free_space.xmin + 0.5 * secondary_free_space.width - 0.5 * A.width)
+    y_min_new                       = int(secondary_free_space.ymin + 0.5 * secondary_free_space.height - 0.5 * A.height)
 
-    new_A['xmin'], new_A['ymin']    = x_min_new, y_min_new
+    new_A                           = A._replace(xmin = x_min_new, ymin = y_min_new, last_move = 'budge')
 
-    new_A['last-move']              = 'budge'
-     
     return [new_A]
 
 
-def swap(A: dict, B: dict) -> list:
+def swap(A: namedtuple, B: namedtuple) -> list:
 
-    new_A                           = copy.deepcopy(A)
-    new_B                           = copy.deepcopy(B)
-     
-    # x_min_new_A                     = int(B['freespace']['xmin'] + 0.5 * B['freespace']['width'] - 0.5 * A['width'])
-    # y_min_new_A                     = int(B['freespace']['ymin'] + 0.5 * B['freespace']['height'] - 0.5 * A['height'])
-    x_min_new_A                     = new_B['xmin']
-    y_min_new_A                     = new_B['ymin']
-
-    # x_min_new_B                     = int(A['freespace']['xmin'] + 0.5 * A['freespace']['width'] - 0.5 * B['width'])
-    # y_min_new_B                     = int(A['freespace']['ymin'] + 0.5 * A['freespace']['height'] - 0.5 * B['height'])
-    x_min_new_B                     = new_A['xmin']
-    y_min_new_B                     = new_A['ymin']
-
-    new_A['xmin'], new_A['ymin']    = x_min_new_A, y_min_new_A
-    new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
-
-    new_A['last-move']              = 'swap with ' + new_B['idx']
+    new_A   = A._replace(xmin = B.xmin, ymin = B.ymin, last_move = 'swap')
+    new_B   = B._replace(xmin = A.xmin, ymin = A.ymin, last_move = 'swap')
 
     return [new_A, new_B]
 
 
-def pair(A : dict, B : dict, direction : str, layout_zone : dict) -> list:
+def pair(A : namedtuple, B : namedtuple, direction : str, layout_zone : namedtuple) -> list:
 
-    new_A                           = copy.deepcopy(A)
-    new_B                           = copy.deepcopy(B)
 
     if direction == 'horizontal-push-right' :
     
-        x_min_new_A     = int(B['xmin'] - 0.5 * A['width'])
-        x_min_new_B     = int(B['xmin'] + 0.5 * A['width'])
-        y_min_new_A     = B['ymin']
-        y_min_new_B     = B['ymin']
+        x_min_new_A     = int(B.xmin - 0.5 * A.width)
+        x_min_new_B     = int(B.xmin + 0.5 * A.width)
+        y_min_new_A     = B.ymin
+        y_min_new_B     = B.ymin
 
     elif direction == 'horizontal-push-left' :
         
-        x_min_new_A     = int(B['xmin'] + B['width'] - 0.5 * A['width'])
-        x_min_new_B     = int(B['xmin'] - 0.5 * A['width'])
-        y_min_new_A     = B['ymin']
-        y_min_new_B     = B['ymin']
+        x_min_new_A     = int(B.xmin + B.width - 0.5 * A.width)
+        x_min_new_B     = int(B.xmin - 0.5 * A.width)
+        y_min_new_A     = B.ymin
+        y_min_new_B     = B.ymin
 
     elif direction == 'vertical-push-up' :
 
-        x_min_new_A     = B['xmin']
-        x_min_new_B     = B['xmin']
-        y_min_new_A     = int(B['ymin'] - 0.5 * A['height'])
-        y_min_new_B     = int(B['ymin'] + 0.5 * A['height'])
+        x_min_new_A     = B.xmin
+        x_min_new_B     = B.xmin
+        y_min_new_A     = int(B.ymin - 0.5 * A.height)
+        y_min_new_B     = int(B.ymin + 0.5 * A.height)
 
     elif direction == 'vertical-push-down':
-        x_min_new_A     = B['xmin']
-        x_min_new_B     = B['xmin']
-        y_min_new_A     = int(B['ymin'] + B['height'] - 0.5 * A['height'])
-        y_min_new_B     = int(B['ymin'] - 0.5 * A['height'])
+        x_min_new_A     = B.xmin
+        x_min_new_B     = B.xmin
+        y_min_new_A     = int(B.ymin + B.height - 0.5 * A.height)
+        y_min_new_B     = int(B.ymin - 0.5 * A.height)
 
-    new_A['xmin'], new_A['ymin']    = x_min_new_A, y_min_new_A
-    new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
+
+    new_A               = A._replace(xmin = x_min_new_A, ymin = y_min_new_A, last_move = 'pair with ' + B.idx)
+    new_B               = B._replace(xmin = x_min_new_B, ymin = y_min_new_B, last_move = 'pair with ' + A.idx)
 
     # Action correction to not push other participants out of the safe zone
-    new_B                           = action_correction(new_B, layout_zone)
-
-    new_A['last-move']              = 'pair with ' + new_B['idx']
-
-    return [new_A, new_B]
+    new_B_corrected           = action_correction(new_B, layout_zone)
 
 
-def hustle(A : dict, layout_zone : dict, participants : dict) -> list:
+    return [new_A, new_B_corrected]
 
-    new_A                           = copy.deepcopy(A)
 
-    #print('A ' + A['idx'])
+def hustle(A : namedtuple, layout_zone : namedtuple, participants : set) -> list:
 
     moved_participants              = []
 
-    for idx in A['overlap-with-idx']:
+    overlapping_participants    = {p for p in participants if p.idx in A.overlap_with_idx}
 
-        #print(idx)
-
-        B                               = participants[idx]
-
-        new_B                           = copy.deepcopy(B)
+    for B in overlapping_participants:
         
-        overlap, locations              = calculate_overlap(A, new_B)
+        overlap, locations              = calculate_overlap(A, B)
 
         if locations[1]:    # B fully encloses A -> A can not hustle but must flee // Added to prevent stuck state in case of full overlap
 
-            if B['ymin'] > 0.5 * (layout_zone['ymin'] + layout_zone['height']):     # Enclosure in the upper half of the layout zone -> A flees south
+            if B.ymin > 0.5 * (layout_zone.ymin + layout_zone.height):     # Enclosure in the upper half of the layout zone -> A flees south
 
-                new_A['xmin']               = int(new_B['xmin'] + 0.5 * new_B['width'] - 0.5 * new_A['width'])
-                new_A['ymin']               = int(new_B['ymin'] - 0.5 * new_A['height'])
+                xmin_new_A              = int(B.xmin + 0.5 * B.width - 0.5 * A.width)
+                ymin_new_A              = int(B.ymin - 0.5 * A.height)
 
             else:   # A flees north
 
-                new_A['xmin']               = int(new_B['xmin'] + 0.5 * new_B['width'] - 0.5 * new_A['width'])
-                new_A['ymin']               = int(new_B['ymin'] + new_B['height'] - 0.5 * new_A['height'])
+                xmin_new_A              = int(B.xmin + 0.5 * B.width - 0.5 * A.width)
+                ymin_new_A              = int(B.ymin + B.height - 0.5 * A.height)
 
-            new_A['last-move']              = 'flee'
+            new_A                       = A._replace(xmin = xmin_new_A, ymin = ymin_new_A, last_move = 'flee')
 
             break
 
         else:
 
-            if overlap['width'] <= overlap['height']:
+            if overlap.width <= overlap.height:
 
-                delta_x                     = overlap['width'] if B['xmin'] > A['xmin'] else overlap['width'] * -1
-                delta_y                     = 0
+                delta_x                 = overlap.width if B.xmin > A.xmin else overlap.width * -1
+                delta_y                 = 0
 
             else:
                 
-                delta_x                     = 0
-                delta_y                     = overlap['height'] if B['ymin'] >= A['ymin'] else overlap['height'] * -1
+                delta_x                 = 0
+                delta_y                 = overlap.height if B.ymin >= A.ymin else overlap.height * -1
 
 
-            x_min_new_B                     = B['xmin'] + delta_x
+            x_min_new_B                 = B.xmin + delta_x
 
-            y_min_new_B                     = B['ymin'] + delta_y
+            y_min_new_B                 = B.ymin + delta_y
 
-            new_B['xmin'], new_B['ymin']    = x_min_new_B, y_min_new_B
+            new_B                       = B._replace(xmin = x_min_new_B, ymin = y_min_new_B, last_move = ' got hustled by ' + A.idx)
 
             # Action correction to not push other participants out of the safe zone
-            new_B                           = action_correction(new_B, layout_zone)
+            new_B_corrected             = action_correction(new_B, layout_zone)
 
+            moved_participants          = moved_participants + [new_B_corrected]
 
-            moved_participants              = moved_participants + [new_B]
-
-            new_A['last-move']              = 'hustle'
+            new_A                       = A._replace(last_move = 'hustle')
 
     return [new_A] + moved_participants
 
 
-def yielt(A : dict) -> list:      # Intentional typo in "yield" to avoid keyword
-
-    new_A                           = copy.deepcopy(A)
+def yielt(A : namedtuple) -> list:      # Intentional typo in "yield" to avoid keyword
      
-    x_center_yield_poly             = A['yield-polygon']['xmin'] + 0.5 * A['yield-polygon']['width']
+    x_center_yield_poly = A.yield_polygon.xmin + 0.5 * A.yield_polygon.width
 
-    y_center_yield_poly             = A['yield-polygon']['ymin'] + 0.5 * A['yield-polygon']['height']
+    y_center_yield_poly = A.yield_polygon.ymin + 0.5 * A.yield_polygon.height
 
-    x_min_new_A                     = x_center_yield_poly - 0.5 * A['width']
+    x_min_new_A         = x_center_yield_poly - 0.5 * A.width
 
-    y_min_new_A                     = y_center_yield_poly - 0.5 * A['height']
+    y_min_new_A         = y_center_yield_poly - 0.5 * A.height
 
-    new_A['xmin'], new_A['ymin']    = x_min_new_A, y_min_new_A
-
-    new_A['last-move']              = 'yield'
+    new_A               = A._replace(xmin = x_min_new_A, ymin = y_min_new_A, last_move = 'yield')
     
     return [new_A]
