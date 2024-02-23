@@ -1,10 +1,13 @@
+from collections import namedtuple
+from swarm_types import *
+
 import math
 
-def calculate_overlap(A : dict, B : dict) -> tuple:
+def calculate_overlap(A : namedtuple, B : namedtuple) -> tuple:
 
-    x_A_min, y_A_min, x_A_max, y_A_max  = A['xmin'], A['ymin'], A['xmin'] + A['width'], A['ymin'] + A['height']
+    x_A_min, y_A_min, x_A_max, y_A_max  = A.xmin, A.ymin, A.xmin + A.width, A.ymin + A.height
 
-    x_B_min, y_B_min, x_B_max, y_B_max  = B['xmin'], B['ymin'], B['xmin'] + B['width'], B['ymin'] + B['height']
+    x_B_min, y_B_min, x_B_max, y_B_max  = B.xmin, B.ymin, B.xmin + B.width, B.ymin + B.height
 
     # Determine overlap direction (multiple can be true)
 
@@ -67,42 +70,37 @@ def calculate_overlap(A : dict, B : dict) -> tuple:
         overlap_width   = x_Overlap_max - x_Overlap_min
         overlap_height  = y_Overlap_max - y_Overlap_min
 
-        overlap = {
-            "xmin": x_Overlap_min,
-            "ymin": y_Overlap_min,
-            "width": overlap_width,
-            "height": overlap_height
-        }
+        overlap = Rectangle(x_Overlap_min, y_Overlap_min, overlap_width, overlap_height)
         
     return overlap, locations
 
 
-def calculate_area(A : dict) -> float:
+def calculate_area(A : namedtuple) -> float:
 
-    return A['width'] * A['height']
+    return A.width * A.height
 
 
 
-def calculate_euclidean_distance(A : dict, B : dict) -> float:
+def calculate_euclidean_distance(A : namedtuple, B : namedtuple) -> float:
 
-    center_A_x  = A['xmin'] + 0.5 * A['width']
+    center_A_x  = A.xmin + 0.5 * A.width
 
-    center_A_y  = A['ymin'] + 0.5 * A['height']
+    center_A_y  = A.ymin + 0.5 * A.height
 
-    center_B_x  = B['xmin'] + 0.5 * B['width']
+    center_B_x  = B.xmin + 0.5 * B.width
 
-    center_B_y  = B['ymin'] + 0.5 * B['height']
+    center_B_y  = B.ymin + 0.5 * B.height
 
     distance    = math.sqrt((center_A_x - center_B_x)**2 + (center_A_y - center_B_y)**2)
 
     return distance
 
 
-def calculate_all_participants_area(participants : dict) -> float:
+def calculate_all_participants_area(participants : set) -> float:
 
-    widths                        = [sub_dict.get('width') for sub_dict in participants.values()]
+    widths                        = [p.width for p in participants]
 
-    heights                       = [sub_dict.get('height') for sub_dict in participants.values()]
+    heights                       = [p.height for p in participants]
 
     summed_participants_area      = sum([a * b for a, b in zip(widths, heights)])
 
