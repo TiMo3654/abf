@@ -13,7 +13,7 @@ Participant = namedtuple('Participant', [  'idx'                             # s
                                          , 'clashes'                        # set of Relations
                                          , 'aversions'                      # set of Relations
                                          , 'interference'                   # float     
-                                         , 'overlap_with_idx'               # set
+                                         , 'overlap_with_idx'               # set of ids
                                          , 'turmoil'                        # float
                                          , 'relaxed_connections'            # int
                                          , 'protrusion_status'              # str
