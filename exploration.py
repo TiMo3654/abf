@@ -248,7 +248,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                         possible_next_positions                                 = possible_next_positions + valid_pair_positions
 
-                print('No. of pairing options explored: ' + str(length_pairing_options))
+                #print('No. of pairing options explored: ' + str(length_pairing_options))
 
                 toc = time.time()
 
