@@ -187,14 +187,16 @@ def calclulate_free_space(A : namedtuple, free_edges : list, participants : set,
 
         overlaps                    = [calculate_overlap(calculate_corridor(A, layout_zone, edge), B)[0] for B in participants if B.idx != A.idx for edge in free_edges]
 
+        overlaps_filtered           = [overlap for overlap in overlaps if overlap]  # filter out empty tuples
 
-        northern_boundary           = [overlap.ymin for overlap in overlaps if overlap.ymin > A.ymin + A.height]
 
-        western_boundary            = [overlap.xmin + overlap.width for overlap in overlaps if overlap.xmin + overlap.width < A.xmin]
+        northern_boundary           = [overlap.ymin                     for overlap in overlaps_filtered if overlap.ymin > A.ymin + A.height]
 
-        eastern_boundary            = [overlap.xmin for overlap in overlaps if overlap.xmin > A.xmin + A.width]
+        western_boundary            = [overlap.xmin + overlap.width     for overlap in overlaps_filtered if overlap.xmin + overlap.width < A.xmin]
 
-        southern_boundary           = [overlap.ymin + overlap.height for overlap in overlaps if overlap.ymin + overlap.height < A.ymin]
+        eastern_boundary            = [overlap.xmin                     for overlap in overlaps_filtered if overlap.xmin > A.xmin + A.width]
+
+        southern_boundary           = [overlap.ymin + overlap.height    for overlap in overlaps_filtered if overlap.ymin + overlap.height < A.ymin]
 
 
         northern_freespace_border   = min(northern_boundary)    if northern_boundary    else (layout_zone.ymin + layout_zone.height)    if 'north'  in free_edges  else A.ymin + A.height

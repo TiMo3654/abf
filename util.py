@@ -13,7 +13,7 @@ def calculate_overlap(A : namedtuple, B : namedtuple) -> tuple:
 
     if  (x_A_min >= x_B_max or x_A_max <= x_B_min) or (y_A_min >= y_B_max or y_A_max <= y_B_min):    # No horizontal or vertical overlap
 
-        overlap                 = {}
+        overlap                 = ()
         locations               = [False, False, False, False, False, False]
 
     else:
