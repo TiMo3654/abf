@@ -2,16 +2,14 @@ from collections import namedtuple
 
 Rectangle   = namedtuple('Rectangle', 'xmin ymin width height')
 
-Relation    = namedtuple('Relation', 'idx value')
-
-Participant = namedtuple('Participant', [  'idx'                             # str
-                                         , 'connections'                    # set 
+Participant = namedtuple('Participant', [  'idx'                            # str
+                                         , 'connections'                    # namedtuple 
                                          , 'xmin'                           # int
                                          , 'ymin'                           # int
                                          , 'width'                          # int
                                          , 'height'                         # int
-                                         , 'clashes'                        # set of Relations
-                                         , 'aversions'                      # set of Relations
+                                         , 'clashes'                        # namedtuple    # Initialized with all ids and zeros
+                                         , 'aversions'                      # namedtuple    # Initialized with all ids and zeros
                                          , 'interference'                   # float     
                                          , 'overlap_with_idx'               # set of ids
                                          , 'turmoil'                        # float
