@@ -289,7 +289,7 @@ def determine_best_move(possible_next_positions : list, partcipants : set, metri
 
             summed_relaxation_delta = [(i, sum([A.relaxed_connections for A in moved_participants])) for i, moved_participants in enumerate(possible_next_positions)]
 
-
+            # keeep working here
 
             prospective_interference_minimum    = math.inf
 
