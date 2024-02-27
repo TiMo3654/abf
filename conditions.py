@@ -181,7 +181,7 @@ def calculate_corridor(A : namedtuple, layout_zone : namedtuple, edge : str) -> 
     return corridor    
 
 
-def calclulate_free_space(A : namedtuple, free_edges : list, participants : set, layout_zone : namedtuple) -> dict:
+def calclulate_free_space(A : namedtuple, free_edges : list, participants : set, layout_zone : namedtuple) -> namedtuple:
 
     if free_edges:
 
@@ -353,7 +353,7 @@ def calculate_conditions(A : namedtuple, participants : set, layout_zone : named
 
     tic                 = time.time()
 
-    lateral_conditions  = [calculate_lateral_condition(A, B, leeway_coeffcient, conciliation_quota, critical_amount) for B in participants]
+    lateral_conditions  = [calculate_lateral_condition(A, B, leeway_coeffcient, conciliation_quota, critical_amount) for B in participants if B.idx != A.idx]
 
     # determine overlapping participants
 
@@ -397,7 +397,7 @@ def calculate_conditions(A : namedtuple, participants : set, layout_zone : named
     # update aversion
 
     new_aversion        = dict([cond.aversion for cond in lateral_conditions])
-    new_aversions_tuple   = namedtuple('Aversions', new_aversion)(**new_aversion)
+    new_aversions_tuple = namedtuple('Aversions', new_aversion)(**new_aversion)
     
     # Calculate compliance
         
@@ -435,7 +435,7 @@ def calculate_conditions(A : namedtuple, participants : set, layout_zone : named
                        , secondary_freespace_north_east = sfs_ne
                        , secondary_freespace_south_east = sfs_se
                        , secondary_freespace_south_west = sfs_sw
-                       , secondary_freespace_north_west = sfs_nw)
+                       , secondary_freespace_north_west = sfs_nw )
 
     toc = time.time()
 

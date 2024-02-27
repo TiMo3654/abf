@@ -3,7 +3,7 @@ from moves import *
 from util import *
 from conditions import *
 from heuristics import *
-from multiprocess import Pool
+from collections import namedtuple
 
 import math
 import os
@@ -11,25 +11,23 @@ import functools
 
 ## Action exploration and evaluation
 
-def check_non_trivial_action(A : dict, A_new : dict) -> bool:
+def check_non_trivial_action(A : namedtuple, A_new : namedtuple) -> bool:
 
     moving_distance         = calculate_euclidean_distance(A, A_new)
 
-    minimal_moving_distance = A['freespace']['height'] * 0.01 if (A['freespace']['width'] > A['freespace']['height']) else A['freespace']['width'] * 0.01
+    minimal_moving_distance = A.freespace.height * 0.01 if (A.freespace.width > A.freespace.height) else A.freespace.width * 0.01
 
     return (moving_distance > minimal_moving_distance)
 
 
-def classify_action(A : dict) -> str:
+def classify_action(A : namedtuple) -> str:
 
-    # if A['idx'] == '0':
-    #     print(A['overlap-with-idx'])
      
-    if (A['protrusion-status'] == 'safe') and A['healthy'] and A['compliant'] and (len(A['overlap-with-idx']) == 0) and (A['relaxed-connections'] == len(A['connections'])):
+    if (A.protrusion_status == 'safe') and A.healthy and A.compliant and (len(A.overlap_with_idx) == 0) and (A.relaxed_connections == len(A.connections)):
         
         action_classification   = 'adjuvant'
     
-    elif (A['protrusion-status'] == 'safe') and A['healthy'] and A['compliant']:
+    elif (A.protrusion_status == 'safe') and A.healthy and A.compliant:
         
         action_classification   = 'valid'
 
@@ -40,51 +38,39 @@ def classify_action(A : dict) -> str:
     return action_classification
 
 
-def explore_action(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action) -> tuple:
+def explore_action(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action) -> tuple:
 
     tic                                 = time.time()
 
-    adjuvant_position                   = []
-    valid_position                      = []
-    invalid_position                    = []
+    adjuvant_position             = []
+    valid_position                = []
+    invalid_position              = []
 
-    actual_participants                 = copy.deepcopy(participants) # A not included yet
+    # Try action
 
-    moved_participants                  = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the actions make deep copies of the moved participants
+    moved_participants            = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the actions make deep copies of the moved participants
 
-    moved_participant_dict              = {moved_participant['idx'] : moved_participant for moved_participant in moved_participants}
+    moved_participants_ids        = [p.idx for p in moved_participants]
 
-    actual_participants                 = actual_participants | moved_participant_dict
+    # Update positions
 
-    for participant in moved_participants:
-    
-        participant_new                 = actual_participants.pop(participant['idx'])   # Remove the leading participant from the overall dict to calculate the conditions (No overlap with itself)
+    participants_updated        = set([p for p in participants if p.idx not in moved_participants_ids] + moved_participants)
 
-        moved_participant_conditions    = calculate_conditions(participant_new, actual_participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount)
+    # Evaluate new positions (update conditions)
 
-        participant_new                 = participant_new | moved_participant_conditions
+    moved_participants_updated  = [calculate_conditions(A, participants_updated, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount) for A in moved_participants]
 
-        if participant_new['last-move'] == 'reenter':    # classification irrelevant in this case
-            
-            valid_position              = valid_position + [participant_new]
+    # Classify moves
 
-        else:
+    classifications             = [classify_action(A) for A in moved_participants_updated]
 
-            action_classification       = classify_action(participant_new)
+    classified_moves            = list(zip(*(moved_participants_updated, classifications)))
 
-            if action_classification == 'adjuvant':
-                
-                adjuvant_position       = adjuvant_position + [participant_new]  
-            
-            elif action_classification == 'valid':
-                    
-                valid_position          = valid_position + [participant_new]
+    # Sort moves
 
-            else:   # invalid action
-
-                invalid_position        = invalid_position + [participant_new]
-
-        actual_participants             = actual_participants | {participant_new['idx'] : participant_new}  # Put the moved participant back into the dictionary for the condition calculation of the other moved participants
+    adjuvant_position           = [p[0] for p in classified_moves if p[1] == 'adjuvant']        
+    valid_position              = [p[0] for p in classified_moves if p[1] == 'valid']  
+    invalid_position            = [p[0] for p in classified_moves if p[1] == 'invalid']  
 
     toc = time.time()
 
@@ -104,7 +90,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
  
     # start of the action exploration
 
-    if A['protrusion-status'] == 'lost':
+    if A.protrusion_status == 'lost':
 
         action                              = lambda P: reenter(P, layout_zone)
 
@@ -116,7 +102,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
          
         # explore centering
 
-        if A['freespace']:
+        if A.freespace:
 
             tic = time.time()
 
@@ -154,7 +140,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
         
         # explore budging, swapping, pairing, hustling only if A is safe, otherwise only centering, evasion or yielding is possible
 
-        if A['protrusion-status'] == 'safe':
+        if A.protrusion_status == 'safe':
 
             # explore budging
 
@@ -317,7 +303,7 @@ def determine_best_move(possible_next_positions : list, partcipants : dict, metr
 
                     summed_interference         = summed_interference + moved_participant['interference']   # TODO: Do not count interference twice in case of mutual overlap
 
-                    relaxation_delta            = partcipants[moved_participant['idx']]['relaxed-connections'] - moved_participant['relaxed-connections']   # Negative means relaxation
+                    relaxation_delta            = partcipants[moved_participant['idx']].relaxed_connections - moved_participant.relaxed_connections   # Negative means relaxation
 
                     summed_relaxation_delta     = summed_relaxation_delta + relaxation_delta
 
