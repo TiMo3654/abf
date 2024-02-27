@@ -397,7 +397,7 @@ def calculate_conditions(A : namedtuple, participants : set, layout_zone : named
     # update aversion
 
     new_aversion        = dict([cond.aversion for cond in lateral_conditions])
-    new_clashes_tuple   = namedtuple('Aversions', new_aversion)(**new_aversion)
+    new_aversions_tuple   = namedtuple('Aversions', new_aversion)(**new_aversion)
     
     # Calculate compliance
         
@@ -420,7 +420,7 @@ def calculate_conditions(A : namedtuple, participants : set, layout_zone : named
     # update A
 
     new_A = A._replace(  clashes                = new_clashes_tuple
-                       , aversions              = new_aversion
+                       , aversions              = new_aversions_tuple
                        , interference           = interference
                        , overlap_with_idx       = overlap_with_idx
                        , turmoil                = turmoil
