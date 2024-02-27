@@ -276,13 +276,20 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
 ## Action evaluation
 
-def determine_best_move(possible_next_positions : list, partcipants : dict, metric : str) -> dict:
+def determine_best_move(possible_next_positions : list, partcipants : set, metric : str) -> dict:
 
     next_position                                   = []
 
-    if possible_next_positions:
+    if possible_next_positions: # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
 
         if len(possible_next_positions) != 1:
+
+
+            summed_interference     = [(i, sum([A.interference for A in moved_participants])) for i, moved_participants in enumerate(possible_next_positions)]
+
+            summed_relaxation_delta = [(i, sum([A.relaxed_connections for A in moved_participants])) for i, moved_participants in enumerate(possible_next_positions)]
+
+
 
             prospective_interference_minimum    = math.inf
 

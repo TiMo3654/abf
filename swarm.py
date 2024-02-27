@@ -3,55 +3,34 @@ from moves import *
 from exploration import *
 from conditions import *
 from interaction import *
-from multiprocess.pool import ThreadPool
+from collections import namedtuple
 
-import copy
 import time
 
-def determine_initial_conditions(participants : dict, layout_zone : dict, conciliation_quota : float, critical_amount : int) -> dict:
+def determine_initial_conditions(participants : set, layout_zone : namedtuple, conciliation_quota : float, critical_amount : int) -> set:
 
     leeway_coefficient          = calculate_leeway_coefficient(layout_zone, participants)
 
-    new_participants            = copy.deepcopy(participants)
+    participants_updated        = set([calculate_conditions(A, participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount) for A in participants])
 
-    id_list                     = [p['idx'] for p in (new_participants.values())]
-
-    #new_participants            = {participant['idx'] : participant | calculate_conditions(participant, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)}
-
-    for idx in id_list:
-
-        participant             = new_participants.pop(idx)
-
-        participant_conditions  = calculate_conditions(participant, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
-
-        participant             = participant | participant_conditions
-
-        new_participants        = new_participants | {participant['idx'] : participant}
-
-    return new_participants
+    return participants_updated
 
 
 
-def one_round_of_interaction(participants : dict, layout_zone : dict, metric : str, conciliation_quota : float, critical_amount : int) -> dict:
+def one_round_of_interaction(participants : set, layout_zone : namedtuple, metric : str, conciliation_quota : float, critical_amount : int) -> set:
 
     tic                             = time.time()
 
     leeway_coefficient              = calculate_leeway_coefficient(layout_zone, participants)
 
-    new_participants                = copy.deepcopy(participants)
 
-    id_list                         = [p['idx'] for p in (new_participants.values())]
-
-    for idx in id_list:             # For loop is important here, because the participants have to act sequentially
+    for A in participants:             # For loop is important here, because the participants have to act sequentially
 
         new_participants            = determine_initial_conditions(new_participants, layout_zone, conciliation_quota, critical_amount)  # Each participant gets the currrent position of all other blocks (no old information)
 
-        A                           = new_participants.pop(idx)  
-
         A_rotated                   = rotate(A)
-        A_rotated_conditions        = calculate_conditions(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
+        A_rotated_updated           = calculate_conditions(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
-        A_rotated                   = A_rotated | A_rotated_conditions
         
         possible_new_positions      = action_exploration(A, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 

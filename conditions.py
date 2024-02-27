@@ -349,7 +349,7 @@ def calculate_lateral_condition(A: namedtuple, B : namedtuple, leeway_coeffcient
 
 
 
-def calculate_conditions(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> dict:
+def calculate_conditions(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> namedtuple:
 
     tic                 = time.time()
 
