@@ -2,7 +2,8 @@ from collections import namedtuple
 
 Rectangle           = namedtuple('Rectangle', 'xmin ymin width height')
 
-Lateral_Conditions  = namedtuple('Lateral_Conditions', [ 'overlap'
+Lateral_Conditions  = namedtuple('Lateral_Conditions', [ 'idx'
+                                                       , 'overlap'
                                                        , 'locations'
                                                        , 'clashes'
                                                        , 'aversion'
@@ -32,8 +33,8 @@ Participant         = namedtuple('Participant', [  'idx'                        
                                                 , 'freespace'                      # Rectangle
                                                 , 'secondary_freespace_north_east' # Rectangle
                                                 , 'secondary_freespace_south_east' # Recatngle
-                                                , 'secondary-freespace-south-west' # Rectangle
-                                                , 'secondary-freespace-north-west' # Rectangle
+                                                , 'secondary_freespace_south_west' # Rectangle
+                                                , 'secondary_freespace_north_west' # Rectangle
                                                 , 'last_move'                      # str
                                                 , 'color'])                        # str
 

@@ -5,7 +5,7 @@ import math
 
 def point_in_rectangle(x, y, B : namedtuple) -> bool:
 
-    return (B.xmin < x < B.xmin + B.width) and (B.ymin < y < B.ymin + B.heigth)
+    return not ( (B.xmin < x < B.xmin + B.width) and (B.ymin < y < B.ymin + B.heigth) ) # returns False, iff point in rectangle -> easier for the next function
 
 
 def calculate_free_corners(A: namedtuple, B: namedtuple) -> list:

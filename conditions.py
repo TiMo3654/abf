@@ -98,13 +98,13 @@ def calculate_tension(leeway_coefficient : float, A : namedtuple, B : namedtuple
     return tension, connection_relaxed
 
 
-def calculate_clashes(A : namedtuple, B : namedtuple, overlap : namedtuple) -> int:
+def calculate_clashes(A : namedtuple, B : namedtuple, overlap : namedtuple) -> tuple:
 
     previous_clashes    = getattr(A.clashes, B.idx)
 
     new_clashes         = previous_clashes + 1 if overlap else previous_clashes
 
-    return new_clashes
+    return (B.idx, new_clashes)
 
 
 def calculate_intensity(A : namedtuple, B : namedtuple, overlap : namedtuple) -> float:
@@ -122,7 +122,7 @@ def calculate_intensity(A : namedtuple, B : namedtuple, overlap : namedtuple) ->
     return intensity
 
 
-def calculate_aversion(A : namedtuple, B : namedtuple, overlap : namedtuple, conciliation_quota : float) -> float:
+def calculate_aversion(A : namedtuple, B : namedtuple, overlap : namedtuple, conciliation_quota : float) -> tuple:
 
     intensity           = calculate_intensity(A,B, overlap)
 
@@ -138,7 +138,7 @@ def calculate_aversion(A : namedtuple, B : namedtuple, overlap : namedtuple, con
         new_aversion    = previous_aversion * conciliation_quota
 
 
-    return new_aversion 
+    return (B.idx, new_aversion)
 
 
 def calculate_trouble(A : namedtuple, B : namedtuple, overlap : namedtuple) -> float:
@@ -333,6 +333,8 @@ def calculate_lateral_condition(A: namedtuple, B : namedtuple, leeway_coeffcient
 
     overlap, locations          = calculate_overlap(A, B)
 
+    free_edges                  = [not elem for elem in locations][2:]  # location has True for non free edges
+
     clashes                     = calculate_clashes(A, B, overlap)
 
     aversion                    = calculate_aversion(A, B, overlap, conciliation_quota)
@@ -342,18 +344,20 @@ def calculate_lateral_condition(A: namedtuple, B : namedtuple, leeway_coeffcient
     tension, relaxed_connection	= calculate_tension(leeway_coeffcient, A, B)
 
     
-    return Lateral_Conditions(overlap, locations, clashes, aversion, trouble, tension, relaxed_connection) 
+    return Lateral_Conditions(B.idx, overlap, free_edges, clashes, aversion, trouble, tension, relaxed_connection) 
 
 
 
 
 def calculate_conditions(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> dict:
 
-    tic                     = time.time()
-
-
+    tic                 = time.time()
 
     lateral_conditions  = [calculate_lateral_condition(A, B, leeway_coeffcient, conciliation_quota, critical_amount) for B in participants]
+
+    # determine overlapping participants
+
+    overlap_with_idx    = set([cond.idx for cond in lateral_conditions if cond.overlap])
 
     # determine free edges
 
@@ -361,168 +365,80 @@ def calculate_conditions(A : namedtuple, participants : set, layout_zone : named
 
     free_edges_bool     = [all(mask[i] for mask in masks_edges) for i in range(4)]
 
-    free_edges_str      = [y for (x,y) in zip(free_edges_bool, ['north', 'east', 'south', 'west']) if x]
+    free_edges_str      = [y for (x,y) in zip(free_edges_bool, ['west', 'east', 'north', 'south']) if x]
 
     # determine free vertices
 
-    overlaps            = [cond.overlap for cond in lateral_conditions]
+    overlaps            = [cond.overlap for cond in lateral_conditions if cond.overlap]
 
-    masks_corners       = [calculate_free_corners(A, O) for O in overlaps]
+    masks_corners       = [calculate_free_corners(A, Ov) for Ov in overlaps]
 
     free_vertices_bool  = [all(mask[i] for mask in masks_corners) for i in range(4)]
 
     free_vertices_str   = [y for (x,y) in zip(free_vertices_bool, [('left', 'top'), ('right', 'top'), ('left', 'bottom'), ('left', 'right')]) if x]
 
+    # calculate interference
 
+    interference        = sum([cond.trouble for cond in lateral_conditions])
 
+    # calculate turmoil
 
+    turmoil             = sum([cond.tension for cond in lateral_conditions])
 
+    # count number of relaxed connections
 
-    free_edges              = ['north', 'east', 'south', 'west']       
+    relaxed_connections = [cond.relaxed_connection for cond in lateral_conditions].count(True)
 
-    free_vertices           = ['north-west', 'north-east', 'south-east', 'south-west']
+    # update clashes
 
-    interference            = 0.0
+    new_clashes         = dict([cond.clashes for cond in lateral_conditions])
+    new_clashes_tuple   = namedtuple('Clashes', new_clashes)(**new_clashes)
 
-    turmoil                 = 0.0
+    # update aversion
 
-    new_clashes             = A['clashes']
-
-    new_aversions           = A['aversions']
-
-    overlap_counter         = 0
-
-    relaxed_connections     = 0
-
-    one_sick_overlap        = False
-
-    overlap_with_idx        = []
-
-
-
-    for B in list(participants.values()):
-        
-        overlap, locations          = calculate_overlap(A, B)                                   # locations   = [A_fully_encloses_B, B_fully_encloses_A, west_edge_overlap, east_edge_overlap, north_edge_overlap, south_edge_overlap]
-
-        overlap_counter             = overlap_counter + 1 if overlap else overlap_counter
-
-        idx_B                       = B.idx
-
-        if overlap:
-            overlap_with_idx.append(idx_B)
-
-        A_fully_encloses_B          = locations[0]
-        B_fully_encloses_A          = locations[1]
-        west_edge_overlap           = locations[2]
-        east_edge_overlap           = locations[3]
-        north_edge_overlap          = locations[4]
-        south_edge_overlap          = locations[5]
-
-        # Determine free edges
-
-        if B_fully_encloses_A:
-            free_edges  = []
-        
-        if west_edge_overlap and ('west' in free_edges):
-            free_edges.remove('west')
-
-        if east_edge_overlap and ('east' in free_edges):
-            free_edges.remove('east')
-
-        if north_edge_overlap and ('north' in free_edges):
-            free_edges.remove('north')
-
-        if south_edge_overlap and ('south' in free_edges):
-            free_edges.remove('south')
-
-        # Determine free vertices
-            
-        if north_edge_overlap and west_edge_overlap and ('north-west' in free_vertices):    # Upper left
-            free_vertices.remove('north-west')
-        
-        if north_edge_overlap and east_edge_overlap and ('north-east' in free_vertices):
-            free_vertices.remove('north-east')
-
-        if south_edge_overlap and east_edge_overlap and ('south-east' in free_vertices):
-            free_vertices.remove('south-east')
-
-        if south_edge_overlap and west_edge_overlap and ('south-west' in free_vertices):
-            free_vertices.remove('south-west')
-
-        # Calculate interference
-        
-
-        clashes                     = calculate_clashes(A, B, overlap)
-
-        new_clashes[idx_B]          = clashes
-
-        aversion                    = calculate_aversion(A, B, overlap, conciliation_quota)
-
-        new_aversions[idx_B]        = aversion
-            
-        trouble                     = calculate_trouble(A, B, overlap)
-            
-        interference                = interference + trouble
-
-        # Calculate turmoil
-
-        tension, connection_relaxed	= calculate_tension(leeway_coeffcient, A, B)
-
-        turmoil                     = turmoil + tension
-
-        relaxed_connections         = relaxed_connections + 1 if connection_relaxed else relaxed_connections
-
-        # Calculate health
-
-        healthy                     = calculate_health(A, B, overlap) and (overlap_counter < critical_amount) and not one_sick_overlap
-            
-        if not healthy:    
-            one_sick_overlap        = True
-
+    new_aversion        = dict([cond.aversion for cond in lateral_conditions])
+    new_clashes_tuple   = namedtuple('Aversions', new_aversion)(**new_aversion)
     
     # Calculate compliance
         
-    compliance                      = calculate_compliance(A)
+    compliance          = calculate_compliance(A)
 
     # Calculate protrusion
 
     protrusion_status, extend, edges = calculate_protrusion(layout_zone, A)
 
-    protruded_zone_edges             = [edge 
-                                        for i,edge in enumerate(['west', 'east', 'north', 'south']) 
-                                        if edges[i]]
+    protruded_zone_edges             = [edge for i,edge in enumerate(['west', 'east', 'north', 'south']) if edges[i]]
 
     # Calculate space values
 
-    #yield_polygon                   = calculate_yield_polygon(A, participants, layout_zone)
     yield_polygon                   = () # TODO: Rethink yield function
 
-    free_space                      = calclulate_free_space(A, free_edges, participants, layout_zone)
+    free_space                      = calclulate_free_space(A, free_edges_str, participants, layout_zone)
 
-    sfs_nw, sfs_ne, sfs_se, sfs_sw  = calclulate_all_secondary_free_spaces(A, free_vertices, participants, layout_zone)     
+    sfs_nw, sfs_ne, sfs_se, sfs_sw  = calclulate_all_secondary_free_spaces(A, free_vertices_str, participants, layout_zone)     
 
-    conditions  = {
-                    "clashes"                       : new_clashes,
-                    "aversions"                     : new_aversions,
-                    "interference"                  : interference,
-                    "overlap-with-idx"              : overlap_with_idx,
-                    "turmoil"                       : turmoil,
-                    "relaxed-connections"           : relaxed_connections,
-                    "protrusion-status"             : protrusion_status,
-                    "protrusion-extend"             : extend,
-                    "protruded-zone-edges"          : protruded_zone_edges,
-                    "healthy"                       : healthy,
-                    "compliant"                     : compliance,
-                    "yield-polygon"                 : yield_polygon,
-                    "freespace"                     : free_space,
-                    'secondary-freespace-north-east': sfs_ne,
-                    'secondary-freespace-south-east': sfs_se,
-                    'secondary-freespace-south-west': sfs_sw,
-                    'secondary-freespace-north-west': sfs_nw
-    }
+    # update A
+
+    new_A = A._replace(  clashes                = new_clashes_tuple
+                       , aversions              = new_aversion
+                       , interference           = interference
+                       , overlap_with_idx       = overlap_with_idx
+                       , turmoil                = turmoil
+                       , relaxed_connections    = relaxed_connections
+                       , protrusion_status      = protrusion_status
+                       , protrusion_extend      = extend
+                       , protruded_zone_edges   = set(protruded_zone_edges)
+                       , healthy                = True
+                       , compliant              = compliance
+                       , yield_polygon          = yield_polygon
+                       , freespace              = free_space
+                       , secondary_freespace_north_east = sfs_ne
+                       , secondary_freespace_south_east = sfs_se
+                       , secondary_freespace_south_west = sfs_sw
+                       , secondary_freespace_north_west = sfs_nw)
 
     toc = time.time()
 
     #print('Condition Calculation took: ' + str(toc-tic))    # typ. 0.0002 seconds on PLASMA Server
     
-    return conditions
+    return new_A
