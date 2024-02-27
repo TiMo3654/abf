@@ -218,121 +218,64 @@ def calclulate_free_space(A : namedtuple, free_edges : list, participants : set,
     return free_space
 
 
-def calculate_secondary_free_space(A : dict, vertex : str, participants : dict, layout_zone : dict) -> dict:   # Budging Move p.137
+def calculate_secondary_free_space(A                                        : namedtuple
+                                   , vertex                                 : tuple
+                                   , horizontal_south_inline_participants   : list
+                                   , horizontal_north_inline_participants   : list
+                                   , vertical_west_inline_participants      : list
+                                   , vertical_east_inline_participants      : list
+                                   , layout_zone                            : namedtuple) -> namedtuple:   # Budging Move p.137
 
-    northern_boundary   = []
-    western_boundary    = []
-    southern_boundary   = []
-    eastern_boundary    = []
+    corner_x                                = A.xmin    if vertex[0] == 'left'      else A.xmin + A.width
+    corner_y                                = A.ymin    if vertex[1] == 'bottom'    else A.ymin + A.height
 
-    # Get vertex coordinates
-        
-    if vertex == "north-east":
-        #print('Free at north-east!')
+    # Catch cases when there are no other participants in line -> Set layout zone as border
 
-        x   = A['xmin'] + A.width
-        y   = A['ymin'] + A.height
+    horizontal_south_inline_participants_f   = horizontal_south_inline_participants  if horizontal_south_inline_participants     else [(layout_zone.xmin + layout_zone.width, layout_zone.xmin )]
+    horizontal_north_inline_participants_f   = horizontal_north_inline_participants  if horizontal_north_inline_participants     else [(layout_zone.xmin + layout_zone.width, layout_zone.xmin )]
+    vertical_west_inline_participants_f      = vertical_west_inline_participants     if vertical_west_inline_participants        else [(layout_zone.ymin + layout_zone.height, layout_zone.ymin)]
+    vertical_east_inline_participants_f      = vertical_east_inline_participants     if vertical_east_inline_participants        else [(layout_zone.ymin + layout_zone.height, layout_zone.ymin)]
 
-    elif vertex == "south-east":
-        #print('Free at south-east!')
+    # Calculate border
 
-        x   = A['xmin'] + A.width
-        y   = A['ymin']
-
-    elif vertex == 'south-west':
-        #print('Free at south-west!')
-
-        x   = A['xmin']
-        y   = A['ymin']
-
-    elif vertex == "north-west":
-        #print('Free at north-west!')
-
-        x   = A['xmin']
-        y   = A['ymin'] + A.height
+    lower_border_vertical                   = max([lb[1] for lb in vertical_west_inline_participants_f if lb[1] < corner_y]) if vertex[0] == 'left' else max([lb[1] for lb in vertical_east_inline_participants_f if lb[1] < corner_y])
+    upper_border_vertical                   = min([ub[0] for ub in vertical_west_inline_participants_f if ub[0] > corner_y]) if vertex[0] == 'left' else min([ub[0] for ub in vertical_east_inline_participants_f if ub[0] > corner_y])
 
 
-    # Check for pairwise collisions
+    left_border_horizontal                  = max([lb[1] for lb in horizontal_south_inline_participants_f if lb[1] < corner_x]) if vertex[1] == 'bottom' else max([lb[1] for lb in horizontal_north_inline_participants_f if lb[1] < corner_x])
+    right_border_horizontal                 = min([rb[0] for rb in horizontal_south_inline_participants_f if rb[0] > corner_x]) if vertex[1] == 'bottom' else min([rb[0] for rb in horizontal_north_inline_participants_f if rb[0] > corner_x])
 
-    for idx in participants:
-        
-        B   = participants[idx]
 
-        B_somewhere_above_vertex            = B['ymin'] > y     # This can only be checked so easily due to the assumption, that B does not overlap the chosen vertex of A
-
-        B_somewhere_right_of_vertex         = B['xmin'] > x     # This can only be checked so easily due to the assumption, that B does not overlap the chosen vertex of A
-
-        vertex_vertical_cuts_edge_of_B      = (B['xmin'] <= x <= B['xmin'] + B.width)
-
-        vertex_horizontal_cuts_edge_of_B    = (B['ymin'] <= y <= B['ymin'] + B.height)
-
-        # Check upwards and downwards
-
-        if B_somewhere_above_vertex:
-
-            southern_boundary.append(layout_zone['ymin'])           # If B is above A, the southern boundary is automatically the layout zone minimum in this pairwise comparison
-            
-            if vertex_vertical_cuts_edge_of_B:
-                northern_boundary.append(B['ymin'])
-            else:
-                northern_boundary.append(layout_zone.height)
-        
-        else:
-
-            northern_boundary.append(layout_zone.height)         # If B is below A, the northern boundary is automatically the layout zone maximum in this pairwise comparison
-
-            if vertex_vertical_cuts_edge_of_B:
-                southern_boundary.append(B['ymin'] + B.height)
-            else:
-                southern_boundary.append(layout_zone['ymin'])             
-            
-        # Check rightwards and leftwards
-                
-        if B_somewhere_right_of_vertex:
-
-            western_boundary.append(layout_zone['xmin'])            # If B is right of A, the western boundary is automatically the layout zone minimum in this pairwise comparison
-                
-            if vertex_horizontal_cuts_edge_of_B:
-                eastern_boundary.append(B['xmin'])
-            else:
-                eastern_boundary.append(layout_zone.width)
-
-        else:
-
-            eastern_boundary.append(layout_zone.width)           # If B is left of A, the eastern boundary is automatically the layout zone maximum in this pairwise comparison
-            
-            if vertex_horizontal_cuts_edge_of_B:
-                western_boundary.append(B['xmin'] + B.width)
-            else:
-                western_boundary.append(layout_zone['xmin'])
-
-    # Get boundary values
-                
-    secondary_free_space    = {
-            'xmin'     : max(western_boundary),
-            'ymin'     : max(southern_boundary),
-            'width'    : min(eastern_boundary) - max(western_boundary),
-            'height'   : min(northern_boundary) - max(southern_boundary)
-
-    }                 
+    secondary_free_space                    = Rectangle(left_border_horizontal, lower_border_vertical, right_border_horizontal - left_border_horizontal, upper_border_vertical - lower_border_vertical)
+               
     
     return secondary_free_space
 
 
 def calclulate_all_secondary_free_spaces(A : dict, free_vertices : list, participants : dict, layout_zone : dict) -> tuple:
+
+    hsip                            = [(B.ymin, B.ymin + B.heigth) for B in participants if B.ymin <= A.ymin <= B.ymin + B.height]
+
+    hnip                            = [(B.ymin, B.ymin + B.heigth) for B in participants if B.ymin <= A.ymin + A.height <= B.ymin + B.height]
+
+    vwip                            = [(B.xmin, B.xmin + B.width) for B in participants if B.xmin <= A.xmin <= B.xmin + B.width]
+
+    veip                            = [(B.xmin, B.xmin + B.width) for B in participants if B.xmin <= A.xmin + A.width <= B.xmin + B.width]
      
-    secondary_free_space_north_west = calculate_secondary_free_space(A, 'north-west', participants, layout_zone) if 'north-west' in free_vertices else {}
+    secondary_free_space_north_west = calculate_secondary_free_space(A, ('left', 'top'), hsip, hnip, vwip, veip, participants, layout_zone) if ('left', 'top') in free_vertices else ()
 
-    secondary_free_space_north_east = calculate_secondary_free_space(A, 'north-east', participants, layout_zone) if 'north-east' in free_vertices else {}
+    secondary_free_space_north_east = calculate_secondary_free_space(A, ('right', 'top'), hsip, hnip, vwip, veip, participants, layout_zone) if ('right', 'top') in free_vertices else ()
 
-    secondary_free_space_south_east = calculate_secondary_free_space(A, 'south-east', participants, layout_zone) if 'south-east' in free_vertices else {}
+    secondary_free_space_south_east = calculate_secondary_free_space(A, ('right', 'bottom'), hsip, hnip, vwip, veip, participants, layout_zone) if ('right', 'bottom') in free_vertices else ()
 
-    secondary_free_space_south_west = calculate_secondary_free_space(A, 'south-west', participants, layout_zone) if 'south-west' in free_vertices else {}
+    secondary_free_space_south_west = calculate_secondary_free_space(A, ('left', 'bottom'), hsip, hnip, vwip, veip, participants, layout_zone) if ('left', 'bottom') in free_vertices else ()
 
     return secondary_free_space_north_west, secondary_free_space_north_east, secondary_free_space_south_east, secondary_free_space_south_west
 
 
-def calculate_yield_polygon(A : dict, participants : dict, layout_zone : dict) -> dict:     # For yield (here called "yielt") move p. 141
+def calculate_yield_polygon(A : namedtuple, participants : set, layout_zone : namedtuple) -> namedtuple:     # For yield (here called "yielt") move p. 141
+
+    overlaps    = [calculate_overlap(A, B) for B in participants]
 
     northern_boundary   = []
     western_boundary    = []
