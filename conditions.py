@@ -254,13 +254,13 @@ def calculate_secondary_free_space(A                                        : na
 
 def calclulate_all_secondary_free_spaces(A : dict, free_vertices : list, participants : dict, layout_zone : dict) -> tuple:
 
-    hsip                            = [(B.ymin, B.ymin + B.heigth) for B in participants if B.ymin <= A.ymin <= B.ymin + B.height]
+    hsip                            = [(B.ymin, B.ymin + B.heigth)  for B in participants if B.ymin <= A.ymin <= B.ymin + B.height]
 
-    hnip                            = [(B.ymin, B.ymin + B.heigth) for B in participants if B.ymin <= A.ymin + A.height <= B.ymin + B.height]
+    hnip                            = [(B.ymin, B.ymin + B.heigth)  for B in participants if B.ymin <= A.ymin + A.height <= B.ymin + B.height]
 
-    vwip                            = [(B.xmin, B.xmin + B.width) for B in participants if B.xmin <= A.xmin <= B.xmin + B.width]
+    vwip                            = [(B.xmin, B.xmin + B.width)   for B in participants if B.xmin <= A.xmin <= B.xmin + B.width]
 
-    veip                            = [(B.xmin, B.xmin + B.width) for B in participants if B.xmin <= A.xmin + A.width <= B.xmin + B.width]
+    veip                            = [(B.xmin, B.xmin + B.width)   for B in participants if B.xmin <= A.xmin + A.width <= B.xmin + B.width]
      
     secondary_free_space_north_west = calculate_secondary_free_space(A, ('left', 'top'), hsip, hnip, vwip, veip, participants, layout_zone) if ('left', 'top') in free_vertices else ()
 
@@ -274,8 +274,6 @@ def calclulate_all_secondary_free_spaces(A : dict, free_vertices : list, partici
 
 
 def calculate_yield_polygon(A : namedtuple, participants : set, layout_zone : namedtuple) -> namedtuple:     # For yield (here called "yielt") move p. 141
-
-    overlaps    = [calculate_overlap(A, B) for B in participants]
 
     northern_boundary   = []
     western_boundary    = []
@@ -331,10 +329,54 @@ def calculate_compliance(A : dict) -> bool:
     return True
 
     
+def calculate_lateral_condition(A: namedtuple, B : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> tuple:
+
+    overlap, locations          = calculate_overlap(A, B)
+
+    clashes                     = calculate_clashes(A, B, overlap)
+
+    aversion                    = calculate_aversion(A, B, overlap, conciliation_quota)
+
+    trouble                     = calculate_trouble(A, B, overlap)
+
+    tension, relaxed_connection	= calculate_tension(leeway_coeffcient, A, B)
+
     
-def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> dict:
+    return Lateral_Conditions(overlap, locations, clashes, aversion, trouble, tension, relaxed_connection) 
+
+
+
+
+def calculate_conditions(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> dict:
 
     tic                     = time.time()
+
+
+
+    lateral_conditions  = [calculate_lateral_condition(A, B, leeway_coeffcient, conciliation_quota, critical_amount) for B in participants]
+
+    # determine free edges
+
+    masks_edges         = [cond.locations for cond in lateral_conditions]
+
+    free_edges_bool     = [all(mask[i] for mask in masks_edges) for i in range(4)]
+
+    free_edges_str      = [y for (x,y) in zip(free_edges_bool, ['north', 'east', 'south', 'west']) if x]
+
+    # determine free vertices
+
+    overlaps            = [cond.overlap for cond in lateral_conditions]
+
+    masks_corners       = [calculate_free_corners(A, O) for O in overlaps]
+
+    free_vertices_bool  = [all(mask[i] for mask in masks_corners) for i in range(4)]
+
+    free_vertices_str   = [y for (x,y) in zip(free_vertices_bool, [('left', 'top'), ('right', 'top'), ('left', 'bottom'), ('left', 'right')]) if x]
+
+
+
+
+
 
     free_edges              = ['north', 'east', 'south', 'west']       
 
@@ -452,7 +494,8 @@ def calculate_conditions(A : dict, participants : dict, layout_zone : dict, leew
 
     # Calculate space values
 
-    yield_polygon                   = calculate_yield_polygon(A, participants, layout_zone)
+    #yield_polygon                   = calculate_yield_polygon(A, participants, layout_zone)
+    yield_polygon                   = () # TODO: Rethink yield function
 
     free_space                      = calclulate_free_space(A, free_edges, participants, layout_zone)
 

@@ -3,6 +3,23 @@ from swarm_types import *
 
 import math
 
+def point_in_rectangle(x, y, B : namedtuple) -> bool:
+
+    return (B.xmin < x < B.xmin + B.width) and (B.ymin < y < B.ymin + B.heigth)
+
+
+def calculate_free_corners(A: namedtuple, B: namedtuple) -> list:
+
+    corner_north_west = (A.xmin, A.ymin + A.height)
+    corner_north_east = (A.xmin + A.width, A.ymin + A.height)
+    corner_south_west = (A.xmin, A.ymin)
+    corner_south_east = (A.xmin + A.width, A.ymin)
+
+    free_corners_bool = [point_in_rectangle(*corner, B) for corner in [corner_north_west, corner_north_east, corner_south_west, corner_south_east]]
+
+    return free_corners_bool
+
+
 def calculate_overlap(A : namedtuple, B : namedtuple) -> tuple:
 
     x_A_min, y_A_min, x_A_max, y_A_max  = A.xmin, A.ymin, A.xmin + A.width, A.ymin + A.height
