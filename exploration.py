@@ -40,7 +40,7 @@ def classify_action(A : namedtuple) -> str:
 
 def explore_action(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action) -> tuple:
 
-    tic                                 = time.time()
+    tic                           = time.time()
 
     adjuvant_position             = []
     valid_position                = []
@@ -56,7 +56,7 @@ def explore_action(A : namedtuple, participants : set, layout_zone : namedtuple,
 
     participants_updated        = set([p for p in participants if p.idx not in moved_participants_ids] + moved_participants)
 
-    # Evaluate new positions (update conditions)
+    # Evaluate new positions (update conditions for the moved participants)
 
     moved_participants_updated  = [calculate_conditions(A, participants_updated, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount) for A in moved_participants]
 
@@ -83,8 +83,6 @@ def explore_action(A : namedtuple, participants : set, layout_zone : namedtuple,
 def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 
     possible_next_positions = []    # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
-
-    parallel_workers        = min(len(participants), os.cpu_count() - 1)
 
     #print(str(A['idx']) + ' takes a turn!')
  
@@ -147,21 +145,21 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
             tic = time.time()
 
 
-            free_secondary_spaces                   = [f'secondary-freespace-{corner}' 
-                                                       for corner in ['north-west', 'north-east', 'south-east', 'south-west'] 
-                                                       if A[f'secondary-freespace-{corner}']]
+            free_secondary_spaces                   = ['secondary_freespace_north_west', 'secondary_freespace_north_east', 'secondary_freespace_south_west', 'secondary_freespace_south_east']
 
             for direction in free_secondary_spaces:
 
-                action                              = lambda P: budge(P, direction)
+                if getattr(A, direction):
 
-                adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+                    action                              = lambda P: budge(P, direction)
 
-                if adjuvant_position:            
-                    return [adjuvant_position]
-        
-                if valid_position:            
-                    possible_next_positions         = possible_next_positions + [valid_position]
+                    adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+
+                    if adjuvant_position:            
+                        return [adjuvant_position]
+            
+                    if valid_position:            
+                        possible_next_positions         = possible_next_positions + [valid_position]
 
             toc = time.time()
 
@@ -188,7 +186,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             swap_exploration                                        = lambda B: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: swap(P, B))
 
-            swap_results                                            = [swap_exploration(B) for B in list(participants.values())]
+            swap_results                                            = [swap_exploration(B) for B in participants if B.idx != A.idx]
           
             adjuvant_swap_move                                      = [mytup[0] for mytup in swap_results if len(mytup[0]) == 2]
 
@@ -214,7 +212,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
                 for direction in ['horizontal-push-right', 'horizontal-push-left', 'vertical-push-up', 'vertical-push-down']:
 
-                    pairing_options                                         = [(x, direction) for x in list(participants.values()) if estimate_pair_success(A, x, direction)]    # returns a list of tuples -> Each participant with each pairing direction
+                    pairing_options                                         = [(B, direction) for B in participants if estimate_pair_success(A, B, direction) and B.idx != A.idx]    # returns a list of tuples -> Each participant with each pairing direction
 
                     length_pairing_options                                  = length_pairing_options + len(pairing_options)
 
@@ -246,7 +244,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
             align_positions = ['left', 'center', 'right']
 
-            for edge in A['protruded-zone-edges']:
+            for edge in A.protruded_zone_edges:
 
                 for position in align_positions:
                 
@@ -262,14 +260,14 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
                 
         # explore yield in case of not lost and interference
 
-        if len(possible_next_positions) == 0 and A['interference'] != 0 and A['yield-polygon']:             
+        # if len(possible_next_positions) == 0 and A['interference'] != 0 and A['yield-polygon']:             #TODO: Rethink yield
 
-            action                                          = lambda P: yielt(P)
+        #     action                                          = lambda P: yielt(P)
 
-            adjuvant_position, valid_position, __           = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)         
+        #     adjuvant_position, valid_position, __           = explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)         
             
-            if valid_position or adjuvant_position:            
-                possible_next_positions         = possible_next_positions + [adjuvant_position + valid_position]
+        #     if valid_position or adjuvant_position:            
+        #         possible_next_positions         = possible_next_positions + [adjuvant_position + valid_position]
 
                     
     return possible_next_positions
