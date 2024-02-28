@@ -407,7 +407,7 @@ def calculate_conditions(A : namedtuple, participants : set, layout_zone : named
 
     protrusion_status, extend, edges = calculate_protrusion(layout_zone, A)
 
-    protruded_zone_edges             = [edge for i,edge in enumerate(['west', 'east', 'north', 'south']) if edges[i]]
+    protruded_zone_edges             = set([edge for i,edge in enumerate(['west', 'east', 'north', 'south']) if edges[i]])
 
     # Calculate space values
 
@@ -427,7 +427,7 @@ def calculate_conditions(A : namedtuple, participants : set, layout_zone : named
                        , relaxed_connections    = relaxed_connections
                        , protrusion_status      = protrusion_status
                        , protrusion_extend      = extend
-                       , protruded_zone_edges   = set(protruded_zone_edges)
+                       , protruded_zone_edges   = protruded_zone_edges
                        , healthy                = True
                        , compliant              = compliance
                        , yield_polygon          = yield_polygon

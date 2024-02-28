@@ -5,7 +5,8 @@ import matplotlib.colors as mcolors
 from IPython import display
 import pylab as pl
 import time
-import copy
+
+from collections import namedtuple
 
 from util import *
 
@@ -17,7 +18,7 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
 
     colors = list(mcolors.CSS4_COLORS.keys())
 
-    participants    = {}
+    participants    = []
         
     for i in range(amount):
             
@@ -29,36 +30,59 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
 
 
         participant = {
-            "idx"                           : str(i),  
-            "connections"                   : {},         #{'idx' : 2}
+            "idx"                           : 'p' + str(i),  
+            "connections"                   : (),         #('idx' : 2)
             "xmin"                          : xmin,
             "ymin"                          : ymin,
             "width"                         : width,
             "height"                        : height,
-            "clashes"                       : {},         #{'idx' : 100}
-            "aversions"                     : {},         #{'idx' : 17,5}
+            "clashes"                       : (),         #('idx' : 100)
+            "aversions"                     : (),         #('idx' : 17,5)
             "interference"                  : 0,
-            "overlap-with-idx"              : [],
+            "overlap-with-idx"              : {},
             "turmoil"                       : 0,
             "relaxed-connections"           : 0,
             "protrusion-status"             : '',
             "protrusion-extend"             : 0,
-            "protruded-zone-edges"          : [],
+            "protruded-zone-edges"          : {},
             "healthy"                       : True,
             "compliant"                     : True,
-            "yield-polygon"                 : {},
-            "freespace"                     : {},
-            'secondary-freespace-north-east': {},
-            'secondary-freespace-south-east': {},
-            'secondary-freespace-south-west': {},
-            'secondary-freespace-north-west': {},
+            "yield-polygon"                 : (),
+            "freespace"                     : (),
+            'secondary-freespace-north-east': (),
+            'secondary-freespace-south-east': (),
+            'secondary-freespace-south-west': (),
+            'secondary-freespace-north-west': (),
             "last-move"                     : '',
             "color"                         : random.choice(colors)
         }
 
-        participants[str(i)]    = participant
+        participants.append(participant)
 
-    return participants
+    # Create defaults for clashes and aversion
+
+    idx_list            = [p['idx'] for p in participants]
+    idx_str             = ' '.join(idx_list)
+
+    Clashes             = namedtuple('Clashes', idx_str)
+
+    Aversions           = namedtuple('Aversions', idx_str)
+
+    clashes_default     = Clashes(*(len(participants) * [0]))
+
+    aversions_default   = Aversions(*(len(participants) * [0]))
+
+    # Turn list of dictionaries to list of namedtuples
+
+    participants        = [namedtuple('Participant', participant)(**participant) for participant in participants] 
+
+    # Put in defaults for clashes and aversions
+
+    particpants_updated = [p._replace(clashes = clashes_default, aversions = aversions_default) for p in participants]
+
+
+
+    return set(particpants_updated)
 
 
 
@@ -306,7 +330,7 @@ def random_place_mcnc(participants_list : list, layout_zone : dict, seed : int) 
 
 
 
-def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax : int, sleep_time = 0.0, plot_connections = False):
+def plot_participants(layout_zone : namedtuple, participants : set, xmax : int, ymax : int, sleep_time = 0.0, plot_connections = False):
 
     plt.rcParams["figure.figsize"] = [7.00, 7.00]
     plt.rcParams["figure.autolayout"] = True
@@ -318,42 +342,40 @@ def plot_participants(layout_zone : dict, participants : dict, xmax : int, ymax 
 
     # Plot layout zone
 
-    origin = (layout_zone['xmin'], layout_zone['ymin'])
+    origin = (layout_zone.xmin, layout_zone.ymin)
 
-    rectangle = patches.Rectangle(origin, layout_zone['width'], layout_zone['height'], edgecolor='red',
+    rectangle = patches.Rectangle(origin, layout_zone.width, layout_zone.height, edgecolor='red',
     facecolor='red', linewidth=2, fill = False)
 
     ax.add_patch(rectangle)
 
     # Plot participants
 
-    for key in participants:
+    for p in participants:
 
-        p = participants[key]
+        origin = (p.xmin, p.ymin)
 
-        origin = (p['xmin'], p['ymin'])
+        rectangle   = patches.Rectangle(origin, p.width, p.height, edgecolor=p.color,
+                        facecolor=p.color, linewidth=0.5, fill = True, alpha = 0.9, hatch = 'x')
 
-        rectangle   = patches.Rectangle(origin, p['width'], p['height'], edgecolor=p['color'],
-                        facecolor=p['color'], linewidth=0.5, fill = True, alpha = 0.9, hatch = 'x')
+        center_x    = p.xmin + 0.5 * p.width
+        center_y    = p.ymin + 0.5 * p.height
 
-        center_x    = p['xmin'] + 0.5 * p['width']
-        center_y    = p['ymin'] + 0.5 * p['height']
-
-        plt.text(center_x, center_y, p['idx'])
+        plt.text(center_x, center_y, p.idx)
 
         ax.add_patch(rectangle)
 
-        if plot_connections:
+        #if plot_connections:
 
-            for key in p['connections']:
+            # for key in p['connections']: #TODO: Rethink connection plot
 
-                center_x_other_one  = participants[key]['xmin'] + 0.5 * participants[key]['width']
-                center_y_other_one  = participants[key]['ymin'] + 0.5 * participants[key]['height']
+            #     center_x_other_one  = participants[key]['xmin'] + 0.5 * participants[key]['width']
+            #     center_y_other_one  = participants[key]['ymin'] + 0.5 * participants[key]['height']
 
-                dx                  = -(center_x - center_x_other_one) 
-                dy                  = -(center_y - center_y_other_one)
+            #     dx                  = -(center_x - center_x_other_one) 
+            #     dy                  = -(center_y - center_y_other_one)
 
-                plt.arrow(center_x, center_y, dx, dy)
+            #     plt.arrow(center_x, center_y, dx, dy)
 
 
     plt.ylim(-10,ymax)
