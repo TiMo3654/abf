@@ -80,7 +80,7 @@ def explore_action(A : namedtuple, participants : set, layout_zone : namedtuple,
 
 
 
-def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
+def action_exploration(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 
     possible_next_positions = []    # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
 
@@ -276,7 +276,7 @@ def action_exploration(A : dict, participants : dict, layout_zone : dict, leeway
 
 ## Action evaluation
 
-def determine_best_move(possible_next_positions : list, partcipants : set, metric : str) -> dict:
+def determine_best_move(possible_next_positions : list, partcipants : set, metric : str) -> list:
 
     next_position                                   = []
 
@@ -285,81 +285,60 @@ def determine_best_move(possible_next_positions : list, partcipants : set, metri
         if len(possible_next_positions) != 1:
 
 
-            summed_interference     = [(i, sum([A.interference for A in moved_participants])) for i, moved_participants in enumerate(possible_next_positions)]
+            # interference
+            summed_interference                 = [sum([A.interference for A in moved_participants]) for moved_participants in possible_next_positions]
 
-            summed_relaxation_delta = [(i, sum([A.relaxed_connections for A in moved_participants])) for i, moved_participants in enumerate(possible_next_positions)]
+            best_position_due_to_interference   = summed_interference.index(min(summed_interference))
 
-            # keeep working here
+            # turmoil
 
-            prospective_interference_minimum    = math.inf
+            number_of_relaxed_connections       = [sum([A.relaxed_connections for A in moved_participants]) for moved_participants in possible_next_positions]
 
-            relaxation_deltas_list              = []
+            max_no_of_relaxed_connections       = max(number_of_relaxed_connections)
 
-            summed_interference_list            = []
+            best_positions_due_to_turmoil_ids   = [i for (i, x) in enumerate(number_of_relaxed_connections) if x == max_no_of_relaxed_connections] # get idx of all equally relaxing position
 
+            best_positions_due_to_turmoil       = [x for (i,x) in enumerate(possible_next_positions) if i in best_positions_due_to_turmoil_ids]
 
-            for idx, positions in enumerate(possible_next_positions):   # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
+            summed_interference                 = [sum([A.interference for A in moved_participants]) for moved_participants in best_positions_due_to_turmoil]
 
-                summed_interference             = 0
+            best_position_due_to_turmoil_and_interference  = summed_interference.index(min(summed_interference))
 
-                summed_relaxation_delta         = 0
-
-                for moved_participant in positions: # [A_hustle, B_hustle, F_hustle, G_hustle] or [A_center]
-
-                    summed_interference         = summed_interference + moved_participant['interference']   # TODO: Do not count interference twice in case of mutual overlap
-
-                    relaxation_delta            = partcipants[moved_participant['idx']].relaxed_connections - moved_participant.relaxed_connections   # Negative means relaxation
-
-                    summed_relaxation_delta     = summed_relaxation_delta + relaxation_delta
-
-                # For interference metric
-
-                if summed_interference < prospective_interference_minimum:
-
-                    prospective_interference_minimum    = summed_interference
-
-                    best_position_due_to_interference   = idx
-
-                # For turmoil metric
-
-                relaxation_deltas_list.append(summed_relaxation_delta)
-
-                summed_interference_list.append(summed_interference)
+            # determine next position
+            next_position                       = possible_next_positions[best_position_due_to_interference] if metric == 'interference' else best_positions_due_to_turmoil[best_position_due_to_turmoil_and_interference]
 
             
-            if metric == 'interference':
+            # if metric == 'interference':
 
-                next_position                           = possible_next_positions[best_position_due_to_interference]
+            #     next_position                           = possible_next_positions[best_position_due_to_interference]
 
-            else:   # 'turmoil'
+            # else:   # 'turmoil'
 
-                most_relaxed_connections                = min(relaxation_deltas_list)
-                best_positions_due_to_turmoil_ids       = [i for i, x in enumerate(relaxation_deltas_list) if x == most_relaxed_connections]
+            #     most_relaxed_connections                = min(relaxation_deltas_list)
+            #     best_positions_due_to_turmoil_ids       = [i for i, x in enumerate(relaxation_deltas_list) if x == most_relaxed_connections]
 
-                if len(best_positions_due_to_turmoil_ids) == 1: # Only one best relaxing action
+            #     if len(best_positions_due_to_turmoil_ids) == 1: # Only one best relaxing action
 
-                    next_position                       = possible_next_positions[best_positions_due_to_turmoil_ids[0]]
+            #         next_position                       = possible_next_positions[best_positions_due_to_turmoil_ids[0]]
 
-                else:   # Multiple best relaxing actions
+            #     else:   # Multiple best relaxing actions
 
-                    prospective_interference_minimum    = math.inf
+            #         prospective_interference_minimum    = math.inf
 
-                    for idx in best_positions_due_to_turmoil_ids:
+            #         for idx in best_positions_due_to_turmoil_ids:
 
-                        if summed_interference_list[idx] < prospective_interference_minimum:
+            #             if summed_interference_list[idx] < prospective_interference_minimum:
 
-                            prospective_interference_minimum                = summed_interference_list[idx]
+            #                 prospective_interference_minimum                = summed_interference_list[idx]
 
-                            best_position_due_to_interference_and_turmoil   = idx
+            #                 best_position_due_to_interference_and_turmoil   = idx
 
-                    next_position                       = possible_next_positions[best_position_due_to_interference_and_turmoil]
+            #         next_position                       = possible_next_positions[best_position_due_to_interference_and_turmoil]
         
         else:
 
             next_position                               = possible_next_positions[0]
 
-    
-    next_position_dict                                  = {moved_participant['idx'] : moved_participant for moved_participant in next_position}
 
-    return next_position_dict
+    return next_position
 

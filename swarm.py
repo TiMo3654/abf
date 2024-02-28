@@ -38,8 +38,9 @@ def one_round_of_interaction(participants : set, layout_zone : namedtuple, metri
 
         new_position                = determine_best_move(possible_new_positions + possible_new_positions_rot, participants, metric)
 
+        moved_participants_ids      = [p.idx for p in new_position]
 
-        new_participants            = new_participants | new_position
+        new_participants            = set([p for p in participants if p.idx not in moved_participants_ids] + new_position)
 
 
     toc                             = time.time()
