@@ -3,6 +3,8 @@ from matplotlib import colors
 
 # Plot in tikz: https://gist.github.com/AugustUnderground/fc914edbc007c37ad3008d50701a7a7e
 
+# TODO: Update exort function
+
 def positions2csv(participants : dict, layout_zone : dict, file_name : str):
 
 

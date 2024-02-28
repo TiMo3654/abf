@@ -22,8 +22,8 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
         
     for i in range(amount):
             
-        xmin        = random.randint(0,layout_zone['width'])
-        ymin        = random.randint(0,layout_zone['height'])
+        xmin        = random.randint(0,layout_zone.width)
+        ymin        = random.randint(0,layout_zone.height)
 
         width       = random.randint(5,maxX)
         height      = random.randint(5,maxY)
@@ -39,21 +39,21 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
             "clashes"                       : (),         #('idx' : 100)
             "aversions"                     : (),         #('idx' : 17,5)
             "interference"                  : 0,
-            "overlap-with-idx"              : {},
+            "overlap_with_idx"              : frozenset(),
             "turmoil"                       : 0,
-            "relaxed-connections"           : 0,
-            "protrusion-status"             : '',
-            "protrusion-extend"             : 0,
-            "protruded-zone-edges"          : {},
+            "relaxed_connections"           : 0,
+            "protrusion_status"             : '',
+            "protrusion_extend"             : 0,
+            "protruded_zone_edges"          : frozenset(),
             "healthy"                       : True,
             "compliant"                     : True,
-            "yield-polygon"                 : (),
+            "yield_polygon"                 : (),
             "freespace"                     : (),
-            'secondary-freespace-north-east': (),
-            'secondary-freespace-south-east': (),
-            'secondary-freespace-south-west': (),
-            'secondary-freespace-north-west': (),
-            "last-move"                     : '',
+            'secondary_freespace_north_east': (),
+            'secondary_freespace_south_east': (),
+            'secondary_freespace_south_west': (),
+            'secondary_freespace_north_west': (),
+            "last_move"                     : '',
             "color"                         : random.choice(colors)
         }
 
@@ -82,7 +82,7 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
 
 
 
-    return set(particpants_updated)
+    return frozenset(particpants_updated)
 
 
 
