@@ -11,7 +11,7 @@ def determine_initial_conditions(participants : namedtuple, layout_zone : namedt
 
     leeway_coefficient          = calculate_leeway_coefficient(layout_zone, participants)
 
-    participants_updated_dict   = {A. idx : calculate_conditions(A, participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount) for A in participants}
+    participants_updated_dict   = {A.idx : calculate_conditions(A, participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount) for A in participants}
 
     participants_updated        = participants._replace(**participants_updated_dict)
 
@@ -27,10 +27,14 @@ def one_round_of_interaction(participants : namedtuple, layout_zone : namedtuple
 
     new_participants                = participants
 
+    idx_list                        = [p.idx for p in participants]
 
-    for A in participants:             # For loop is important here, because the participants have to act sequentially
+
+    for idx in idx_list:             # For loop is important here, because the participants have to act sequentially
 
         new_participants            = determine_initial_conditions(new_participants, layout_zone, conciliation_quota, critical_amount)  # Each participant gets the currrent position of all other blocks (no old information)
+
+        A                           = getattr(new_participants, idx)
 
         A_rotated                   = rotate(A)
         A_rotated_updated           = calculate_conditions(A_rotated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
