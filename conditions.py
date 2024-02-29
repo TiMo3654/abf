@@ -225,6 +225,8 @@ def calculate_secondary_free_space(A                                        : na
                                    , vertical_west_inline_participants      : list
                                    , vertical_east_inline_participants      : list
                                    , layout_zone                            : namedtuple) -> namedtuple:   # Budging Move p.137
+    
+    #print(A.idx)
 
     corner_x                                = A.xmin    if vertex[0] == 'left'      else A.xmin + A.width
     corner_y                                = A.ymin    if vertex[1] == 'bottom'    else A.ymin + A.height
@@ -253,6 +255,8 @@ def calculate_secondary_free_space(A                                        : na
 
 
 def calclulate_all_secondary_free_spaces(A : namedtuple, free_vertices : list, participants : namedtuple, layout_zone : namedtuple) -> tuple:
+
+    #print(free_vertices)
 
     #print(A.idx)
 
@@ -381,9 +385,7 @@ def calculate_conditions(A : namedtuple, participants : namedtuple, layout_zone 
 
     overlaps            = [cond.overlap for cond in lateral_conditions if cond.overlap]
 
-    masks_corners       = [calculate_free_corners(A, Ov, layout_zone) for Ov in overlaps]
-
-    free_vertices_bool  = [all(mask[i] for mask in masks_corners) for i in range(4)]
+    free_vertices_bool  = calculate_free_corners(A, overlaps, layout_zone)
 
     free_vertices_str   = [y for (x,y) in zip(free_vertices_bool, [('left', 'top'), ('right', 'top'), ('left', 'bottom'), ('left', 'right')]) if x]
 

@@ -3,23 +3,25 @@ from swarm_types import *
 
 import math
 
-def point_in_rectangle(x, y, B : namedtuple) -> bool:
+def point_in_rectangle(x: int, y: int, B : namedtuple) -> bool:
 
     return (B.xmin <= x <= B.xmin + B.width) and (B.ymin <= y <= B.ymin + B.height)
 
 
-def calculate_free_corners(A: namedtuple, B: namedtuple, layout_zone: namedtuple) -> list:
+def calculate_free_corners(A: namedtuple, overlaps: list, layout_zone: namedtuple) -> list:
 
-    corner_north_west   = (A.xmin, A.ymin + A.height)
-    corner_north_east   = (A.xmin + A.width, A.ymin + A.height)
-    corner_south_west   = (A.xmin, A.ymin)
-    corner_south_east   = (A.xmin + A.width, A.ymin)
+    corner_north_west       = (A.xmin, A.ymin + A.height)
+    corner_north_east       = (A.xmin + A.width, A.ymin + A.height)
+    corner_south_west       = (A.xmin, A.ymin)
+    corner_south_east       = (A.xmin + A.width, A.ymin)
 
-    free_corners_bool_1 = [not point_in_rectangle(*corner, B) for corner in [corner_north_west, corner_north_east, corner_south_west, corner_south_east]]
+    free_corners_bool_1     = [[not point_in_rectangle(*corner, B) for corner in [corner_north_west, corner_north_east, corner_south_west, corner_south_east]] for B in overlaps]   # Check if a vertex is within an overlap
     #print(free_corners_bool_1)
-    free_corners_bool_2 = [point_in_rectangle(*corner, layout_zone) for corner in [corner_north_west, corner_north_east, corner_south_west, corner_south_east]]
-    # #print(free_corners_bool_2)
-    free_corners_bool   = [all(mask[i] for mask in [free_corners_bool_1, free_corners_bool_2]) for i in range(4)]
+    free_corners_bool_11    = [all(mask[i] for mask in free_corners_bool_1) for i in range(4)]                                                                                      # Logic AND of the results of the comparison with all overlaps
+
+    free_corners_bool_2     = [point_in_rectangle(*corner, layout_zone) for corner in [corner_north_west, corner_north_east, corner_south_west, corner_south_east]]                 # Check if vertex is within layout zone
+    
+    free_corners_bool       = [all(mask[i] for mask in [free_corners_bool_11, free_corners_bool_2]) for i in range(4)]                                                              # Logic AND of overlap and layout zone calculation
 
     return free_corners_bool
 
