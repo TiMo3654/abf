@@ -169,7 +169,7 @@ def calculate_corridor(A : namedtuple, layout_zone : namedtuple, edge : str) -> 
 
     elif edge == "east":
 
-        corridor   = Rectangle(A.xmin + A.width, A.ymin, layout_zone.width - (A.xmin + A.width))
+        corridor   = Rectangle(A.xmin + A.width, A.ymin, layout_zone.width - (A.xmin + A.width), A.height)
 
     elif edge == "south":
         corridor   = Rectangle(A.xmin, layout_zone.ymin, A.width, A.ymin)
@@ -181,7 +181,7 @@ def calculate_corridor(A : namedtuple, layout_zone : namedtuple, edge : str) -> 
     return corridor    
 
 
-def calclulate_free_space(A : namedtuple, free_edges : list, participants : set, layout_zone : namedtuple) -> namedtuple:
+def calclulate_free_space(A : namedtuple, free_edges : list, participants : namedtuple, layout_zone : namedtuple) -> namedtuple:
 
     if free_edges:
 
@@ -229,12 +229,17 @@ def calculate_secondary_free_space(A                                        : na
     corner_x                                = A.xmin    if vertex[0] == 'left'      else A.xmin + A.width
     corner_y                                = A.ymin    if vertex[1] == 'bottom'    else A.ymin + A.height
 
+    print(corner_x)
+    print(corner_y)
+
     # Catch cases when there are no other participants in line -> Set layout zone as border
 
-    horizontal_south_inline_participants_f   = horizontal_south_inline_participants  if horizontal_south_inline_participants     else [(layout_zone.xmin + layout_zone.width, layout_zone.xmin )]
-    horizontal_north_inline_participants_f   = horizontal_north_inline_participants  if horizontal_north_inline_participants     else [(layout_zone.xmin + layout_zone.width, layout_zone.xmin )]
-    vertical_west_inline_participants_f      = vertical_west_inline_participants     if vertical_west_inline_participants        else [(layout_zone.ymin + layout_zone.height, layout_zone.ymin)]
-    vertical_east_inline_participants_f      = vertical_east_inline_participants     if vertical_east_inline_participants        else [(layout_zone.ymin + layout_zone.height, layout_zone.ymin)]
+    horizontal_south_inline_participants_f   = horizontal_south_inline_participants  + [(layout_zone.xmin + layout_zone.width, layout_zone.xmin )]
+    horizontal_north_inline_participants_f   = horizontal_north_inline_participants  + [(layout_zone.xmin + layout_zone.width, layout_zone.xmin )]
+    vertical_west_inline_participants_f      = vertical_west_inline_participants     + [(layout_zone.ymin + layout_zone.height, layout_zone.ymin)]
+    vertical_east_inline_participants_f      = vertical_east_inline_participants     + [(layout_zone.ymin + layout_zone.height, layout_zone.ymin)]
+
+    print(vertical_west_inline_participants_f)
 
     # Calculate border
 
@@ -252,23 +257,33 @@ def calculate_secondary_free_space(A                                        : na
     return secondary_free_space
 
 
-def calclulate_all_secondary_free_spaces(A : dict, free_vertices : list, participants : dict, layout_zone : dict) -> tuple:
+def calclulate_all_secondary_free_spaces(A : namedtuple, free_vertices : list, participants : namedtuple, layout_zone : namedtuple) -> tuple:
 
-    hsip                            = [(B.ymin, B.ymin + B.heigth)  for B in participants if B.ymin <= A.ymin <= B.ymin + B.height]
+    print(A.idx)
 
-    hnip                            = [(B.ymin, B.ymin + B.heigth)  for B in participants if B.ymin <= A.ymin + A.height <= B.ymin + B.height]
+    hsip                            = [(B.xmin, B.xmin + B.width)  for B in participants if (B.ymin <= A.ymin <= B.ymin + B.height) and B.idx != A.idx]
 
-    vwip                            = [(B.xmin, B.xmin + B.width)   for B in participants if B.xmin <= A.xmin <= B.xmin + B.width]
+    #print(hsip)
 
-    veip                            = [(B.xmin, B.xmin + B.width)   for B in participants if B.xmin <= A.xmin + A.width <= B.xmin + B.width]
+    hnip                            = [(B.xmin, B.xmin + B.width)  for B in participants if (B.ymin <= A.ymin + A.height <= B.ymin + B.height) and B.idx != A.idx]
+
+    #print(hnip)
+
+    vwip                            = [(B.ymin, B.ymin + B.height)   for B in participants if (B.xmin <= A.xmin <= B.xmin + B.width) and B.idx != A.idx]
+
+    print(vwip)
+
+    veip                            = [(B.ymin, B.ymin + B.height)   for B in participants if (B.xmin <= A.xmin + A.width <= B.xmin + B.width) and B.idx != A.idx]
      
-    secondary_free_space_north_west = calculate_secondary_free_space(A, ('left', 'top'), hsip, hnip, vwip, veip, participants, layout_zone) if ('left', 'top') in free_vertices else ()
+    #print(veip)
 
-    secondary_free_space_north_east = calculate_secondary_free_space(A, ('right', 'top'), hsip, hnip, vwip, veip, participants, layout_zone) if ('right', 'top') in free_vertices else ()
+    secondary_free_space_north_west = calculate_secondary_free_space(A, ('left', 'top'), hsip, hnip, vwip, veip, layout_zone) if ('left', 'top') in free_vertices else ()
 
-    secondary_free_space_south_east = calculate_secondary_free_space(A, ('right', 'bottom'), hsip, hnip, vwip, veip, participants, layout_zone) if ('right', 'bottom') in free_vertices else ()
+    secondary_free_space_north_east = calculate_secondary_free_space(A, ('right', 'top'), hsip, hnip, vwip, veip, layout_zone) if ('right', 'top') in free_vertices else ()
 
-    secondary_free_space_south_west = calculate_secondary_free_space(A, ('left', 'bottom'), hsip, hnip, vwip, veip, participants, layout_zone) if ('left', 'bottom') in free_vertices else ()
+    secondary_free_space_south_east = calculate_secondary_free_space(A, ('right', 'bottom'), hsip, hnip, vwip, veip, layout_zone) if ('right', 'bottom') in free_vertices else ()
+
+    secondary_free_space_south_west = calculate_secondary_free_space(A, ('left', 'bottom'), hsip, hnip, vwip, veip, layout_zone) if ('left', 'bottom') in free_vertices else ()
 
     return secondary_free_space_north_west, secondary_free_space_north_east, secondary_free_space_south_east, secondary_free_space_south_west
 
@@ -371,7 +386,7 @@ def calculate_conditions(A : namedtuple, participants : set, layout_zone : named
 
     overlaps            = [cond.overlap for cond in lateral_conditions if cond.overlap]
 
-    masks_corners       = [calculate_free_corners(A, Ov) for Ov in overlaps]
+    masks_corners       = [calculate_free_corners(A, Ov, layout_zone) for Ov in overlaps]
 
     free_vertices_bool  = [all(mask[i] for mask in masks_corners) for i in range(4)]
 

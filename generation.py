@@ -39,12 +39,12 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
             "clashes"                       : (),         #('idx' : 100)
             "aversions"                     : (),         #('idx' : 17,5)
             "interference"                  : 0,
-            "overlap_with_idx"              : frozenset(),
+            "overlap_with_idx"              : (),
             "turmoil"                       : 0,
             "relaxed_connections"           : 0,
             "protrusion_status"             : '',
             "protrusion_extend"             : 0,
-            "protruded_zone_edges"          : frozenset(),
+            "protruded_zone_edges"          : (),
             "healthy"                       : True,
             "compliant"                     : True,
             "yield_polygon"                 : (),
@@ -80,9 +80,13 @@ def generate_unconnected_participants(amount : int, layout_zone : dict, maxX : i
 
     particpants_updated = [p._replace(clashes = clashes_default, aversions = aversions_default) for p in participants]
 
+    # Put participants into named tuple
 
+    Participants        = namedtuple('Participants', idx_str)
 
-    return frozenset(particpants_updated)
+    all_participants    = Participants(*particpants_updated)
+
+    return all_participants
 
 
 
@@ -330,7 +334,7 @@ def random_place_mcnc(participants_list : list, layout_zone : dict, seed : int) 
 
 
 
-def plot_participants(layout_zone : namedtuple, participants : set, xmax : int, ymax : int, sleep_time = 0.0, plot_connections = False):
+def plot_participants(layout_zone : namedtuple, participants : namedtuple, xmax : int, ymax : int, sleep_time = 0.0, plot_connections = False):
 
     plt.rcParams["figure.figsize"] = [7.00, 7.00]
     plt.rcParams["figure.autolayout"] = True
