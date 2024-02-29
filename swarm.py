@@ -25,6 +25,8 @@ def one_round_of_interaction(participants : namedtuple, layout_zone : namedtuple
 
     leeway_coefficient              = calculate_leeway_coefficient(layout_zone, participants)
 
+    new_participants                = participants
+
 
     for A in participants:             # For loop is important here, because the participants have to act sequentially
 

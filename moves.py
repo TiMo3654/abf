@@ -136,8 +136,8 @@ def evade(A : namedtuple, layout_zone : namedtuple, layout_zone_edge : str, alig
 
 def center(A: namedtuple) -> list:
      
-    x_min_new                       = int(A['freespace'].xmin + 0.5 * A['freespace'].width - 0.5 * A.width)
-    y_min_new                       = int(A['freespace'].ymin + 0.5 * A['freespace'].height - 0.5 * A.height)
+    x_min_new                       = int(A.freespace.xmin + 0.5 * A.freespace.width - 0.5 * A.width)
+    y_min_new                       = int(A.freespace.ymin + 0.5 * A.freespace.height - 0.5 * A.height)
 
     new_A                      = A._replace(xmin = x_min_new, ymin = y_min_new, last_move = 'center')
 
