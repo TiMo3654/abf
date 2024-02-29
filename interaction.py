@@ -14,7 +14,22 @@ def scale_layout_zone(layout_zone : namedtuple, scaling_factor : float) -> dict:
 
 def reset_after_tightening(participants : namedtuple) -> namedtuple:
 
-    reset_participants  = {p.idx : p._replace(aversions = (), clashes = ()) for p in participants}
+    # Create defaults for clashes and aversion
+
+    idx_list            = [p.idx for p in participants]
+    idx_str             = ' '.join(idx_list)
+
+    Clashes             = namedtuple('Clashes', idx_str)
+
+    Aversions           = namedtuple('Aversions', idx_str)
+
+    clashes_default     = Clashes(*(len(participants) * [0]))
+
+    aversions_default   = Aversions(*(len(participants) * [0]))
+
+    # Insert default values
+
+    reset_participants  = {p.idx : p._replace(aversions = aversions_default, clashes = clashes_default) for p in participants}
 
     all_participants    = participants._replace(**reset_participants)
 
