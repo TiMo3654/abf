@@ -1,13 +1,13 @@
 from util import *
+from collections import namedtuple
 
-
-def calculate_dead_space(participants : dict, layout_zone : dict) -> float:
+def calculate_dead_space(participants : namedtuple, layout_zone : namedtuple) -> float:
 
     total_layout_area               = calculate_area(layout_zone)
 
-    widths                          = [sub_dict.get('width') for sub_dict in participants.values()]
+    widths                          = [p.width for p in participants]
 
-    heights                         = [sub_dict.get('height') for sub_dict in participants.values()]
+    heights                         = [p.height for p in participants]
 
     summed_participants_area        = sum([a * b for a, b in zip(widths, heights)])
 

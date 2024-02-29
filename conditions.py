@@ -49,7 +49,7 @@ def calculate_protrusion(layout_zone : namedtuple, B : namedtuple) -> tuple:  #l
     return protrusion, protrusion_extend, locations[2:]   # The protrusion extend is signed and can therefore be simply added to the origin of a rectangle to correct a prone state
 
 
-def calculate_leeway_coefficient(layout_zone : namedtuple, participants : set) -> float:                         # Equation 7.33 p. 120
+def calculate_leeway_coefficient(layout_zone : namedtuple, participants : namedtuple) -> float:                         # Equation 7.33 p. 120
 
     total_layout_area             = calculate_area(layout_zone)
 
@@ -283,7 +283,7 @@ def calclulate_all_secondary_free_spaces(A : namedtuple, free_vertices : list, p
     return secondary_free_space_north_west, secondary_free_space_north_east, secondary_free_space_south_east, secondary_free_space_south_west
 
 
-def calculate_yield_polygon(A : namedtuple, participants : set, layout_zone : namedtuple) -> namedtuple:     # For yield (here called "yielt") move p. 141
+def calculate_yield_polygon(A : namedtuple, participants : namedtuple, layout_zone : namedtuple) -> namedtuple:     # For yield (here called "yielt") move p. 141
 
     northern_boundary   = []
     western_boundary    = []
@@ -367,7 +367,7 @@ def calculate_conditions(A : namedtuple, participants : namedtuple, layout_zone 
 
     # determine overlapping participants
 
-    overlap_with_idx    = set([cond.idx for cond in lateral_conditions if cond.overlap])
+    overlap_with_idx    = tuple([cond.idx for cond in lateral_conditions if cond.overlap])
 
     # determine free edges
 
@@ -417,7 +417,7 @@ def calculate_conditions(A : namedtuple, participants : namedtuple, layout_zone 
 
     protrusion_status, extend, edges = calculate_protrusion(layout_zone, A)
 
-    protruded_zone_edges             = set([edge for i,edge in enumerate(['west', 'east', 'north', 'south']) if edges[i]])
+    protruded_zone_edges             = tuple([edge for i,edge in enumerate(['west', 'east', 'north', 'south']) if edges[i]])
 
     # Calculate space values
 

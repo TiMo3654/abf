@@ -38,7 +38,7 @@ def classify_action(A : namedtuple) -> str:
     return action_classification
 
 
-def explore_action(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action) -> tuple:
+def explore_action(A : namedtuple, participants : namedtuple, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int, action) -> tuple:
 
     tic                           = time.time()
 
@@ -48,13 +48,13 @@ def explore_action(A : namedtuple, participants : set, layout_zone : namedtuple,
 
     # Try action
 
-    moved_participants            = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the actions make deep copies of the moved participants
+    moved_participants          = action(A)     # list with either one entry (only a moved A) or two entries (moved A and B) or more in case of hustle/ the actions make deep copies of the moved participants
 
-    moved_participants_ids        = [p.idx for p in moved_participants]
+    moved_participants_dict     = {p.idx : p for p in moved_participants}
 
     # Update positions
 
-    participants_updated        = set([p for p in participants if p.idx not in moved_participants_ids] + moved_participants)
+    participants_updated        = participants._replace(**moved_participants_dict)
 
     # Evaluate new positions (update conditions for the moved participants)
 
@@ -80,7 +80,7 @@ def explore_action(A : namedtuple, participants : set, layout_zone : namedtuple,
 
 
 
-def action_exploration(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
+def action_exploration(A : namedtuple, participants : namedtuple, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> list:
 
     possible_next_positions = []    # [ [A_center], [A_budge], [A_swap, B_swap], [A_hustle, B_hustle, F_hustle, G_hustle] ... ] -> A list of lists
 
@@ -276,7 +276,7 @@ def action_exploration(A : namedtuple, participants : set, layout_zone : namedtu
 
 ## Action evaluation
 
-def determine_best_move(possible_next_positions : list, partcipants : set, metric : str) -> list:
+def determine_best_move(possible_next_positions : list, metric : str) -> list:
 
     next_position                                   = []
 

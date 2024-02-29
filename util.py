@@ -117,7 +117,7 @@ def calculate_euclidean_distance(A : namedtuple, B : namedtuple) -> float:
     return distance
 
 
-def calculate_all_participants_area(participants : set) -> float:
+def calculate_all_participants_area(participants : namedtuple) -> float:
 
     widths                        = [p.width for p in participants]
 

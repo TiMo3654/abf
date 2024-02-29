@@ -212,11 +212,11 @@ def pair(A : namedtuple, B : namedtuple, direction : str, layout_zone : namedtup
     return [new_A, new_B_corrected]
 
 
-def hustle(A : namedtuple, layout_zone : namedtuple, participants : set) -> list:
+def hustle(A : namedtuple, layout_zone : namedtuple, participants : namedtuple) -> list:
 
-    moved_participants              = []
+    moved_participants          = []
 
-    overlapping_participants    = {p for p in participants if p.idx in A.overlap_with_idx}
+    overlapping_participants    = [p for p in participants if p.idx in A.overlap_with_idx]
 
     for B in overlapping_participants:
         
