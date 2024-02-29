@@ -229,17 +229,12 @@ def calculate_secondary_free_space(A                                        : na
     corner_x                                = A.xmin    if vertex[0] == 'left'      else A.xmin + A.width
     corner_y                                = A.ymin    if vertex[1] == 'bottom'    else A.ymin + A.height
 
-    print(corner_x)
-    print(corner_y)
-
     # Catch cases when there are no other participants in line -> Set layout zone as border
 
     horizontal_south_inline_participants_f   = horizontal_south_inline_participants  + [(layout_zone.xmin + layout_zone.width, layout_zone.xmin )]
     horizontal_north_inline_participants_f   = horizontal_north_inline_participants  + [(layout_zone.xmin + layout_zone.width, layout_zone.xmin )]
     vertical_west_inline_participants_f      = vertical_west_inline_participants     + [(layout_zone.ymin + layout_zone.height, layout_zone.ymin)]
     vertical_east_inline_participants_f      = vertical_east_inline_participants     + [(layout_zone.ymin + layout_zone.height, layout_zone.ymin)]
-
-    print(vertical_west_inline_participants_f)
 
     # Calculate border
 
@@ -259,7 +254,7 @@ def calculate_secondary_free_space(A                                        : na
 
 def calclulate_all_secondary_free_spaces(A : namedtuple, free_vertices : list, participants : namedtuple, layout_zone : namedtuple) -> tuple:
 
-    print(A.idx)
+    #print(A.idx)
 
     hsip                            = [(B.xmin, B.xmin + B.width)  for B in participants if (B.ymin <= A.ymin <= B.ymin + B.height) and B.idx != A.idx]
 
@@ -271,7 +266,7 @@ def calclulate_all_secondary_free_spaces(A : namedtuple, free_vertices : list, p
 
     vwip                            = [(B.ymin, B.ymin + B.height)   for B in participants if (B.xmin <= A.xmin <= B.xmin + B.width) and B.idx != A.idx]
 
-    print(vwip)
+    #print(vwip)
 
     veip                            = [(B.ymin, B.ymin + B.height)   for B in participants if (B.xmin <= A.xmin + A.width <= B.xmin + B.width) and B.idx != A.idx]
      
@@ -364,7 +359,7 @@ def calculate_lateral_condition(A: namedtuple, B : namedtuple, leeway_coeffcient
 
 
 
-def calculate_conditions(A : namedtuple, participants : set, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> namedtuple:
+def calculate_conditions(A : namedtuple, participants : namedtuple, layout_zone : namedtuple, leeway_coeffcient : float, conciliation_quota : float, critical_amount : int) -> namedtuple:
 
     tic                 = time.time()
 
