@@ -40,7 +40,7 @@ def one_round_of_interaction(participants : namedtuple, layout_zone : namedtuple
 
         possible_new_positions_rot  = action_exploration(A_rotated_updated, new_participants, layout_zone, leeway_coefficient, conciliation_quota, critical_amount)
 
-        new_position                = determine_best_move(possible_new_positions + possible_new_positions_rot, participants, metric)
+        new_position                = determine_best_move(possible_new_positions + possible_new_positions_rot, metric)
 
         moved_participants_dict     = {p.idx : p for p in new_position}
 

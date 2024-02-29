@@ -240,12 +240,12 @@ def calculate_secondary_free_space(A                                        : na
 
     # Calculate border
 
-    lower_border_vertical                   = max([lb[1] for lb in vertical_west_inline_participants_f if lb[1] < corner_y]) if vertex[0] == 'left' else max([lb[1] for lb in vertical_east_inline_participants_f if lb[1] < corner_y])
-    upper_border_vertical                   = min([ub[0] for ub in vertical_west_inline_participants_f if ub[0] > corner_y]) if vertex[0] == 'left' else min([ub[0] for ub in vertical_east_inline_participants_f if ub[0] > corner_y])
+    lower_border_vertical                   = max([lb[1] for lb in vertical_west_inline_participants_f if lb[1] <= corner_y]) if vertex[0] == 'left' else max([lb[1] for lb in vertical_east_inline_participants_f if lb[1] <= corner_y])
+    upper_border_vertical                   = min([ub[0] for ub in vertical_west_inline_participants_f if ub[0] >= corner_y]) if vertex[0] == 'left' else min([ub[0] for ub in vertical_east_inline_participants_f if ub[0] >= corner_y])
 
 
-    left_border_horizontal                  = max([lb[1] for lb in horizontal_south_inline_participants_f if lb[1] < corner_x]) if vertex[1] == 'bottom' else max([lb[1] for lb in horizontal_north_inline_participants_f if lb[1] < corner_x])
-    right_border_horizontal                 = min([rb[0] for rb in horizontal_south_inline_participants_f if rb[0] > corner_x]) if vertex[1] == 'bottom' else min([rb[0] for rb in horizontal_north_inline_participants_f if rb[0] > corner_x])
+    left_border_horizontal                  = max([lb[1] for lb in horizontal_south_inline_participants_f if lb[1] <= corner_x]) if vertex[1] == 'bottom' else max([lb[1] for lb in horizontal_north_inline_participants_f if lb[1] <= corner_x])
+    right_border_horizontal                 = min([rb[0] for rb in horizontal_south_inline_participants_f if rb[0] >= corner_x]) if vertex[1] == 'bottom' else min([rb[0] for rb in horizontal_north_inline_participants_f if rb[0] >= corner_x])
 
 
     secondary_free_space                    = Rectangle(left_border_horizontal, lower_border_vertical, right_border_horizontal - left_border_horizontal, upper_border_vertical - lower_border_vertical)
