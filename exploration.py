@@ -100,6 +100,21 @@ def action_exploration(A : namedtuple, participants : namedtuple, layout_zone : 
          
         # explore centering
 
+        # explore lingering
+            
+        action                              = lambda P: linger(P)
+
+        adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)      
+
+        if adjuvant_position:    
+            #print('linger is adjuvant')        
+            return [adjuvant_position]  # [ [A_linger] ]
+        
+        if valid_position:            
+            possible_next_positions         = possible_next_positions + [valid_position]  # [ [A_center], [A_linger] ]
+
+        
+
         if A.freespace:
 
             tic = time.time()
@@ -121,20 +136,6 @@ def action_exploration(A : namedtuple, participants : namedtuple, layout_zone : 
             toc = time.time()
 
             #print('Center Exploration took: ' +str(toc-tic))
-
-
-        # explore lingering
-            
-        action                              = lambda P: linger(P)
-
-        adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)      
-
-        if adjuvant_position:    
-            #print('linger is adjuvant')        
-            return [adjuvant_position]  # [ [A_linger] ]
-        
-        if valid_position:            
-            possible_next_positions         = possible_next_positions + [valid_position]  # [ [A_center], [A_linger] ]
         
         # explore budging, swapping, pairing, hustling only if A is safe, otherwise only centering, evasion or yielding is possible
 

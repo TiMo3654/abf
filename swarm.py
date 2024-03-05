@@ -29,7 +29,7 @@ def one_round_of_interaction(participants : namedtuple, layout_zone : namedtuple
 
     participants_interference       = [(p.idx, p.interference) for p in new_participants]
 
-    sorted_participants             = sorted(participants_interference, key=lambda x : x[1], reverse=False)
+    sorted_participants             = sorted(participants_interference, key=lambda x : x[1], reverse=True)
 
     idx_list                        = [p[0] for p in sorted_participants]
 
