@@ -167,46 +167,52 @@ def action_exploration(A : namedtuple, participants : namedtuple, layout_zone : 
 
             # explore hustling
 
-            tic = time.time()
-                                
-            action                              = lambda P: hustle(P, layout_zone, participants)
+            if A.overlap_with_idx:
 
-            adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
+                tic = time.time()
+                                    
+                action                              = lambda P: hustle(P, layout_zone, participants)
 
-            if adjuvant_position or valid_position:
-                possible_next_positions         = possible_next_positions + [adjuvant_position + valid_position] # new positions for all participants in valid positions
+                adjuvant_position, valid_position, _= explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, action)
 
-            toc = time.time()
+                if adjuvant_position or valid_position:
+                    possible_next_positions         = possible_next_positions + [adjuvant_position + valid_position] # new positions for all participants in valid positions
 
-            #print('Hustle Exploration took: ' +str(toc-tic))
+                toc = time.time()
+
+                #print('Hustle Exploration took: ' +str(toc-tic))
 
             tic = time.time()
             
             # explore swapping
 
-            swap_exploration                                        = lambda B: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: swap(P, B))
+            if True:#A.last_move != 'swap':
 
-            swap_results                                            = [swap_exploration(B) for B in participants if B.idx != A.idx]
-          
-            adjuvant_swap_move                                      = [mytup[0] for mytup in swap_results if len(mytup[0]) == 2]
+                swap_exploration                                        = lambda B: explore_action(A, participants, layout_zone, leeway_coeffcient, conciliation_quota, critical_amount, lambda P: swap(P, B))
 
-            if adjuvant_swap_move:
-
-                return adjuvant_swap_move
+                swap_results                                            = [swap_exploration(B) for B in participants if B.idx != A.idx]
             
-            else:
+                adjuvant_swap_move                                      = [mytup[0] for mytup in swap_results if len(mytup[0]) == 2]
 
-                valid_swap_positions                                = [mytup[0] + mytup[1] for mytup in swap_results if not mytup[2]] 
+                if adjuvant_swap_move:
 
-                possible_next_positions                             = possible_next_positions + valid_swap_positions
+                    return adjuvant_swap_move
+                
+                else:
 
-                toc = time.time()
+                    valid_swap_positions                                = [mytup[0] + mytup[1] for mytup in swap_results if not mytup[2]] 
 
-                #print('Swap Exploration took: ' +str(toc-tic))
+                    possible_next_positions                             = possible_next_positions + valid_swap_positions
 
-                tic = time.time()
+                    toc = time.time()
 
-                # explore pairing
+                    #print('Swap Exploration took: ' +str(toc-tic))
+
+            tic = time.time()
+
+            # explore pairing
+
+            if True:#A.last_move != 'pair':
 
                 length_pairing_options = 0
 

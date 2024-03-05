@@ -289,48 +289,109 @@ def generate_unconnected_wheel_participants(layout_zone : dict, edge_length : in
 
 def random_place_mcnc(participants_list : list, layout_zone : dict, seed : int) -> dict:
 
+    participants_list_pure      = participants_list[:-1]
+
     random.seed(seed)
 
     participants_dict           = {}
 
     colors                      = list(mcolors.CSS4_COLORS.keys())
 
-    swarm_specifics             = { "clashes"                       : {},         #{'idx' : 100}
-                                    "aversions"                     : {},         #{'idx' : 17,5}
+    swarm_specifics             = { "clashes"                       : (),         #('idx' : 100)
+                                    "aversions"                     : (),         #('idx' : 17,5)
                                     "interference"                  : 0,
-                                    "overlap-with-idx"              : [],
+                                    "overlap_with_idx"              : (),
                                     "turmoil"                       : 0,
-                                    "relaxed-connections"           : 0,
-                                    "protrusion-status"             : '',
-                                    "protrusion-extend"             : 0,
-                                    "protruded-zone-edges"          : [],
+                                    "relaxed_connections"           : 0,
+                                    "protrusion_status"             : '',
+                                    "protrusion_extend"             : 0,
+                                    "protruded_zone_edges"          : (),
                                     "healthy"                       : True,
                                     "compliant"                     : True,
-                                    "yield-polygon"                 : {},
-                                    "freespace"                     : {},
-                                    'secondary-freespace-north-east': {},
-                                    'secondary-freespace-south-east': {},
-                                    'secondary-freespace-south-west': {},
-                                    'secondary-freespace-north-west': {},
-                                    "last-move"                     : '' }
+                                    "yield_polygon"                 : (),
+                                    "freespace"                     : (),
+                                    'secondary_freespace_north_east': (),
+                                    'secondary_freespace_south_east': (),
+                                    'secondary_freespace_south_west': (),
+                                    'secondary_freespace_north_west': (),
+                                    "last_move"                     : ''}
+    
+    # Create defaults for clashes and aversion
 
-    for participant in participants_list[:-1]:  # The last entry is the network
+    idx_list            = [p['idx'] for p in participants_list_pure]
+    idx_str             = ' '.join(idx_list)
 
-        participant_new             = copy.deepcopy(participant)
+    Clashes             = namedtuple('Clashes', idx_str)
+
+    Aversions           = namedtuple('Aversions', idx_str)
+
+    clashes_default     = Clashes(*(len(participants_list_pure) * [0]))
+
+    aversions_default   = Aversions(*(len(participants_list_pure) * [0]))
+
+    swarm_specifics['clashes']      = clashes_default
+    swarm_specifics['aversions']    = aversions_default
+
+    # Merge yal input with swarm specifics
+
+    participants_updated_swarm      = [p | swarm_specifics for p in participants_list_pure]
+
+    #print(participants_updated_swarm)
+
+    # Turn connections into namedtuple
+
+    # connections                     = {p.idx : namedtuple('Connections', p['connections'])(**p['connections']) for p in participants_updated_swarm}
+
+    # print(connections)
+
+    participants_updated_con        = [p | {'connections' : namedtuple('Connections', p['connections'])(**p['connections'])} for p in participants_updated_swarm]
+    
+    participants_updated_color      = [p | {"color" : random.choice(colors)} for p in participants_updated_con]
+
+    #print(participants_updated_con)
+
+    participants_list_tuple          = [namedtuple('Participant', p)(**p) for p in participants_updated_color]
+
+    #print(participants_list_dict)
+
+    Participants                    = namedtuple('Participants', idx_str)
+
+    participants_final              = Participants(*participants_list_tuple)
+
+    #print(participants_final)
+
+
+    # # # Create complete dictionary
+
+    # # participants_dict               = {p['idx'] : p for p in participants_updated_con}
+
+    # # print(participants_dict)
+
+    # participants_list_dict          = [namedtuple('Participants', p)(**p) for p in participants_dict]
+
+    # # Create named tuple
+
+    # participants_final              = namedtuple('Participants', participants_list_dict)(**participants_list_dict)
+
+
+
+    # for participant in participants_list[:-1]:  # The last entry is the network
+
+    #     participant_new             = copy.deepcopy(participant)
         
-        xmin                        = random.randint(0,layout_zone['width'])
-        ymin                        = random.randint(0,layout_zone['height'])
+    #     xmin                        = random.randint(0,layout_zone['width'])
+    #     ymin                        = random.randint(0,layout_zone['height'])
 
-        participant_new['xmin']     = xmin
-        participant_new['ymin']     = ymin
-        participant_new['color']    = random.choice(colors)
+    #     participant_new['xmin']     = xmin
+    #     participant_new['ymin']     = ymin
+    #     participant_new['color']    = random.choice(colors)
 
-        participant_new             = participant_new | swarm_specifics
+    #     participant_new             = participant_new | swarm_specifics
 
-        participants_dict.update({participant_new['idx'] : participant_new})
+    #     participants_dict.update({participant_new['idx'] : participant_new})
 
     
-    return participants_dict       
+    return participants_final       
 
 
 
